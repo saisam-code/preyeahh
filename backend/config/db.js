@@ -9,10 +9,8 @@ export const connectDB = async () => {
   try {
     const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/preyeah";
 
-    const connection = await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const connection = await mongoose.connect(mongoUri);
+    // ↑ Remove useNewUrlParser and useUnifiedTopology (they're no longer needed)
 
     console.log(`✓ MongoDB connected: ${connection.connection.host}:${connection.connection.port}/${connection.connection.name}`);
     return connection;
