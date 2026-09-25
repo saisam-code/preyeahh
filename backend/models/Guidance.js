@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 /**
  * Mirrors: CREATE TABLE guidance (id, title, branch, icon, points text[], role_id FK nullable)
@@ -37,7 +37,7 @@ const guidanceSchema = new mongoose.Schema(
     },
     role: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
+      ref: "CareerRole",
       default: null,
       index: true,
     },
@@ -47,4 +47,5 @@ const guidanceSchema = new mongoose.Schema(
 
 guidanceSchema.index({ branch: 1, role: 1 });
 
-module.exports = mongoose.model("Guidance", guidanceSchema);
+export default mongoose.model("Guidance", guidanceSchema);
+

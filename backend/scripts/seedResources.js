@@ -1,6 +1,7 @@
-require("dotenv").config({ path: "../.env" });
-const mongoose = require("mongoose");
-const Resource = require("../models/Resource");
+import dotenv from "dotenv";
+dotenv.config({ path: "../.env" });
+import mongoose from "mongoose";
+import Resource from "../models/Resource.js";
 
 const seedData = [
   // JavaScript — all branches can benefit
@@ -70,8 +71,7 @@ const seedData = [
 
 const seedDB = async () => {
   try {
-    const mongoUri = process.env.MONGO_URI;
-    if (!mongoUri) throw new Error("MONGO_URI not set in .env");
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://localhost:27017/preyeah";
 
     console.log("Connecting to MongoDB...");
     await mongoose.connect(mongoUri);

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 /**
  * Mirrors: CREATE TABLE branches (name text PRIMARY KEY)
@@ -28,8 +28,7 @@ branchSchema.pre("findOneAndDelete", async function (next) {
   const branch = await this.model.findOne(this.getQuery());
   if (!branch) return next();
 
-  const Role = mongoose.model("Role");
-  const Beyond = mongoose.model("Beyond");
+  const Role = mongoose.model("CareerRole");
   const Guidance = mongoose.model("Guidance");
 
   const roles = await Role.find({ branch: branch.name }).select("_id");
@@ -37,10 +36,10 @@ branchSchema.pre("findOneAndDelete", async function (next) {
 
   await Guidance.deleteMany({ role: { $in: roleIds } });
   await Guidance.deleteMany({ branch: branch.name });
-  await Beyond.deleteMany({ branch: branch.name });
   await Role.deleteMany({ branch: branch.name });
 
   next();
 });
 
-module.exports = mongoose.model("Branch", branchSchema);
+export default mongoose.model("Branch", branchSchema);
+

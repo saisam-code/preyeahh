@@ -1,6 +1,6 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 const GUIDE_EMAIL_REGEX = /^[^\s@]+@nbkrist\.org$/i;
 
@@ -77,4 +77,4 @@ guideSchema.methods.toSafeJSON = function () {
   };
 };
 
-module.exports = mongoose.model("Guide", guideSchema);
+export default mongoose.model("Guide", guideSchema);

@@ -1,15 +1,15 @@
-const {
+import {
   generateAIRoadmap,
   getStudentRoadmaps,
   getRoadmapById,
   updateTopicProgress,
   deleteRoadmap,
-} = require("../services/aiRoadmapService");
+} from "../services/aiRoadmapService.js";
 
-exports.generateRoadmapController = async (req, res, next) => {
+export const generateRoadmapController = async (req, res, next) => {
   try {
     const { topic, roleId } = req.body;
-    const roadmap = await generateAIRoadmap(req.user.id, { topic, roleId });
+    const roadmap = await generateAIRoadmap(req.user.id || req.user.userId, { topic, roleId });
     return res.status(201).json({
       success: true,
       message: "Roadmap generated successfully",
@@ -32,26 +32,26 @@ exports.generateRoadmapController = async (req, res, next) => {
   }
 };
 
-exports.getStudentRoadmapsController = async (req, res, next) => {
+export const getStudentRoadmapsController = async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
-    const result = await getStudentRoadmaps(req.user.id, page, limit);
+    const result = await getStudentRoadmaps(req.user.id || req.user.userId, page, limit);
     return res.status(200).json({ success: true, ...result });
   } catch (err) {
     next(err);
   }
 };
 
-exports.getRoadmapByIdController = async (req, res, next) => {
+export const getRoadmapByIdController = async (req, res, next) => {
   try {
-    const roadmap = await getRoadmapById(req.params.id, req.user.id);
+    const roadmap = await getRoadmapById(req.params.id, req.user.id || req.user.userId);
     return res.status(200).json({ success: true, roadmap });
   } catch (err) {
     next(err);
   }
 };
 
-exports.updateTopicProgressController = async (req, res, next) => {
+export const updateTopicProgressController = async (req, res, next) => {
   try {
     const { topicId, isCompleted } = req.body;
 
@@ -66,7 +66,7 @@ exports.updateTopicProgressController = async (req, res, next) => {
       req.params.id,
       topicId,
       isCompleted,
-      req.user.id
+      req.user.id || req.user.userId
     );
     return res.status(200).json({
       success: true,
@@ -78,11 +78,19 @@ exports.updateTopicProgressController = async (req, res, next) => {
   }
 };
 
-exports.deleteRoadmapController = async (req, res, next) => {
+export const deleteRoadmapController = async (req, res, next) => {
   try {
-    const result = await deleteRoadmap(req.params.id, req.user.id);
+    const result = await deleteRoadmap(req.params.id, req.user.id || req.user.userId);
     return res.status(200).json({ success: true, ...result });
   } catch (err) {
     next(err);
   }
+};
+
+export default {
+  generateRoadmapController,
+  getStudentRoadmapsController,
+  getRoadmapByIdController,
+  updateTopicProgressController,
+  deleteRoadmapController,
 };

@@ -1,4 +1,6 @@
 import { getUserPerformance } from "../services/performance.service.js";
+import User from "../models/User.js";
+import UserGuidanceProgress from "../models/UserGuidanceProgress.js";
 
 /**
  * GET /api/performance

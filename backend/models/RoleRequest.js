@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 /**
  * Mirrors: CREATE TABLE role_requests (role_name, branch, summary,
@@ -32,7 +32,7 @@ const roleRequestSchema = new mongoose.Schema(
     },
     student: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
+      ref: "User",
       default: null, // request can be submitted while logged out, same as original modal
     },
     email: { type: String, default: null, trim: true, lowercase: true },
@@ -46,4 +46,5 @@ const roleRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("RoleRequest", roleRequestSchema);
+export default mongoose.model("RoleRequest", roleRequestSchema);
+

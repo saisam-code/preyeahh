@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const resourceSchema = new mongoose.Schema(
   {
@@ -36,14 +36,14 @@ const aiRoadmapSchema = new mongoose.Schema(
   {
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
+      ref: "User",
       required: true,
       index: true,
     },
     // Linked to PreYeah role — optional, null if student generated without a role
     roleId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
+      ref: "CareerRole",
       default: null,
     },
     roleTitle: { type: String, default: "" },
@@ -62,4 +62,4 @@ const aiRoadmapSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("AIRoadmap", aiRoadmapSchema);
+export default mongoose.model("AIRoadmap", aiRoadmapSchema);

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 /**
  * Mirrors: CREATE TABLE role_interest (student_id, role_id, role_name,
@@ -14,12 +14,12 @@ const roleInterestSchema = new mongoose.Schema(
   {
     student: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
+      ref: "User",
       required: true,
     },
     role: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Role",
+      ref: "CareerRole",
       required: true,
     },
     roleName: { type: String, required: true },
@@ -32,4 +32,5 @@ const roleInterestSchema = new mongoose.Schema(
 
 roleInterestSchema.index({ student: 1, role: 1 }, { unique: true });
 
-module.exports = mongoose.model("RoleInterest", roleInterestSchema);
+export default mongoose.model("RoleInterest", roleInterestSchema);
+

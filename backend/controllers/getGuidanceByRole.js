@@ -1,11 +1,11 @@
-const Guidance = require("../models/Guidance");
-const Role = require("../models/Role");
-const ApiError = require("../utils/ApiError");
-const ApiResponse = require("../utils/ApiResponse");
-const asyncHandler = require("../utils/asyncHandler");
+import Guidance from "../models/Guidance.js";
+import CareerRole from "../models/CareerRole.js";
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 // GET /api/guidance?branch=CSE&role=<id> — public, powers admin/guide guidance tables
-exports.getGuidance = asyncHandler(async (req, res) => {
+export const getGuidance = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.branch) {
     const b = req.query.branch.toUpperCase();
@@ -22,8 +22,8 @@ exports.getGuidance = asyncHandler(async (req, res) => {
  * merges this role's own roadmap entries with its branch's branch-wide
  * entries (branch === role.branch or branch === "All").
  */
-exports.getGuidanceForRole = asyncHandler(async (req, res) => {
-  const role = await Role.findById(req.params.roleId);
+export const getGuidanceForRole = asyncHandler(async (req, res) => {
+  const role = await CareerRole.findById(req.params.roleId);
   if (!role) throw ApiError.notFound("Role not found");
 
   const [roleRoadmap, branchRoadmap] = await Promise.all([
@@ -37,7 +37,7 @@ exports.getGuidanceForRole = asyncHandler(async (req, res) => {
 /**
  * POST /api/guidance — admin (any branch) or approved guide (own branch only).
  */
-exports.createGuidance = asyncHandler(async (req, res) => {
+export const createGuidance = asyncHandler(async (req, res) => {
   const { title, points } = req.body;
   let branch = req.body.branch;
   const roleId = req.body.role || null;
@@ -47,7 +47,7 @@ exports.createGuidance = asyncHandler(async (req, res) => {
   }
 
   if (roleId) {
-    const role = await Role.findById(roleId);
+    const role = await CareerRole.findById(roleId);
     if (!role) throw ApiError.notFound("Role not found");
     if (role.branch !== branch) {
       throw ApiError.badRequest("Role-specific guidance must match the entry's branch");
@@ -58,7 +58,7 @@ exports.createGuidance = asyncHandler(async (req, res) => {
   res.status(201).json(new ApiResponse(201, entry, "Guidance entry created"));
 });
 
-exports.updateGuidance = asyncHandler(async (req, res) => {
+export const updateGuidance = asyncHandler(async (req, res) => {
   const entry = await Guidance.findById(req.params.id);
   if (!entry) throw ApiError.notFound("Guidance entry not found");
 
@@ -78,7 +78,7 @@ exports.updateGuidance = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, entry, "Guidance entry updated"));
 });
 
-exports.deleteGuidance = asyncHandler(async (req, res) => {
+export const deleteGuidance = asyncHandler(async (req, res) => {
   const entry = await Guidance.findById(req.params.id);
   if (!entry) throw ApiError.notFound("Guidance entry not found");
 
@@ -89,3 +89,11 @@ exports.deleteGuidance = asyncHandler(async (req, res) => {
   await entry.deleteOne();
   res.status(200).json(new ApiResponse(200, null, "Guidance entry deleted"));
 });
+
+export default {
+  getGuidance,
+  getGuidanceForRole,
+  createGuidance,
+  updateGuidance,
+  deleteGuidance,
+};

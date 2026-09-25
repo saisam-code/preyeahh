@@ -1,22 +1,22 @@
-const AIRoadmap = require("../models/AIRoadmap");
-const Student = require("../models/Student");
-const Role = require("../models/Role");
-const { getGroqClient, GROQ_MODEL } = require("../config/groq");
-const { buildAIRoadmapPrompt } = require("../utils/aiPrompts");
-const { getRecommendedResources } = require("./resourceService");
+import AIRoadmap from "../models/AIRoadmap.js";
+import User from "../models/User.js";
+import CareerRole from "../models/CareerRole.js";
+import { getGroqClient, GROQ_MODEL } from "../config/groq.js";
+import { buildAIRoadmapPrompt } from "../utils/aiPrompts.js";
+import { getRecommendedResources } from "./resource.service.js";
 
 /**
  * Generate AI roadmap
  * roleId is optional — if provided, pulls Role.guidance for context
  */
-const generateAIRoadmap = async (studentId, { topic, roleId }) => {
+export const generateAIRoadmap = async (studentId, { topic, roleId }) => {
   if (!topic || topic.trim().length === 0) {
     const error = new Error("Topic is required to generate a roadmap");
     error.statusCode = 400;
     throw error;
   }
 
-  const student = await Student.findById(studentId).select("preferences branch");
+  const student = await User.findById(studentId).select("preferences branch");
   if (!student) {
     const error = new Error("Student not found");
     error.statusCode = 404;
@@ -32,7 +32,7 @@ const generateAIRoadmap = async (studentId, { topic, roleId }) => {
   let linkedRoleId = null;
 
   if (roleId) {
-    const role = await Role.findById(roleId);
+    const role = await CareerRole.findById(roleId);
     if (role) {
       roleGuidance = role.guidance || {};
       roleTitle = role.title;
@@ -122,7 +122,7 @@ const generateAIRoadmap = async (studentId, { topic, roleId }) => {
   return roadmap;
 };
 
-const getStudentRoadmaps = async (studentId, page = 1, limit = 10) => {
+export const getStudentRoadmaps = async (studentId, page = 1, limit = 10) => {
   const skip = (page - 1) * limit;
   const roadmaps = await AIRoadmap.find({ studentId })
     .select("title roleTitle branch level estimatedWeeks isCompleted createdAt updatedAt")
@@ -140,7 +140,7 @@ const getStudentRoadmaps = async (studentId, page = 1, limit = 10) => {
   };
 };
 
-const getRoadmapById = async (roadmapId, studentId) => {
+export const getRoadmapById = async (roadmapId, studentId) => {
   const roadmap = await AIRoadmap.findOne({ _id: roadmapId, studentId });
   if (!roadmap) {
     const error = new Error("Roadmap not found");
@@ -150,7 +150,7 @@ const getRoadmapById = async (roadmapId, studentId) => {
   return roadmap;
 };
 
-const updateTopicProgress = async (roadmapId, topicId, isCompleted, studentId) => {
+export const updateTopicProgress = async (roadmapId, topicId, isCompleted, studentId) => {
   const roadmap = await AIRoadmap.findOne({ _id: roadmapId, studentId });
   if (!roadmap) {
     const error = new Error("Roadmap not found");
@@ -192,7 +192,7 @@ const updateTopicProgress = async (roadmapId, topicId, isCompleted, studentId) =
   return updated;
 };
 
-const deleteRoadmap = async (roadmapId, studentId) => {
+export const deleteRoadmap = async (roadmapId, studentId) => {
   const roadmap = await AIRoadmap.findOneAndDelete({ _id: roadmapId, studentId });
   if (!roadmap) {
     const error = new Error("Roadmap not found");
@@ -202,7 +202,7 @@ const deleteRoadmap = async (roadmapId, studentId) => {
   return { id: roadmapId, message: "Roadmap deleted successfully" };
 };
 
-module.exports = {
+export default {
   generateAIRoadmap,
   getStudentRoadmaps,
   getRoadmapById,

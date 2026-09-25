@@ -170,3 +170,6 @@ export function extractAndVerifyToken(req) {
   // Caller (refresh.controller) will verify using JWT_REFRESH_SECRET.
   return jwt.decode(token);
 }
+
+export { roleGate as authorize };
+

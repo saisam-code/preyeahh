@@ -1,14 +1,15 @@
-const express = require("express");
-const router = express.Router();
-const { protect, authorize } = require("../middleware/auth");
-const {
+import { Router } from "express";
+import { protect, roleGate as authorize } from "../middleware/auth.middleware.js";
+import {
   createResourceController,
   searchResourcesController,
   recommendResourcesController,
   getResourceByIdController,
   incrementViewsController,
   deleteResourceController,
-} = require("../controllers/resourceController");
+} from "../controllers/resourceController.js";
+
+const router = Router();
 
 // Public — search and browse
 router.get("/", searchResourcesController);
@@ -22,4 +23,4 @@ router.post("/recommend", protect, authorize("student"), recommendResourcesContr
 router.post("/", protect, authorize("admin"), createResourceController);
 router.delete("/:id", protect, authorize("admin"), deleteResourceController);
 
-module.exports = router;
+export default router;
