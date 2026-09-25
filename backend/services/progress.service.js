@@ -1,10 +1,11 @@
-import Roadmap from "../models/Roadmap.js";
+import AIRoadmap from "../models/AIRoadmap.js";
+import Quiz from "../models/Quiz.js";
 
 /**
- * Compute detailed learning progress per roadmap and overall total completion.
+ * Compute detailed learning progress per AI roadmap and overall completion.
  */
-export const getLearningProgress = async (userId) => {
-  const roadmaps = await Roadmap.find({ userId }).sort({ updatedAt: -1 });
+export const getLearningProgress = async (studentId) => {
+  const roadmaps = await AIRoadmap.find({ studentId }).sort({ updatedAt: -1 });
 
   if (!roadmaps || roadmaps.length === 0) {
     return {
@@ -31,9 +32,7 @@ export const getLearningProgress = async (userId) => {
           sec.topics.forEach((tp) => {
             rmTotalTopics += 1;
             totalTopicsGlobal += 1;
-
-            const isDone = tp.isCompleted === true || tp.isCompleted === "true";
-            if (isDone) {
+            if (tp.isCompleted) {
               rmCompletedTopics += 1;
               completedTopicsGlobal += 1;
             }
@@ -47,16 +46,15 @@ export const getLearningProgress = async (userId) => {
         ? Math.round((rmCompletedTopics / rmTotalTopics) * 100)
         : 0;
 
-    if (completionPercentage === 100) {
-      completedRoadmapsCount += 1;
-    }
+    if (completionPercentage === 100) completedRoadmapsCount += 1;
 
     return {
-      id: rm._id ? rm._id.toString() : rm.id,
-      title: rm.title || rm.topic || "Untitled Roadmap",
-      topic: rm.topic || rm.title || "General",
-      level: rm.level || "beginner",
-      estimatedWeeks: rm.estimatedWeeks || 4,
+      id: rm._id.toString(),
+      title: rm.title,
+      roleTitle: rm.roleTitle,
+      branch: rm.branch,
+      level: rm.level,
+      estimatedWeeks: rm.estimatedWeeks,
       totalTopics: rmTotalTopics,
       completedTopics: rmCompletedTopics,
       completionPercentage,
@@ -77,5 +75,29 @@ export const getLearningProgress = async (userId) => {
     totalTopics: totalTopicsGlobal,
     completedTopics: completedTopicsGlobal,
     roadmapProgressList,
+  };
+};
+
+/**
+ * Compute quiz progress stats for the student.
+ */
+export const getQuizProgress = async (studentId) => {
+  const quizzes = await Quiz.find({ studentId, isCompleted: true })
+    .select("title topic branch roleTitle difficulty score createdAt")
+    .sort({ createdAt: -1 });
+
+  const total = await Quiz.countDocuments({ studentId });
+  const completed = quizzes.length;
+
+  const avgScore =
+    completed > 0
+      ? Math.round(quizzes.reduce((sum, q) => sum + q.score, 0) / completed)
+      : 0;
+
+  return {
+    totalQuizzes: total,
+    completedQuizzes: completed,
+    averageScore: avgScore,
+    recentQuizzes: quizzes.slice(0, 5),
   };
 };

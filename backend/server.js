@@ -16,6 +16,9 @@ import guideRoutes from "./routes/guide.routes.js";
 import careerRoleRoutes from "./routes/careerRole.routes.js";
 import aiRoadmapRoutes from "./routes/aiRoadmapRoutes.js";
 import resourceRoutes from "./routes/resourceRoutes.js";
+import quizRoutes from "./routes/quizRoutes.js";
+import progressRoutes from "./routes/progress.routes.js";
+import performanceRoutes from "./routes/performance.routes.js";
 
 await connectDB();
 
@@ -47,6 +50,9 @@ app.use("/api/guides", guideRoutes);
 app.use("/api/roles", careerRoleRoutes);
 app.use("/api/ai-roadmaps", aiRoadmapRoutes);
 app.use("/api/resources", resourceRoutes);
+app.use("/api/quiz", quizRoutes);
+app.use("/api/progress", progressRoutes);
+app.use("/api/performance", performanceRoutes);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HEALTH CHECK

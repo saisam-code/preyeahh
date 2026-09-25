@@ -1,23 +1,27 @@
-import { getLearningProgress } from "../services/progress.service.js";
+import { getLearningProgress, getQuizProgress } from "../services/progress.service.js";
 
 /**
  * GET /api/progress
- * Get comprehensive learning progress broken down by roadmap for the authenticated user.
  */
-export const getLearningProgressController = async (req, res) => {
+export const getLearningProgressController = async (req, res, next) => {
   try {
-    const userId = req.user.userId;
-    const progress = await getLearningProgress(userId);
+    const studentId = req.user?.id || req.user?.userId;
+    const progress = await getLearningProgress(studentId);
+    return res.status(200).json({ success: true, progress });
+  } catch (err) {
+    next(err);
+  }
+};
 
-    return res.status(200).json({
-      success: true,
-      progress,
-    });
-  } catch (error) {
-    console.error("Error in getLearningProgressController:", error);
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || "Internal server error",
-    });
+/**
+ * GET /api/progress/quizzes
+ */
+export const getQuizProgressController = async (req, res, next) => {
+  try {
+    const studentId = req.user?.id || req.user?.userId;
+    const progress = await getQuizProgress(studentId);
+    return res.status(200).json({ success: true, progress });
+  } catch (err) {
+    next(err);
   }
 };

@@ -12,11 +12,14 @@ const questionSchema = new mongoose.Schema(
 
 const quizSchema = new mongoose.Schema(
   {
-    userId: {
+    studentId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Student",
       required: true,
+      index: true,
     },
+    branch: { type: String, default: "", uppercase: true, trim: true },
+    roleTitle: { type: String, default: "" },
     title: { type: String, required: true },
     topic: { type: String, required: true },
     difficulty: {
@@ -25,27 +28,12 @@ const quizSchema = new mongoose.Schema(
       default: "beginner",
     },
     questions: [questionSchema],
-    
-    // Progress/Results tracking
     isCompleted: { type: Boolean, default: false },
     score: { type: Number, default: 0 },
-    userAnswers: [{ type: String }], // The answers the user submitted
+    userAnswers: [{ type: String }],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Virtual for formatted output (id mapping)
-quizSchema.set("toJSON", {
-  transform: (doc, ret) => {
-    ret.id = ret._id.toString();
-    delete ret._id;
-    delete ret.__v;
-    return ret;
-  },
-});
-
 const Quiz = mongoose.model("Quiz", quizSchema);
-
 export default Quiz;

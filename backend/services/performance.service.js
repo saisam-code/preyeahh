@@ -1,83 +1,68 @@
-import Roadmap from "../models/Roadmap.js";
+import AIRoadmap from "../models/AIRoadmap.js";
+import Quiz from "../models/Quiz.js";
 
 /**
- * Calculate user performance metrics grouped by topic/technology
+ * Calculate user performance metrics per AI roadmap with quiz breakdown
  * and generate diagnostic suggestions on where to fix/focus.
  */
-export const getUserPerformance = async (userId) => {
-  const roadmaps = await Roadmap.find({ userId });
+export const getUserPerformance = async (studentId) => {
+  const [roadmaps, quizzes] = await Promise.all([
+    AIRoadmap.find({ studentId }),
+    Quiz.find({ studentId, isCompleted: true }),
+  ]);
 
-  if (!roadmaps || roadmaps.length === 0) {
+  if (roadmaps.length === 0 && quizzes.length === 0) {
     return {
       overallProgress: 0,
       totalTopics: 0,
       completedTopics: 0,
       topicBreakdown: [],
+      quizBreakdown: [],
       suggestions: [
         {
-          id: "no-roadmap",
+          id: "no-data",
           type: "action",
-          title: "Generate your first roadmap",
-          description: "Create a learning roadmap to start tracking your performance and progress.",
+          title: "Get started",
+          description:
+            "Generate your first AI roadmap for a role in your branch to start tracking performance.",
           severity: "info",
         },
       ],
     };
   }
 
+  // ── Roadmap performance ───────────────────────────────────────
   let grandTotalTopics = 0;
   let grandCompletedTopics = 0;
-
-  const topicPerformanceMap = {};
   const weakTopics = [];
-  const pendingSections = [];
 
-  // Iterate over all roadmaps and calculate section/topic performance
-  roadmaps.forEach((rm) => {
-    const rmTopic = rm.topic || rm.title || "General";
-    
-    if (!topicPerformanceMap[rmTopic]) {
-      topicPerformanceMap[rmTopic] = {
-        roadmapId: rm._id ? rm._id.toString() : (rm.id || ""),
-        topic: rmTopic,
-        level: rm.level || "beginner",
-        totalTopics: 0,
-        completedTopics: 0,
-        sectionsCount: rm.sections?.length || 0,
-        incompleteTopicsList: [],
-      };
-    }
-
-    const entry = topicPerformanceMap[rmTopic];
+  const topicBreakdown = roadmaps.map((rm) => {
+    let total = 0;
+    let completed = 0;
+    const incompleteList = [];
 
     if (Array.isArray(rm.sections)) {
-      rm.sections.forEach((section) => {
-        if (Array.isArray(section.topics)) {
-          section.topics.forEach((tp) => {
-            entry.totalTopics += 1;
+      rm.sections.forEach((sec) => {
+        if (Array.isArray(sec.topics)) {
+          sec.topics.forEach((tp) => {
+            total += 1;
             grandTotalTopics += 1;
-
-            const isDone = tp.isCompleted === true || tp.isCompleted === "true";
-            if (isDone) {
-              entry.completedTopics += 1;
+            if (tp.isCompleted) {
+              completed += 1;
               grandCompletedTopics += 1;
             } else {
-              entry.incompleteTopicsList.push({
-                sectionTitle: section.title || "Section",
-                topicTitle: tp.title || "Topic",
-                description: tp.description || "",
+              incompleteList.push({
+                sectionTitle: sec.title,
+                topicTitle: tp.title,
               });
             }
           });
         }
       });
     }
-  });
 
-  // Calculate percentages and proficiency status
-  const topicBreakdown = Object.values(topicPerformanceMap).map((item) => {
-    const pct = item.totalTopics > 0 ? Math.round((item.completedTopics / item.totalTopics) * 100) : 0;
-    
+    const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
     let proficiency = "Needs Review";
     let statusColor = "red";
     if (pct >= 80) {
@@ -90,60 +75,96 @@ export const getUserPerformance = async (userId) => {
 
     if (pct < 60) {
       weakTopics.push({
-        topic: item.topic,
+        roadmapTitle: rm.title,
+        roleTitle: rm.roleTitle,
         pct,
-        incomplete: item.incompleteTopicsList.slice(0, 3),
+        incomplete: incompleteList.slice(0, 3),
       });
     }
 
     return {
-      roadmapId: item.roadmapId,
-      topic: item.topic,
-      level: item.level,
-      totalTopics: item.totalTopics,
-      completedTopics: item.completedTopics,
+      roadmapId: rm._id.toString(),
+      title: rm.title,
+      roleTitle: rm.roleTitle,
+      branch: rm.branch,
+      level: rm.level,
+      totalTopics: total,
+      completedTopics: completed,
       percentage: pct,
       proficiency,
       statusColor,
     };
   });
 
-  const overallProgress = grandTotalTopics > 0 ? Math.round((grandCompletedTopics / grandTotalTopics) * 100) : 0;
+  // ── Quiz performance ──────────────────────────────────────────
+  const quizBreakdown = quizzes.map((q) => ({
+    quizId: q._id.toString(),
+    title: q.title,
+    topic: q.topic,
+    branch: q.branch,
+    difficulty: q.difficulty,
+    score: q.score,
+    grade:
+      q.score >= 80 ? "Excellent" :
+      q.score >= 60 ? "Good" :
+      q.score >= 40 ? "Average" : "Needs Work",
+  }));
 
-  // Generate Diagnostic Fix Suggestions
+  const avgQuizScore =
+    quizzes.length > 0
+      ? Math.round(quizzes.reduce((s, q) => s + q.score, 0) / quizzes.length)
+      : 0;
+
+  const overallProgress =
+    grandTotalTopics > 0
+      ? Math.round((grandCompletedTopics / grandTotalTopics) * 100)
+      : 0;
+
+  // ── Diagnostic suggestions ────────────────────────────────────
   const suggestions = [];
 
-  if (weakTopics.length > 0) {
-    weakTopics.forEach((wt) => {
-      if (wt.incomplete.length > 0) {
-        const nextTopic = wt.incomplete[0];
-        suggestions.push({
-          id: `fix-${wt.topic.replace(/\s+/g, '-').toLowerCase()}`,
-          type: "weakness",
-          title: `Fix gap in ${wt.topic}`,
-          description: `You are at ${wt.pct}% completion. Focus on "${nextTopic.topicTitle}" under ${nextTopic.sectionTitle} to strengthen this area.`,
-          severity: wt.pct < 30 ? "high" : "medium",
-          targetTopic: wt.topic,
-          recommendedStep: nextTopic.topicTitle,
-        });
-      }
+  weakTopics.forEach((wt) => {
+    if (wt.incomplete.length > 0) {
+      const slug = (wt.roleTitle || wt.roadmapTitle || "topic")
+        .replace(/\s+/g, "-")
+        .toLowerCase();
+      suggestions.push({
+        id: `fix-${slug}`,
+        type: "weakness",
+        title: `Complete topics in ${wt.roleTitle || wt.roadmapTitle}`,
+        description: `You are at ${wt.pct}% on this roadmap. Next up: "${wt.incomplete[0].topicTitle}" under ${wt.incomplete[0].sectionTitle}.`,
+        severity: wt.pct < 30 ? "high" : "medium",
+      });
+    }
+  });
+
+  if (avgQuizScore > 0 && avgQuizScore < 50) {
+    suggestions.push({
+      id: "quiz-low",
+      type: "weakness",
+      title: "Quiz scores need improvement",
+      description: `Your average quiz score is ${avgQuizScore}%. Revisit topics and retake quizzes to improve retention.`,
+      severity: "high",
     });
   }
 
   if (overallProgress >= 80) {
     suggestions.push({
-      id: "mastery-next",
+      id: "mastery",
       type: "achievement",
-      title: "Great proficiency achieved!",
-      description: "You've completed over 80% of your current roadmaps. Consider creating an advanced roadmap to test your skills.",
+      title: "Great progress!",
+      description:
+        "You have completed over 80% of your roadmaps. Consider generating an advanced roadmap.",
       severity: "low",
     });
-  } else if (suggestions.length === 0) {
+  }
+
+  if (suggestions.length === 0) {
     suggestions.push({
-      id: "steady-progress",
+      id: "steady",
       type: "guidance",
-      title: "Keep up the steady momentum",
-      description: "Complete your next pending topic to boost your overall mastery score.",
+      title: "Keep going",
+      description: "Complete your next pending topic to boost your mastery score.",
       severity: "info",
     });
   }
@@ -153,7 +174,9 @@ export const getUserPerformance = async (userId) => {
     totalTopics: grandTotalTopics,
     completedTopics: grandCompletedTopics,
     remainingTopics: grandTotalTopics - grandCompletedTopics,
+    avgQuizScore,
     topicBreakdown,
+    quizBreakdown,
     suggestions,
   };
 };

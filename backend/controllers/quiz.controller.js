@@ -63,6 +63,8 @@ export const getUserQuizzesController = async (req, res) => {
   }
 };
 
+export const getStudentQuizzesController = getUserQuizzesController;
+
 /**
  * GET /api/quizzes/:id
  */

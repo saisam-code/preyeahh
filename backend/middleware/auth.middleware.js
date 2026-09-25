@@ -173,3 +173,11 @@ export function extractAndVerifyToken(req) {
 
 export { roleGate as authorize };
 
+export default {
+  protect,
+  optionalAuth,
+  roleGate,
+  authorize: roleGate,
+  extractAndVerifyToken,
+};
+
