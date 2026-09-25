@@ -1,280 +1,160 @@
-/**
- * SOURCE: Merged from preyeahouter/backend/services/auth.service.js (App A)
- *         + preyeah-main/server/models/auth.js (App B patterns)
- *
- * UNIFIED AUTH SERVICE:
- *   - Single User model (both App A fields + App B fields)
- *   - Email verification (new; from App B)
- *   - Password reset flow (new; from App B)
- *   - Google OAuth ready (App A pattern; routes TBD)
- *   - Refresh token versioning (App B security pattern)
- */
-
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
-import { signAccessToken, signRefreshToken, refreshCookieOptions } from "./token.service.js";
-import { ApiError } from "../utils/ApiError.js";
-import nodemailer from "nodemailer";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// EMAIL CONFIG (placeholder; configure in .env)
-// ─────────────────────────────────────────────────────────────────────────────
+// Helper to get Google OAuth Client dynamically
+const getGoogleClient = () => {
+  return new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+};
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || "smtp.gmail.com",
-  port: process.env.EMAIL_PORT || 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
+// Helper to sign JWT tokens
+export const generateToken = (userId, email) => {
+  const secret = process.env.JWT_SECRET || "default_jwt_secret_key";
+  return jwt.sign({ userId, email }, secret, { expiresIn: "7d" });
+};
+
+// Helper to format user payload
+const formatUserPayload = (user) => ({
+  id: user._id.toString(),
+  email: user.email,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  avatarUrl: user.avatarUrl,
+  preferences: user.preferences || {},
+  createdAt: user.createdAt,
+  updatedAt: user.updatedAt,
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// REGISTER
-// ─────────────────────────────────────────────────────────────────────────────
+// Register Service
+export const registerUser = async ({ email, password, firstName, lastName }) => {
+  const normalizedEmail = email.toLowerCase().trim();
 
-export const register = async (email, password, firstName = "", lastName = "") => {
   // Check if user already exists
-  const existingUser = await User.findOne({ email: email.toLowerCase() });
+  const existingUser = await User.findOne({ email: normalizedEmail });
   if (existingUser) {
-    throw new ApiError(409, "Email already registered");
+    const error = new Error("User already exists with this email");
+    error.statusCode = 409;
+    throw error;
   }
 
-  // Create new user
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  // Create user
   const user = await User.create({
-    email: email.toLowerCase(),
-    password, // Will be hashed by pre('save') hook
-    firstName,
-    lastName,
-    role: "student", // Default role
+    email: normalizedEmail,
+    password: hashedPassword,
+    firstName: firstName || "",
+    lastName: lastName || "",
   });
 
-  // Generate email verification token
-  const rawToken = user.createEmailVerificationToken();
-  await user.save({ validateBeforeSave: false });
-
-  // Send verification email
-  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${rawToken}`;
-
-  try {
-    await transporter.sendMail({
-      to: user.email,
-      subject: "Verify your Pre-Yeah account",
-      html: `
-        <p>Hi ${firstName || user.email},</p>
-        <p>Click the link below to verify your email:</p>
-        <a href="${verificationUrl}">${verificationUrl}</a>
-        <p>This link expires in 24 hours.</p>
-      `,
-    });
-  } catch (err) {
-    console.error("Failed to send verification email:", err.message);
-    // Don't throw — user is still created, they can request resend
-  }
+  const accessToken = generateToken(user._id.toString(), user.email);
 
   return {
-    id: user._id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    role: user.role,
-    isVerified: user.isVerified,
-  };
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// LOGIN
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const login = async (email, password) => {
-  // Find user + select password field for comparison
-  const user = await User.findOne({ email: email.toLowerCase() }).select(
-    "+password"
-  );
-
-  if (!user) {
-    throw new ApiError(401, "Invalid email or password");
-  }
-
-  // Compare password
-  const isPasswordValid = await user.comparePassword(password);
-  if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid email or password");
-  }
-
-  return {
-    id: user._id,
-    email: user.email,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    role: user.role,
-    branch: user.branch,
-    isVerified: user.isVerified,
-    preferences: user.preferences,
-  };
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// VERIFY EMAIL TOKEN
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const verifyEmail = async (rawToken) => {
-  // Hash the raw token to find the user
-  const crypto = await import("crypto");
-  const tokenHash = crypto
-    .createHash("sha256")
-    .update(rawToken)
-    .digest("hex");
-
-  const user = await User.findOne({
-    emailVerificationTokenHash: tokenHash,
-    emailVerificationExpires: { $gt: Date.now() },
-  });
-
-  if (!user) {
-    throw new ApiError(400, "Invalid or expired verification token");
-  }
-
-  user.isVerified = true;
-  user.emailVerificationTokenHash = null;
-  user.emailVerificationExpires = null;
-  await user.save({ validateBeforeSave: false });
-
-  return {
-    id: user._id,
-    email: user.email,
-    isVerified: user.isVerified,
-  };
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// FORGOT PASSWORD (initiate reset)
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const forgotPassword = async (email) => {
-  const user = await User.findOne({ email: email.toLowerCase() });
-
-  if (!user) {
-    // For security, don't reveal if email exists
-    return { message: "If email exists, reset link sent" };
-  }
-
-  // Generate password reset token
-  const rawToken = user.createPasswordResetToken();
-  await user.save({ validateBeforeSave: false });
-
-  // Send reset email
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${rawToken}`;
-
-  try {
-    await transporter.sendMail({
-      to: user.email,
-      subject: "Reset your Pre-Yeah password",
-      html: `
-        <p>Hi ${user.firstName || user.email},</p>
-        <p>Click the link below to reset your password:</p>
-        <a href="${resetUrl}">${resetUrl}</a>
-        <p>This link expires in 15 minutes.</p>
-        <p>If you didn't request this, ignore this email.</p>
-      `,
-    });
-  } catch (err) {
-    console.error("Failed to send reset email:", err.message);
-    throw new ApiError(500, "Failed to send reset email");
-  }
-
-  return { message: "Password reset link sent to email" };
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// RESET PASSWORD
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const resetPassword = async (rawToken, newPassword) => {
-  const crypto = await import("crypto");
-  const tokenHash = crypto
-    .createHash("sha256")
-    .update(rawToken)
-    .digest("hex");
-
-  const user = await User.findOne({
-    passwordResetTokenHash: tokenHash,
-    passwordResetExpires: { $gt: Date.now() },
-  });
-
-  if (!user) {
-    throw new ApiError(400, "Invalid or expired reset token");
-  }
-
-  user.password = newPassword; // Will be hashed by pre('save') hook
-  user.passwordResetTokenHash = null;
-  user.passwordResetExpires = null;
-  user.refreshTokenVersion += 1; // Invalidate all old refresh tokens
-  await user.save();
-
-  return {
-    id: user._id,
-    email: user.email,
-    message: "Password reset successful. Please log in again.",
-  };
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-// REFRESH ACCESS TOKEN
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const refreshAccessToken = async (req, res) => {
-  const refreshToken = req.cookies?.pp_rt;
-
-  if (!refreshToken) {
-    throw new ApiError(401, "No refresh token");
-  }
-
-  // Verify refresh token using JWT_REFRESH_SECRET
-  const { verifyRefreshToken } = await import("./token.service.js");
-  let decoded;
-  try {
-    decoded = verifyRefreshToken(refreshToken);
-  } catch (error) {
-    throw new ApiError(401, "Invalid refresh token");
-  }
-
-  // Fetch user + check if version matches
-  const user = await User.findById(decoded.id);
-  if (!user || user.refreshTokenVersion !== decoded.version) {
-    throw new ApiError(401, "Refresh token invalidated");
-  }
-
-  // Issue new access token + rotate refresh token
-  const { issueTokens } = await import("./token.service.js");
-  const accessToken = issueTokens(res, user, user.role);
-
-  return {
+    user: formatUserPayload(user),
     accessToken,
-    user: {
-      id: user._id,
-      email: user.email,
-      role: user.role,
-      branch: user.branch,
-    },
   };
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// LOGOUT
-// ─────────────────────────────────────────────────────────────────────────────
-
-export const logout = async (userId) => {
-  // Increment refreshTokenVersion to invalidate all refresh tokens
-  const user = await User.findByIdAndUpdate(
-    userId,
-    { $inc: { refreshTokenVersion: 1 } },
-    { new: true }
-  );
+// Login Service
+export const loginUser = async ({ email, password }) => {
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
-    throw new ApiError(404, "User not found");
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
   }
 
-  return { message: "Logged out successfully" };
+  if (!user.password) {
+    const error = new Error("This account uses Google OAuth. Please use Google Login");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    const error = new Error("Invalid email or password");
+    error.statusCode = 401;
+    throw error;
+  }
+
+  const accessToken = generateToken(user._id.toString(), user.email);
+
+  return {
+    user: formatUserPayload(user),
+    accessToken,
+  };
+};
+
+// Google OAuth Service
+export const googleAuthUser = async (credential) => {
+  const googleClient = getGoogleClient();
+  const ticket = await googleClient.verifyIdToken({
+    idToken: credential,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const payload = ticket.getPayload();
+  if (!payload || !payload.email) {
+    const error = new Error("Invalid Google token");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  const normalizedEmail = payload.email.toLowerCase().trim();
+  let user = await User.findOne({ email: normalizedEmail });
+
+  if (!user) {
+    user = await User.create({
+      email: normalizedEmail,
+      firstName: payload.given_name || "",
+      lastName: payload.family_name || "",
+      avatarUrl: payload.picture || "",
+      googleId: payload.sub,
+    });
+  } else {
+    let updated = false;
+    if (!user.googleId) {
+      user.googleId = payload.sub;
+      updated = true;
+    }
+    if (payload.picture && !user.avatarUrl) {
+      user.avatarUrl = payload.picture;
+      updated = true;
+    }
+    if (payload.given_name && !user.firstName) {
+      user.firstName = payload.given_name;
+      updated = true;
+    }
+    if (payload.family_name && !user.lastName) {
+      user.lastName = payload.family_name;
+      updated = true;
+    }
+    if (updated) {
+      await user.save();
+    }
+  }
+
+  const accessToken = generateToken(user._id.toString(), user.email);
+
+  return {
+    user: formatUserPayload(user),
+    accessToken,
+  };
+};
+
+// Get User Profile Service
+export const getUserProfile = async (userId) => {
+  const user = await User.findById(userId).select("-password");
+
+  if (!user) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  return formatUserPayload(user);
 };

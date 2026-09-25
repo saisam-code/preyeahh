@@ -2,97 +2,9 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
-// ---------------------------------------------------------------------------
-// SOURCE:
-//   Base    → preyeahouter/backend/models/User.js   (App A — ESM, Mongoose 9)
-//   Extended→ preyeah-main/server/models/Student.js  (App B — fields)
-//             preyeah-main/server/models/Guide.js    (App B — guide fields)
-//             preyeah-main/server/models/Admin.js    (App B — admin fields)
-//
-// WHAT CHANGED VS APP A:
-//   + import bcrypt, crypto
-//   + password: select:false
-//   + googleId: select:false
-//   + branch, role, isVerified
-//   + emailVerificationTokenHash/Expires  (select:false)
-//   + passwordResetTokenHash/Expires      (select:false)
-//   + refreshTokenVersion                 (select:false)
-//   + roleNames, bio, guideStatus         (guide-only, null on others)
-//   + methods: comparePassword, createEmailVerificationToken,
-//              createPasswordResetToken, toSafeJSON
-//   + toJSON: also strips googleId + all new select:false fields
-//
-// WHAT IS IDENTICAL TO APP A (untouched):
-//   skillSchema, preferencesSchema (entire AI learning profile),
-//   email, firstName, lastName, avatarUrl, timestamps
-//
-// App B's Student/Guide/Admin are NOT deleted — they remain in
-// preyeah-main/server/models/ until Step 4 (unified backend).
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
-// Sub-schema: individual skill entry (App A — unchanged)
-// ---------------------------------------------------------------------------
-const skillSchema = new mongoose.Schema(
-  {
-    name: { type: String, required: true },
-    level: {
-      type: String,
-      enum: ["beginner", "intermediate", "advanced"],
-      default: "beginner",
-    },
-  },
-  { _id: false }
-);
-
-// ---------------------------------------------------------------------------
-// Sub-schema: AI learning preferences (App A — unchanged)
-// ---------------------------------------------------------------------------
-const preferencesSchema = new mongoose.Schema(
-  {
-    onboardingCompleted: { type: Boolean, default: false },
-    onboardingSkipped: { type: Boolean, default: false },
-
-    // Who they are
-    currentRole: { type: String, default: "" },
-    targetRole: { type: String, default: "" },
-    experienceLevel: {
-      type: String,
-      enum: ["beginner", "intermediate", "advanced", ""],
-      default: "",
-    },
-
-    // What they want to learn
-    goals: { type: [String], default: [] },
-    skills: { type: [skillSchema], default: [] },
-    interests: { type: [String], default: [] },
-
-    // How they learn
-    learningStyle: {
-      type: String,
-      enum: ["visual", "reading", "hands-on", "mixed", ""],
-      default: "",
-    },
-    weeklyHoursAvailable: { type: Number, default: 0 },
-    preferredLanguage: { type: String, default: "" },
-
-    // AI-generated natural language summary (injected into chat prompts)
-    aiProfileSummary: { type: String, default: "" },
-    lastExtractedAt: { type: Date, default: null },
-  },
-  { _id: false }
-);
-
-// ---------------------------------------------------------------------------
-// Canonical User schema
-// Base  : App A fields (email, password, firstName, lastName, avatarUrl,
-//         googleId, preferences)
-// Added : App B identity fields (branch, role, isVerified, email-verification
-//         tokens, password-reset tokens, refreshTokenVersion, guide fields)
-// ---------------------------------------------------------------------------
 const userSchema = new mongoose.Schema(
   {
-    // ── Core identity (App A — unchanged) ─────────────────────────────────
+    // ─── IDENTITY ────────────────────────────────────────────
     email: {
       type: String,
       required: true,
@@ -100,192 +12,169 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    /**
-     * password is select:false so it is NEVER returned in normal queries.
-     * Existing App A auth.service.js passes an already-hashed password to
-     * User.create(); the pre('save') hook is intentionally omitted here —
-     * it will be added in Step 2 (auth unification) once both auth paths
-     * are unified under a single controller that sends the raw password.
-     */
     password: {
       type: String,
-      default: null,
-      select: false,       // ← ADDED (was missing in App A)
+      required: true,
+      select: false,
+      minlength: 6,
     },
-    firstName: { type: String, default: "" },
-    lastName: { type: String, default: "" },
-    avatarUrl: { type: String, default: "" },
-    googleId: { type: String, default: null, select: false }, // ← select:false ADDED
+    firstName: String,
+    lastName: String,
+    avatarUrl: String,
 
-    // ── Rich learning preferences (App A — full AI profile, unchanged) ────
-    preferences: {
-      type: preferencesSchema,
-      default: () => ({}),
-    },
-
-    // ── Identity / role fields (from App B) ───────────────────────────────
-
-    /**
-     * branch — from App B Student + Guide.
-     * Stored uppercase (matches App B convention).
-     * null is valid for Google-OAuth users who haven't picked a branch yet.
-     */
-    branch: {
-      type: String,
-      uppercase: true,
-      trim: true,
-      index: true,
-      default: null,
-    },
-
-    /**
-     * role — replaces App B's three separate collections (Student / Guide /
-     * Admin) with a single enum on one document.
-     * default: 'student' keeps all existing App A users valid.
-     */
+    // ─── AUTH ────────────────────────────────────────────────
     role: {
       type: String,
-      enum: {
-        values: ["student", "guide", "admin"],
-        message: "role must be student, guide, or admin",
-      },
+      enum: ["student", "guide", "admin"],
       default: "student",
-      index: true,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationTokenHash: { type: String, select: false },
+    emailVerificationExpires: { type: Date, select: false },
+    passwordResetTokenHash: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
+    refreshTokenVersion: {
+      type: Number,
+      default: 0,
     },
 
-    // ── Email verification (App B — Student + Guide) ───────────────────────
-    isVerified: { type: Boolean, default: false },
-    emailVerificationTokenHash: { type: String, default: null, select: false },
-    emailVerificationExpires: { type: Date, default: null, select: false },
+    // ─── CAREER PROFILE ──────────────────────────────────────
+    branch: {
+      type: String,
+      enum: [
+        "CSE",
+        "ECE",
+        "MECH",
+        "CIVIL",
+        "CHEM",
+        "BIO",
+        "AERO",
+        "MINING",
+        "POWER",
+      ],
+      default: null,
+    },
+    careerRole: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "CareerRole",
+      default: null,
+    },
 
-    // ── Password reset (App B — Student, Guide, Admin) ─────────────────────
-    passwordResetTokenHash: { type: String, default: null, select: false },
-    passwordResetExpires: { type: Date, default: null, select: false },
+    // ─── AI LEARNING PROFILE ────────────────────────────────
+    preferences: {
+      skills: [String],
+      experienceLevel: {
+        type: String,
+        enum: ["beginner", "intermediate", "advanced"],
+        default: "beginner",
+      },
+      learningStyle: String,
+      aiProfileSummary: String,
+    },
 
-    // ── Refresh-token versioning (App B — all three models) ───────────────
-    refreshTokenVersion: { type: Number, default: 0, select: false },
+    // ─── GUIDANCE PROGRESS ───────────────────────────────────
+    guidanceProgress: [
+      {
+        roleId: mongoose.Schema.Types.ObjectId,
+        milestoneId: mongoose.Schema.Types.ObjectId,
+        completed: { type: Boolean, default: false },
+        completedAt: Date,
+      },
+    ],
 
-    // ── Guide-only fields (App B — Guide model) ───────────────────────────
-    // Present on every document but only meaningful when role === 'guide'.
-    roleNames:   { type: [String], default: [] },
-    bio:         { type: String, default: "", trim: true, maxlength: 1000 },
+    // ─── GUIDE PROFILE (if role === "guide") ───────────────
     guideStatus: {
       type: String,
-      enum: {
-        values: ["pending", "approved", "rejected"],
-        message: "guideStatus must be pending, approved, or rejected",
-      },
-      default: null, // null = not a guide
+      enum: ["available", "busy", "inactive"],
+      default: "available",
     },
+    guideBio: String,
+    roleNames: [String], // Roles this guide can mentor
+    rating: { type: Number, default: 0 },
+    studentsHelped: { type: Number, default: 0 },
+
+    // ─── SOCIAL/PROFILE ─────────────────────────────────────
+    googleId: { type: String, select: false },
   },
   { timestamps: true }
 );
 
-// Hash password before saving
+// ─────────────────────────────────────────────────────────────────────────────
+// PRE-SAVE: Hash password if modified
+// ─────────────────────────────────────────────────────────────────────────────
+
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password") || !this.password) return next();
-  this.password = await bcrypt.hash(this.password, 12);
-  next();
+  if (!this.isModified("password")) return next();
+
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
-// ---------------------------------------------------------------------------
-// Instance methods (ported from App B — Student / Guide / Admin)
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// METHODS
+// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * comparePassword
- * Verify a plaintext candidate against the stored bcrypt hash.
- * Always call after: User.findById(id).select('+password')
- */
-userSchema.methods.comparePassword = function (candidate) {
-  return bcrypt.compare(candidate, this.password);
+userSchema.methods.comparePassword = async function (rawPassword) {
+  return bcrypt.compare(rawPassword, this.password);
 };
 
-/**
- * createEmailVerificationToken
- * Generates a 32-byte random token, stores its SHA-256 hash on the document
- * with a 24-hour expiry, and returns the RAW token for the verification email.
- * (From App B Student.js + Guide.js — identical implementation)
- */
+// FIX: was `const crypto = await import("crypto")` inside a non-async
+// function — SyntaxError at module load. crypto is now imported at top.
 userSchema.methods.createEmailVerificationToken = function () {
   const rawToken = crypto.randomBytes(32).toString("hex");
   this.emailVerificationTokenHash = crypto
     .createHash("sha256")
     .update(rawToken)
     .digest("hex");
-  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 h
+  this.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
   return rawToken;
 };
 
-/**
- * createPasswordResetToken
- * Same pattern, 15-minute expiry.
- * (From App B Student.js + Guide.js + Admin.js — identical implementation)
- */
 userSchema.methods.createPasswordResetToken = function () {
   const rawToken = crypto.randomBytes(32).toString("hex");
   this.passwordResetTokenHash = crypto
     .createHash("sha256")
     .update(rawToken)
     .digest("hex");
-  this.passwordResetExpires = Date.now() + 15 * 60 * 1000; // 15 min
+  this.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000); // 15min
   return rawToken;
 };
 
-/**
- * toSafeJSON
- * Role-aware public representation of the user document.
- * Consolidates App A's toJSON transform + App B's per-model toSafeJSON().
- * Guide-specific fields only appear when role === 'guide'.
- */
 userSchema.methods.toSafeJSON = function () {
-  const base = {
-    id:          this._id.toString(),
-    email:       this.email,
-    firstName:   this.firstName,
-    lastName:    this.lastName,
-    avatarUrl:   this.avatarUrl,
-    role:        this.role,
-    branch:      this.branch,
-    isVerified:  this.isVerified,
-    preferences: this.preferences,
-    createdAt:   this.createdAt,
-    updatedAt:   this.updatedAt,
-  };
-
-  if (this.role === "guide") {
-    base.roleNames   = this.roleNames;
-    base.bio         = this.bio;
-    base.guideStatus = this.guideStatus;
-  }
-
-  return base;
+  const obj = this.toObject();
+  delete obj.password;
+  delete obj.emailVerificationTokenHash;
+  delete obj.emailVerificationExpires;
+  delete obj.passwordResetTokenHash;
+  delete obj.passwordResetExpires;
+  delete obj.googleId;
+  delete obj.refreshTokenVersion;
+  return obj;
 };
 
-// ---------------------------------------------------------------------------
-// toJSON transform — fires automatically on res.json() / JSON.stringify()
-// Strips ALL sensitive / internal fields from plain serialisation.
-// (select:false fields never appear in ret, but we guard defensively.)
-// ---------------------------------------------------------------------------
+// ─────────────────────────────────────────────────────────────────────────────
+// JSON TRANSFORM: Auto-strip sensitive fields
+// ─────────────────────────────────────────────────────────────────────────────
+
 userSchema.set("toJSON", {
   transform: (doc, ret) => {
-    ret.id = ret._id.toString();
-    delete ret._id;
-    delete ret.__v;
-    // App A originals
     delete ret.password;
-    delete ret.googleId;
-    // App B additions
-    delete ret.refreshTokenVersion;
     delete ret.emailVerificationTokenHash;
     delete ret.emailVerificationExpires;
     delete ret.passwordResetTokenHash;
     delete ret.passwordResetExpires;
+    delete ret.googleId;
+    delete ret.refreshTokenVersion;
     return ret;
   },
 });
 
-// ---------------------------------------------------------------------------
-const User = mongoose.model("User", userSchema);
-
-export default User;
+export default mongoose.model("User", userSchema);
