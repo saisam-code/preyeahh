@@ -135,7 +135,7 @@ export default function About() {
           </motion.div>
         </Section>
 
-        <Section icon={FaUsers} title="Who Is It For" sub="Three types of users, one platform">
+        <Section icon={FaUsers} title="Who Is It For" sub="Two types of users, one platform">
           <motion.div className="about-user-cards" variants={staggerGroup} initial="hidden" whileInView="show" viewport={{ once: true }}>
             <motion.div className="about-user-card" variants={staggerChild}>
               <div className="auc-icon"><FaGraduationCap /></div>

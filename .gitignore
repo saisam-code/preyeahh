@@ -1,27 +1,4 @@
-# dependencies
 node_modules/
-
-# env (keep .env.example)
-.env
-.env.*
-!.env.example
-
-# build output
 dist/
-build/
-.vite/
-coverage/
-
-# logs
+.env
 *.log
-npm-debug.log*
-
-# OS / editor
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
-
-# uploads / temp
-*.zip
-tmp/

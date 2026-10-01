@@ -18,6 +18,7 @@ import MyRoadmaps from "./pages/MyRoadmaps.jsx";
 import Quiz from "./pages/Quiz.jsx";
 import Progress from "./pages/Progress.jsx";
 import Profile from "./pages/Profile.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 
 export default function App() {
   return (
@@ -30,6 +31,10 @@ export default function App() {
         <Route path="/beyond" element={<Beyond />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/admin" element={<Admin />} />
+
+        <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/?login=1" />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />

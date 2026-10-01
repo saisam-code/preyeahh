@@ -14,6 +14,7 @@ import { setAccessToken } from "../services/api.js";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home", icon: FaHouse, exact: true },
+  { to: "/dashboard", label: "Dashboard", icon: FaGauge, requiresRole: ["student", "guide"] },
   { to: "/roles", label: "Roles", icon: FaBriefcase, branchGated: true },
   { to: "/beyond", label: "Beyond", icon: FaCompass, branchGated: true },
   { to: "/resources", label: "Resources", icon: FaBookmark, mobile: false },
@@ -64,7 +65,12 @@ export default function Navbar() {
   const effectiveUser = user || adminUser;
 
   const isStudent = user?.role === "student";
-  const visibleItems = NAV_ITEMS.filter((item) => !item.studentOnly || isStudent);
+  const isGuide = user?.role === "guide";
+  const visibleItems = NAV_ITEMS.filter((item) => {
+    if (item.studentOnly && !isStudent) return false;
+    if (item.requiresRole && !item.requiresRole.includes(effectiveUser?.role)) return false;
+    return true;
+  });
   const mobileItems = visibleItems.filter((item) => item.mobile !== false);
 
   const linkTo = (item) => (item.branchGated && branch ? `${item.to}?branch=${branch}` : item.to);
@@ -83,8 +89,12 @@ export default function Navbar() {
     navigate("/");
   };
 
-  // Only the admin panel exists as a dashboard page; guides/students have none yet.
-  const rawDashboardHref = effectiveUser?.role === "admin" ? "/admin" : null;
+  const rawDashboardHref =
+    effectiveUser?.role === "admin"
+      ? "/admin"
+      : effectiveUser?.role === "student" || effectiveUser?.role === "guide"
+        ? "/dashboard"
+        : null;
   const dashboardHref = rawDashboardHref && location.pathname !== rawDashboardHref ? rawDashboardHref : null;
   return (
     <>
@@ -109,7 +119,7 @@ export default function Navbar() {
           <ThemeToggle />
 
           {effectiveUser ? (
-            <div className="user-dropdown-wrap visible" style={{ position: "relative" }}>
+            <div className={`user-dropdown-wrap visible ${menuOpen ? "open" : ""}`}>
               <button className="user-chip-btn" onClick={() => setMenuOpen((o) => !o)}>
                 <FaCircleUser />
                 <span>

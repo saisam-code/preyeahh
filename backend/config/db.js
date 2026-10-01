@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import logger from "../utils/logger.js";
 
 mongoose.set("strictQuery", true);
 
@@ -10,7 +11,7 @@ async function connectDB() {
   const uri = process.env.MONGO_URI;
 
   if (!uri) {
-    console.error("[db] MONGO_URI is not set in environment variables.");
+    logger.error("[db] MONGO_URI is not set in environment variables.");
     process.exit(1);
   }
 
@@ -18,23 +19,23 @@ async function connectDB() {
     const conn = await mongoose.connect(uri, {
       serverSelectionTimeoutMS: 10000,
     });
-    console.log(`[db] MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);
+    logger.info(`[db] MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);
   } catch (err) {
-    console.error(`[db] Initial connection failed: ${err.message}`);
+    logger.error(`[db] Initial connection failed: ${err.message}`);
     process.exit(1);
   }
 
   mongoose.connection.on("error", (err) => {
-    console.error(`[db] Connection error: ${err.message}`);
+    logger.error(`[db] Connection error: ${err.message}`);
   });
 
   mongoose.connection.on("disconnected", () => {
-    console.warn("[db] MongoDB disconnected.");
+    logger.warn("[db] MongoDB disconnected.");
   });
 
   process.on("SIGINT", async () => {
     await mongoose.connection.close();
-    console.log("[db] Connection closed due to app termination (SIGINT).");
+    logger.info("[db] Connection closed due to app termination (SIGINT).");
     process.exit(0);
   });
 }

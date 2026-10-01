@@ -26,7 +26,11 @@ function loadStoredUser() {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const activeRole = getActiveRole();
+    const cachedUser = loadStoredUser();
+    return cachedUser?.role === activeRole ? cachedUser : null;
+  });
   const [initialized, setInitialized] = useState(false);
   const [loading, setLoading] = useState(false);
 

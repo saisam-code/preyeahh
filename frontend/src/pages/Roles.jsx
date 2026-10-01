@@ -73,7 +73,10 @@ export default function Roles() {
         (r) => r.title.toLowerCase().includes(q) || (r.description || "").toLowerCase().includes(q)
       );
     }
-    return list;
+    return [...list].sort((a, b) => {
+      if (a.type === b.type) return 0;
+      return a.type === "core" ? -1 : 1;
+    });
   }, [roles, typeFilter, search]);
 
   const openDetail = async (role) => {
@@ -167,7 +170,7 @@ export default function Roles() {
     <div>
       <div className="page-hero">
         <h1>{branch} <span>Roles</span></h1>
-        <p>Career roles for {branch} — tap any card for full guidance &amp; resources</p>
+                <p>Explore {branch} career paths. Core roles are shown first; switch to Non-Core to explore other options.</p>
       </div>
 
       <div className="section">
@@ -303,7 +306,12 @@ export default function Roles() {
                 <button className="btn btn-primary" style={{ flex: 1 }} disabled={generating} onClick={() => handleGenerateRoadmap(selectedRole)}>
                   {generating ? "Generating..." : "Generate my AI roadmap for this role"}
                 </button>
-                <button className="btn btn-outline" onClick={() => navigate("/quiz")}>Quiz me</button>
+                <button
+                  className="btn btn-outline"
+                  onClick={() => navigate("/quiz", { state: { roleId: selectedRole._id, roleTitle: selectedRole.title } })}
+                >
+                  Quiz this role
+                </button>
               </div>
             )}
 

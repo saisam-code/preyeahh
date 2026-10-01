@@ -5,6 +5,7 @@ import RoleInterest from "../models/RoleInterest.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import logger from "../utils/logger.js";
 import sendEmail from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 import * as profileService from "../services/profileService.js";
@@ -22,7 +23,7 @@ export const registerStudent = asyncHandler(async (req, res) => {
 
   const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=student`;
   if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-    console.log(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
+    logger.dev(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
   }
 
   await sendEmail({
@@ -112,7 +113,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     await student.save({ validateBeforeSave: false });
     const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=student`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      console.log(`[DEV] Student password reset link for ${student.email}: ${resetUrl}`);
+      logger.dev(`[DEV] Student password reset link for ${student.email}: ${resetUrl}`);
     }
     await sendEmail({
       to: student.email,
@@ -172,7 +173,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
     await student.save({ validateBeforeSave: false });
     const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=student`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      console.log(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
+      logger.dev(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
     }
     await sendEmail({
       to: student.email,

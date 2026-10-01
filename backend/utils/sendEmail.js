@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import logger from "./logger.js";
 
 let transporter;
 
@@ -15,7 +16,7 @@ function getTransporter() {
 
 async function sendEmail({ to, subject, html }) {
   if (!process.env.SMTP_HOST) {
-    console.warn(`[sendEmail] SMTP not configured — skipping email to ${to}: ${subject}`);
+    logger.warn(`[sendEmail] SMTP not configured — skipping email to ${to}: ${subject}`);
     return;
   }
   const t = getTransporter();

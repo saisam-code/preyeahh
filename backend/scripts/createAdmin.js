@@ -5,12 +5,13 @@
  */
 import "dotenv/config";
 import mongoose from "mongoose";
+import logger from "../utils/logger.js";
 import "../models/index.js";
 
 async function main() {
   const { ADMIN_NAME, ADMIN_EMAIL, ADMIN_PASSWORD, MONGO_URI } = process.env;
   if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    console.error("Set ADMIN_EMAIL and ADMIN_PASSWORD (and optionally ADMIN_NAME) as env vars before running this script.");
+    logger.error("Set ADMIN_EMAIL and ADMIN_PASSWORD (and optionally ADMIN_NAME) as env vars before running this script.");
     process.exit(1);
   }
 
@@ -19,16 +20,16 @@ async function main() {
 
   const existing = await Admin.countDocuments();
   if (existing > 0) {
-    console.log(`Refusing — ${existing} admin account(s) already exist. Delete them first if you really mean to replace.`);
+    logger.info(`Refusing — ${existing} admin account(s) already exist. Delete them first if you really mean to replace.`);
     process.exit(1);
   }
 
   await Admin.create({ name: ADMIN_NAME || "Admin", email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
-  console.log(`Admin created: ${ADMIN_EMAIL}`);
+  logger.info(`Admin created: ${ADMIN_EMAIL}`);
   process.exit(0);
 }
 
 main().catch((err) => {
-  console.error("Failed to create admin:", err.message);
+  logger.error("Failed to create admin:", err.message);
   process.exit(1);
 });

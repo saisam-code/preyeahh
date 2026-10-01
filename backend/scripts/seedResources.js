@@ -4,6 +4,7 @@
  */
 import "dotenv/config";
 import mongoose from "mongoose";
+import logger from "../utils/logger.js";
 import Resource from "../models/Resource.js";
 
 const seedData = [
@@ -76,20 +77,20 @@ const seedDB = async () => {
   try {
     const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/preyeah";
 
-    console.log("Connecting to MongoDB...");
+    logger.info("Connecting to MongoDB...");
     await mongoose.connect(mongoUri);
-    console.log("Connected.");
+    logger.info("Connected.");
 
-    console.log("Clearing existing resources...");
+    logger.info("Clearing existing resources...");
     await Resource.deleteMany();
 
-    console.log("Inserting seed data...");
+    logger.info("Inserting seed data...");
     await Resource.insertMany(seedData);
 
-    console.log(`Successfully inserted ${seedData.length} resources.`);
+    logger.info(`Successfully inserted ${seedData.length} resources.`);
     process.exit(0);
   } catch (err) {
-    console.error("Seed failed:", err.message);
+    logger.error("Seed failed:", err.message);
     process.exit(1);
   }
 };

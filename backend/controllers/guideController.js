@@ -3,6 +3,7 @@ import Guide from "../models/Guide.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import logger from "../utils/logger.js";
 import sendEmail from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 
@@ -19,7 +20,7 @@ export const registerGuide = asyncHandler(async (req, res) => {
 
   const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=guide`;
   if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-    console.log(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
+    logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
   }
 
   await sendEmail({
@@ -89,7 +90,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     await guide.save({ validateBeforeSave: false });
     const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=guide`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      console.log(`[DEV] Guide password reset link for ${guide.email}: ${resetUrl}`);
+      logger.dev(`[DEV] Guide password reset link for ${guide.email}: ${resetUrl}`);
     }
     await sendEmail({
       to: guide.email,
@@ -149,7 +150,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
     await guide.save({ validateBeforeSave: false });
     const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=guide`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      console.log(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
+      logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
     }
     await sendEmail({
       to: guide.email,

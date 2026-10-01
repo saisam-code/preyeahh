@@ -1,4 +1,5 @@
 import ApiError from "../utils/ApiError.js";
+import logger from "../utils/logger.js";
 import { getGroqClient, GROQ_MODEL } from "../config/groq.js";
 
 function isRateLimit(err) {
@@ -18,7 +19,7 @@ function toApiError(err) {
   if (/GROQ_API_KEY/.test(err?.message || "")) {
     return new ApiError(503, "AI service is not configured on the server.");
   }
-  console.error("[groq] request failed:", err?.message);
+  logger.error("[groq] request failed:", err?.message);
   return new ApiError(502, "AI service is temporarily unavailable. Please try again.");
 }
 

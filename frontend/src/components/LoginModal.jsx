@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash, FaTimes } from "react-icons/fa";
@@ -11,6 +12,7 @@ const GUIDE_EMAIL_RE = /^[^\s@]+@nbkrist\.org$/i;
 
 export default function LoginModal({ open, onClose, startTab = "login" }) {
   const { login, registerStudent, registerGuide } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState(startTab);
   const [regType, setRegType] = useState("student");
   const [branches, setBranches] = useState([]);
@@ -53,6 +55,7 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   const onLoginSubmit = async (data) => {
     try {
       await login(data.email.trim(), data.password);
+      navigate("/", { replace: true });
       toast.success("Welcome back!");
       onClose();
     } catch (err) {

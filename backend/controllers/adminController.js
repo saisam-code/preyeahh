@@ -10,6 +10,7 @@ import RoleInterest from "../models/RoleInterest.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import logger from "../utils/logger.js";
 import sendEmail from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 
@@ -61,7 +62,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     await admin.save({ validateBeforeSave: false });
     const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=admin`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      console.log(`[DEV] Admin password reset link for ${admin.email}: ${resetUrl}`);
+      logger.dev(`[DEV] Admin password reset link for ${admin.email}: ${resetUrl}`);
     }
     await sendEmail({
       to: admin.email,

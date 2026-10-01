@@ -59,6 +59,74 @@ body {
   box-shadow: 0 0 5px rgba(97, 218, 251, 0.5);
 }
 
+.ai-feature-showcase {
+  margin: 0 auto 2.5rem;
+  max-width: 1200px;
+  padding: 0 1rem;
+}
+
+.ai-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.ai-feature-card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(140, 160, 255, 0.2);
+  border-radius: 18px;
+  padding: 1.25rem;
+  text-align: left;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  cursor: pointer;
+}
+
+.ai-feature-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(96, 118, 255, 0.4);
+  box-shadow: 0 20px 35px rgba(37, 99, 235, 0.12);
+}
+
+.ai-feature-icon {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(168, 85, 247, 0.2));
+  color: #1d4ed8;
+  font-size: 1.3rem;
+}
+
+.ai-feature-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #101827;
+}
+
+.ai-feature-card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+  font-size: 0.92rem;
+}
+
+.ai-feature-card span {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
 button {
   width: 100%;
   padding: 0.75rem;

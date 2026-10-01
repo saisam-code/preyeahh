@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaPlus, FaTrash, FaCircleCheck, FaCircleXmark } from "react-icons/fa6";
 import { generateQuiz, fetchQuizzes, fetchQuiz, submitQuiz, deleteQuiz } from "../services/quizService.js";
@@ -11,6 +12,7 @@ const selectStyle = {
 };
 
 export default function Quiz() {
+  const location = useLocation();
   const { branch } = useBranch();
   const [quizzes, setQuizzes] = useState([]);
   const [active, setActive] = useState(null);
@@ -18,7 +20,7 @@ export default function Quiz() {
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [topic, setTopic] = useState("");
-  const [roleId, setRoleId] = useState("");
+  const [roleId, setRoleId] = useState(location.state?.roleId || "");
   const [roles, setRoles] = useState([]);
   const [difficulty, setDifficulty] = useState("beginner");
 

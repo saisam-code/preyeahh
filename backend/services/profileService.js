@@ -1,5 +1,6 @@
 import Student from "../models/Student.js";
 import ApiError from "../utils/ApiError.js";
+import logger from "../utils/logger.js";
 import { jsonCompletion } from "./groqService.js";
 import { buildProfileExtractionPrompt, buildPassiveExtractionPrompt } from "../utils/aiPrompts.js";
 
@@ -132,6 +133,6 @@ export async function passivelyUpdateProfile(studentId, messages, currentPrefere
     if (Object.keys($addToSet).length) update.$addToSet = $addToSet;
     await Student.findByIdAndUpdate(studentId, update);
   } catch (err) {
-    console.warn(`[profile] passive update failed for ${studentId}: ${err.message}`);
+    logger.warn(`[profile] passive update failed for ${studentId}: ${err.message}`);
   }
 }
