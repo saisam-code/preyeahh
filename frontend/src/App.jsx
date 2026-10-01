@@ -1,50 +1,50 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Navbar from "./components/Navbar";
+import Navbar from "./components/Navbar.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
-// Pages
-import Home from "./pages/Home";
-import Roles from "./pages/Roles";
-import RoleGuidanceView from "./pages/RoleGuidanceView";
-import Beyond from "./pages/Beyond";
-import Admin from "./pages/Admin";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import VerifyEmail from "./pages/VerifyEmail";
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
+import Home from "./pages/Home.jsx";
+import About from "./pages/About.jsx";
+import Roles from "./pages/Roles.jsx";
+import Beyond from "./pages/Beyond.jsx";
+import Resources from "./pages/Resources.jsx";
+import Admin from "./pages/Admin.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+import VerifyEmail from "./pages/VerifyEmail.jsx";
 
-function App() {
+// Student-only AI pages
+import Chat from "./pages/Chat.jsx";
+import MyRoadmaps from "./pages/MyRoadmaps.jsx";
+import Quiz from "./pages/Quiz.jsx";
+import Progress from "./pages/Progress.jsx";
+import Profile from "./pages/Profile.jsx";
+
+export default function App() {
   return (
     <>
       <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/roles" element={<Roles />} />
+        <Route path="/beyond" element={<Beyond />} />
+        <Route path="/resources" element={<Resources />} />
+        <Route path="/admin" element={<Admin />} />
 
-      <main className="main-content">
-        <Routes>
-          {/* PUBLIC ROUTES */}
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/verify-email/:token" element={<VerifyEmail />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
-          {/* CAREER ROUTES */}
-          <Route path="/roles" element={<Roles />} />
-          <Route path="/roles/:roleId" element={<RoleGuidanceView />} />
-          <Route path="/beyond" element={<Beyond />} />
+        <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/?login=1" />}>
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/roadmaps" element={<MyRoadmaps />} />
+          <Route path="/quiz" element={<Quiz />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/profile" element={<Profile />} />
+        </Route>
 
-          {/* PROTECTED ROUTES */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/admin" element={<Admin />} />
-          </Route>
-
-          {/* FALLBACK */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </>
   );
 }
-
-export default App;

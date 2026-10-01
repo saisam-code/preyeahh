@@ -37,7 +37,7 @@ const guidanceSchema = new mongoose.Schema(
     },
     role: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "CareerRole",
+      ref: "Role",
       default: null,
       index: true,
     },
@@ -48,4 +48,3 @@ const guidanceSchema = new mongoose.Schema(
 guidanceSchema.index({ branch: 1, role: 1 });
 
 export default mongoose.model("Guidance", guidanceSchema);
-

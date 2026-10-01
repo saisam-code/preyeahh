@@ -1,26 +1,33 @@
-import { Router } from "express";
-import { protect, roleGate as authorize } from "../middleware/auth.middleware.js";
+import express from "express";
+import { protect, authorize } from "../middleware/auth.js";
+import validate from "../middleware/validate.js";
 import {
-  createResourceController,
-  searchResourcesController,
-  recommendResourcesController,
-  getResourceByIdController,
-  incrementViewsController,
-  deleteResourceController,
+  idParamRule,
+  searchRules,
+  recommendRules,
+  createResourceRules,
+} from "../validators/resourceValidator.js";
+import {
+  searchResources,
+  getResource,
+  incrementViews,
+  recommendResources,
+  createResource,
+  deleteResource,
 } from "../controllers/resourceController.js";
 
-const router = Router();
+const router = express.Router();
 
-// Public — search and browse
-router.get("/", searchResourcesController);
-router.get("/:id", getResourceByIdController);
-router.patch("/:id/view", incrementViewsController);
+// Public — browse the library
+router.get("/", searchRules, validate, searchResources);
+router.get("/:id", idParamRule, validate, getResource);
+router.patch("/:id/view", idParamRule, validate, incrementViews);
 
-// Student — get recommendations (used internally by AI roadmap)
-router.post("/recommend", protect, authorize("student"), recommendResourcesController);
+// Student
+router.post("/recommend", protect, authorize("student"), recommendRules, validate, recommendResources);
 
-// Admin only — curate resources
-router.post("/", protect, authorize("admin"), createResourceController);
-router.delete("/:id", protect, authorize("admin"), deleteResourceController);
+// Admin — curate the library
+router.post("/", protect, authorize("admin"), createResourceRules, validate, createResource);
+router.delete("/:id", protect, authorize("admin"), idParamRule, validate, deleteResource);
 
 export default router;

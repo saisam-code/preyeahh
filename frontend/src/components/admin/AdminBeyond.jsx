@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchBeyond, createBeyond, updateBeyond, deleteBeyond } from "../../services/beyondService";
-import { fetchBranches } from "../../services/branchService";
+import { fetchBeyond, createBeyond, updateBeyond, deleteBeyond } from "../../services/beyondService.js";
+import { fetchBranches } from "../../services/branchService.js";
 
 const CATEGORIES = [
   { value: "college", label: "In College" },

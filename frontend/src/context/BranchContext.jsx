@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuth } from "./AuthContext.jsx";
 
 const BranchContext = createContext(null);
 

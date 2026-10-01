@@ -2,8 +2,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { Link } from "react-router-dom";
-import { loginAdmin } from "../../services/adminService";
-import { setAccessToken, setActiveRole } from "../../services/api";
+import { loginAdmin } from "../../services/adminService.js";
+import { setAccessToken, setActiveRole } from "../../services/api.js";
 
 export default function AdminLogin({ onSuccess }) {
   const [showPass, setShowPass] = useState(false);
@@ -49,7 +49,7 @@ export default function AdminLogin({ onSuccess }) {
           </button>
         </form>
         <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "1rem", textAlign: "center" }}>
-          <Link to="/reset-password?role=admin" style={{ color: "var(--primary)" }}>Forgot password?</Link>
+          <Link to="/forgot-password?role=admin" style={{ color: "var(--primary)" }}>Forgot password?</Link>
         </p>
         <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.5rem", textAlign: "center" }}>
           Contact your administrator for access.

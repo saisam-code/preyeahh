@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchRoles, createRole, updateRole, deleteRole } from "../../services/rolesService";
-import { fetchBranches } from "../../services/branchService";
-import { fetchGuidance, createGuidance, updateGuidance, deleteGuidance } from "../../services/guidanceService";
+import { fetchRoles, createRole, updateRole, deleteRole } from "../../services/rolesService.js";
+import { fetchBranches } from "../../services/branchService.js";
+import { fetchGuidance, createGuidance, updateGuidance, deleteGuidance } from "../../services/guidanceService.js";
 
 const emptyRole = {
   title: "", branch: "", type: "core", description: "",

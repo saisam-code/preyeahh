@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchGuides, setGuideStatus, assignGuideRoles, deleteGuide } from "../../services/guideService";
-import { fetchRoles } from "../../services/rolesService";
+import { fetchGuides, setGuideStatus, assignGuideRoles, deleteGuide } from "../../services/guideService.js";
+import { fetchRoles } from "../../services/rolesService.js";
 
 export default function AdminGuides() {
   const [guides, setGuides] = useState([]);

@@ -18,6 +18,9 @@ const resourceSchema = new mongoose.Schema(
     category: { type: String, default: "", lowercase: true, trim: true }, // e.g., "frontend", "backend"
     tags: [{ type: String, lowercase: true, trim: true }], // e.g., ["hooks", "state management"]
 
+    // Branches this resource is relevant for. Empty array = relevant to every branch.
+    branches: [{ type: String, uppercase: true, trim: true }],
+
     difficulty: {
       type: String,
       enum: ["beginner", "intermediate", "advanced", "all"],
@@ -38,6 +41,7 @@ const resourceSchema = new mongoose.Schema(
 
 // Compound index for fast searching based on AI generated tags
 resourceSchema.index({ technology: 1, tags: 1, difficulty: 1 });
+resourceSchema.index({ branches: 1 });
 // Text index for standard search bar
 resourceSchema.index({ title: "text", description: "text", tags: "text" });
 
@@ -51,6 +55,4 @@ resourceSchema.set("toJSON", {
   },
 });
 
-const Resource = mongoose.model("Resource", resourceSchema);
-
-export default Resource;
+export default mongoose.model("Resource", resourceSchema);

@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./api.js";
 
 export function fetchGuidance(params = {}) {
   return api.get("/guidance", { params }).then((r) => r.data.data);

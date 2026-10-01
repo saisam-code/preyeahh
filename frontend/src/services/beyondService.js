@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./api.js";
 
 export function fetchBeyond(params = {}) {
   return api.get("/beyond", { params }).then((r) => r.data);

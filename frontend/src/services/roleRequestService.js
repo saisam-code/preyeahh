@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./api.js";
 
 export function submitRoleRequest(payload) {
   return api.post("/role-requests", payload).then((r) => r.data);

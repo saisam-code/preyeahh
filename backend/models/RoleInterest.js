@@ -14,12 +14,12 @@ const roleInterestSchema = new mongoose.Schema(
   {
     student: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Student",
       required: true,
     },
     role: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "CareerRole",
+      ref: "Role",
       required: true,
     },
     roleName: { type: String, required: true },
@@ -33,4 +33,3 @@ const roleInterestSchema = new mongoose.Schema(
 roleInterestSchema.index({ student: 1, role: 1 }, { unique: true });
 
 export default mongoose.model("RoleInterest", roleInterestSchema);
-

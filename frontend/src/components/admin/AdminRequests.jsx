@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchRoleRequests, dismissRoleRequest, clearRoleRequests } from "../../services/roleRequestService";
+import { fetchRoleRequests, dismissRoleRequest, clearRoleRequests } from "../../services/roleRequestService.js";
 
 export default function AdminRequests() {
   const [requests, setRequests] = useState([]);

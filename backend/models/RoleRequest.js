@@ -32,7 +32,7 @@ const roleRequestSchema = new mongoose.Schema(
     },
     student: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Student",
       default: null, // request can be submitted while logged out, same as original modal
     },
     email: { type: String, default: null, trim: true, lowercase: true },
@@ -47,4 +47,3 @@ const roleRequestSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("RoleRequest", roleRequestSchema);
-

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchDashboardStats } from "../../services/adminService";
+import { fetchDashboardStats } from "../../services/adminService.js";
 
 export default function AdminDashboard({ onNavigate }) {
   const [stats, setStats] = useState(null);

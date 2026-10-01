@@ -1,21 +1,42 @@
-/**
- * SOURCE: preyeahouter/backend/config/db.js (App A)
- * Unified MongoDB connection with logging.
- */
-
 import mongoose from "mongoose";
 
-export const connectDB = async () => {
-  try {
-    const mongoUri = process.env.MONGODB_URI || "mongodb://localhost:27017/preyeah";
+mongoose.set("strictQuery", true);
 
-    const connection = await mongoose.connect(mongoUri);
-    // ↑ Remove useNewUrlParser and useUnifiedTopology (they're no longer needed)
+/**
+ * Connects to MongoDB Atlas using Mongoose.
+ * Exits the process on failure to connect at boot (fail fast in production).
+ */
+async function connectDB() {
+  const uri = process.env.MONGO_URI;
 
-    console.log(`✓ MongoDB connected: ${connection.connection.host}:${connection.connection.port}/${connection.connection.name}`);
-    return connection;
-  } catch (error) {
-    console.error("✗ MongoDB connection failed:", error.message);
+  if (!uri) {
+    console.error("[db] MONGO_URI is not set in environment variables.");
     process.exit(1);
   }
-};
+
+  try {
+    const conn = await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 10000,
+    });
+    console.log(`[db] MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);
+  } catch (err) {
+    console.error(`[db] Initial connection failed: ${err.message}`);
+    process.exit(1);
+  }
+
+  mongoose.connection.on("error", (err) => {
+    console.error(`[db] Connection error: ${err.message}`);
+  });
+
+  mongoose.connection.on("disconnected", () => {
+    console.warn("[db] MongoDB disconnected.");
+  });
+
+  process.on("SIGINT", async () => {
+    await mongoose.connection.close();
+    console.log("[db] Connection closed due to app termination (SIGINT).");
+    process.exit(0);
+  });
+}
+
+export default connectDB;

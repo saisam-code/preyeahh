@@ -1,96 +1,34 @@
-import {
-  generateAIRoadmap,
-  getStudentRoadmaps,
-  getRoadmapById,
-  updateTopicProgress,
-  deleteRoadmap,
-} from "../services/aiRoadmapService.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiResponse from "../utils/ApiResponse.js";
+import * as aiRoadmapService from "../services/aiRoadmapService.js";
 
-export const generateRoadmapController = async (req, res, next) => {
-  try {
-    const { topic, roleId } = req.body;
-    const roadmap = await generateAIRoadmap(req.user.id || req.user.userId, { topic, roleId });
-    return res.status(201).json({
-      success: true,
-      message: "Roadmap generated successfully",
-      roadmap,
-    });
-  } catch (err) {
-    if (
-      err.status === 429 ||
-      err.statusCode === 429 ||
-      err.message?.includes("429") ||
-      err.message?.includes("rate_limit") ||
-      err.message?.includes("Too Many Requests")
-    ) {
-      return res.status(429).json({
-        success: false,
-        message: "AI service is temporarily unavailable. Please try again shortly.",
-      });
-    }
-    next(err);
-  }
-};
+// POST /api/ai-roadmaps/generate   body: { topic?, roleId? }
+export const generateRoadmap = asyncHandler(async (req, res) => {
+  const roadmap = await aiRoadmapService.generateAIRoadmap(req.user, req.body);
+  res.status(201).json(new ApiResponse(201, roadmap, "Roadmap generated successfully"));
+});
 
-export const getStudentRoadmapsController = async (req, res, next) => {
-  try {
-    const { page = 1, limit = 10 } = req.query;
-    const result = await getStudentRoadmaps(req.user.id || req.user.userId, page, limit);
-    return res.status(200).json({ success: true, ...result });
-  } catch (err) {
-    next(err);
-  }
-};
+// GET /api/ai-roadmaps
+export const listRoadmaps = asyncHandler(async (req, res) => {
+  const { items, meta } = await aiRoadmapService.listRoadmaps(req.user.id, req.query);
+  res.status(200).json(new ApiResponse(200, items, "Roadmaps fetched", meta));
+});
 
-export const getRoadmapByIdController = async (req, res, next) => {
-  try {
-    const roadmap = await getRoadmapById(req.params.id, req.user.id || req.user.userId);
-    return res.status(200).json({ success: true, roadmap });
-  } catch (err) {
-    next(err);
-  }
-};
+// GET /api/ai-roadmaps/:id
+export const getRoadmap = asyncHandler(async (req, res) => {
+  const roadmap = await aiRoadmapService.getRoadmap(req.params.id, req.user.id);
+  res.status(200).json(new ApiResponse(200, roadmap, "Roadmap fetched"));
+});
 
-export const updateTopicProgressController = async (req, res, next) => {
-  try {
-    const { topicId, isCompleted } = req.body;
+// PATCH /api/ai-roadmaps/:id/progress   body: { topicId, isCompleted }
+export const updateTopicProgress = asyncHandler(async (req, res) => {
+  const { topicId, isCompleted } = req.body;
+  const roadmap = await aiRoadmapService.setTopicCompleted(req.params.id, topicId, isCompleted, req.user.id);
+  res.status(200).json(new ApiResponse(200, roadmap, "Progress updated"));
+});
 
-    if (!topicId || typeof isCompleted !== "boolean") {
-      return res.status(400).json({
-        success: false,
-        message: "topicId and isCompleted (boolean) are required",
-      });
-    }
-
-    const roadmap = await updateTopicProgress(
-      req.params.id,
-      topicId,
-      isCompleted,
-      req.user.id || req.user.userId
-    );
-    return res.status(200).json({
-      success: true,
-      message: "Progress updated successfully",
-      roadmap,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export const deleteRoadmapController = async (req, res, next) => {
-  try {
-    const result = await deleteRoadmap(req.params.id, req.user.id || req.user.userId);
-    return res.status(200).json({ success: true, ...result });
-  } catch (err) {
-    next(err);
-  }
-};
-
-export default {
-  generateRoadmapController,
-  getStudentRoadmapsController,
-  getRoadmapByIdController,
-  updateTopicProgressController,
-  deleteRoadmapController,
-};
+// DELETE /api/ai-roadmaps/:id
+export const deleteRoadmap = asyncHandler(async (req, res) => {
+  await aiRoadmapService.deleteRoadmap(req.params.id, req.user.id);
+  res.status(200).json(new ApiResponse(200, null, "Roadmap deleted"));
+});

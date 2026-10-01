@@ -1,68 +1,29 @@
 import mongoose from "mongoose";
 
-// Individual message within a chat session
 const messageSchema = new mongoose.Schema(
   {
-    role: {
-      type: String,
-      enum: ["user", "assistant"],
-      required: true,
-    },
-    content: {
-      type: String,
-      required: true,
-    },
+    role: { type: String, enum: ["user", "assistant"], required: true },
+    content: { type: String, required: true },
   },
-  {
-    timestamps: true,
-    _id: true,
-  }
+  { timestamps: true, _id: true }
 );
 
-// Chat session (a named conversation thread per user)
+// A named conversation thread owned by one student.
 const chatSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      index: true,
-    },
-    title: {
-      type: String,
-      default: "New Chat",
-      maxlength: 200,
-    },
-    topic: {
-      type: String,
-      default: "",
-    },
-    messages: {
-      type: [messageSchema],
-      default: [],
-    },
-    // Soft-delete flag
-    isArchived: {
-      type: Boolean,
-      default: false,
-    },
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true, index: true },
+    title: { type: String, default: "New Chat", maxlength: 200 },
+    topic: { type: String, default: "" },
+    // Optional Role being explored; gives the AI the role's curated overview + skills as context
+    roleId: { type: mongoose.Schema.Types.ObjectId, ref: "Role", default: null },
+    // Branch snapshot at creation, so the AI keeps branch context even if a student later switches view
+    branch: { type: String, default: "", uppercase: true, trim: true },
+    messages: { type: [messageSchema], default: [] },
+    isArchived: { type: Boolean, default: false }, // soft delete
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-// Auto-generate title from the first user message if not set
-chatSchema.pre("save", async function () {
-  if (this.messages.length > 0 && this.title === "New Chat") {
-    const firstUserMessage = this.messages.find((m) => m.role === "user");
-    if (firstUserMessage) {
-      // Truncate first message to 60 chars as title
-      this.title = firstUserMessage.content.slice(0, 60).trim();
-    }
-  }
-});
+chatSchema.index({ studentId: 1, isArchived: 1, updatedAt: -1 });
 
-const Chat = mongoose.model("Chat", chatSchema);
-
-export default Chat;
+export default mongoose.model("Chat", chatSchema);

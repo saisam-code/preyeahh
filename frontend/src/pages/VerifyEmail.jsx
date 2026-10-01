@@ -1,39 +1,52 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import api from "../services/api";
+import { useEffect, useRef, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function VerifyEmail() {
   const { token } = useParams();
-  const navigate = useNavigate();
-  const [status, setStatus] = useState("loading"); // loading | error
-  const [error, setError] = useState("");
+  const [params] = useSearchParams();
+  const role = params.get("role") === "guide" ? "guide" : "student";
+  const { verifyEmail } = useAuth();
+
+  const [status, setStatus] = useState("loading"); // loading | success | error
+  const [message, setMessage] = useState("");
+  const started = useRef(false); // StrictMode runs effects twice; the token is single-use
 
   useEffect(() => {
-    if (!token) {
-      setStatus("error");
-      setError("Missing verification token — use the link from your email");
-      return;
-    }
-
-    api
-      .post("/auth/verify-email", { token })
-      .then(() => {
-        navigate("/login", { state: { message: "Email verified! Please login." } });
+    if (started.current) return;
+    started.current = true;
+    verifyEmail(token, role)
+      .then((res) => {
+        setMessage(res.message || "Email verified.");
+        setStatus("success");
       })
-      .catch((e) => {
-        setError(e.response?.data?.message || "Verification failed");
+      .catch((err) => {
+        setMessage(err.response?.data?.message || "Verification link is invalid or has expired.");
         setStatus("error");
       });
-  }, [token, navigate]);
+  }, [token, role, verifyEmail]);
 
   return (
     <div className="login-wrap">
-      <div className="login-card">
-        <h2>Verify Email</h2>
-        {status === "loading" ? (
-          <p style={{ color: "var(--text-dim)" }}>Verifying email...</p>
-        ) : (
-          <p style={{ color: "#ef4444", fontSize: "0.85rem" }}>Error: {error}</p>
+      <div className="login-card" style={{ textAlign: "center" }}>
+        <h2>Email Verification</h2>
+        {status === "loading" && <p style={{ color: "var(--text-dim)" }}>Verifying your email...</p>}
+        {status === "success" && (
+          <>
+            <p style={{ color: "#16a34a", marginBottom: "0.75rem" }}>{message}</p>
+            {role === "guide" && (
+              <p style={{ color: "var(--text-dim)", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
+                An admin still needs to approve your guide registration before you can log in.
+              </p>
+            )}
+            <Link className="btn btn-primary" to="/?login=1">Go to Login</Link>
+          </>
+        )}
+        {status === "error" && (
+          <>
+            <p style={{ color: "#ef4444", marginBottom: "0.75rem" }}>{message}</p>
+            <Link className="btn btn-outline" to="/">Back to Home</Link>
+          </>
         )}
       </div>
     </div>

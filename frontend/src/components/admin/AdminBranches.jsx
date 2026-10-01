@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchBranches, createBranch, deleteBranch } from "../../services/branchService";
-import { fetchRoles } from "../../services/rolesService";
+import { fetchBranches, createBranch, deleteBranch } from "../../services/branchService.js";
+import { fetchRoles } from "../../services/rolesService.js";
 
 export default function AdminBranches() {
   const [branches, setBranches] = useState([]);

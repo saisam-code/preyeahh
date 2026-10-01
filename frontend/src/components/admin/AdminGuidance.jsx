@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchGuidance, createGuidance, updateGuidance, deleteGuidance } from "../../services/guidanceService";
-import { fetchBranches } from "../../services/branchService";
-import { fetchRoles } from "../../services/rolesService";
+import { fetchGuidance, createGuidance, updateGuidance, deleteGuidance } from "../../services/guidanceService.js";
+import { fetchBranches } from "../../services/branchService.js";
+import { fetchRoles } from "../../services/rolesService.js";
 
 const emptyForm = { title: "", branch: "All", role: "", points: "" };
 

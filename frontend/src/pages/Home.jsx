@@ -5,11 +5,11 @@ import {
   FaCompass, FaChartLine, FaArrowRight, FaLaptopCode, FaSatelliteDish,
   FaBolt, FaGears, FaBuilding, FaGraduationCap, FaUser,
 } from "react-icons/fa6";
-import { useAuth } from "../context/AuthContext";
-import { useBranch } from "../context/BranchContext";
-import { fetchBranches } from "../services/branchService";
-import { fetchRoles } from "../services/rolesService";
-import { fetchBeyond } from "../services/beyondService";
+import { useAuth } from "../context/AuthContext.jsx";
+import { useBranch } from "../context/BranchContext.jsx";
+import { fetchBranches } from "../services/branchService.js";
+import { fetchRoles } from "../services/rolesService.js";
+import { fetchBeyond } from "../services/beyondService.js";
 
 const BRANCH_META = {
   CSE: { icon: FaLaptopCode, color: "#1a56db", desc: "Computer Science & Engineering" },

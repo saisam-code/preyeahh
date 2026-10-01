@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./api.js";
 
 /**
  * @param {Object} params - { branch, type, search, page, limit }

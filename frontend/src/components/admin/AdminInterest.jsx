@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchRoleInterest } from "../../services/adminService";
-import { fetchBranches } from "../../services/branchService";
+import { fetchRoleInterest } from "../../services/adminService.js";
+import { fetchBranches } from "../../services/branchService.js";
 
 export default function AdminInterest() {
   const [branches, setBranches] = useState([]);

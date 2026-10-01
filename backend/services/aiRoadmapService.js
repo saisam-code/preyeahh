@@ -1,211 +1,142 @@
 import AIRoadmap from "../models/AIRoadmap.js";
-import User from "../models/User.js";
-import CareerRole from "../models/CareerRole.js";
-import { getGroqClient, GROQ_MODEL } from "../config/groq.js";
-import { buildAIRoadmapPrompt } from "../utils/aiPrompts.js";
-import { getRecommendedResources } from "./resource.service.js";
+import ApiError from "../utils/ApiError.js";
+import { jsonCompletion } from "./groqService.js";
+import { getRoleContext } from "./roleContextService.js";
+import { getRecommendedResources, listTechnologies } from "./resourceService.js";
+import { buildRoadmapPrompt } from "../utils/aiPrompts.js";
 
-/**
- * Generate AI roadmap
- * roleId is optional — if provided, pulls Role.guidance for context
- */
-export const generateAIRoadmap = async (studentId, { topic, roleId }) => {
-  if (!topic || topic.trim().length === 0) {
-    const error = new Error("Topic is required to generate a roadmap");
-    error.statusCode = 400;
-    throw error;
-  }
+const LEVELS = ["beginner", "intermediate", "advanced"];
+const RESOURCE_TYPES = ["video", "article", "course", "documentation", "book", "practice", "github"];
 
-  const student = await User.findById(studentId).select("preferences branch");
-  if (!student) {
-    const error = new Error("Student not found");
-    error.statusCode = 404;
-    throw error;
-  }
+/** Replaces each AI "searchQuery" with a real library resource when one matches (title-only fallback otherwise). */
+async function attachResources(sections, { level, learningStyle, branch }) {
+  const cache = new Map();
 
-  const preferences = student.preferences || {};
-  const branch = student.branch || "";
-
-  // Pull existing role guidance for richer context if roleId provided
-  let roleGuidance = {};
-  let roleTitle = topic.trim();
-  let linkedRoleId = null;
-
-  if (roleId) {
-    const role = await CareerRole.findById(roleId);
-    if (role) {
-      roleGuidance = role.guidance || {};
-      roleTitle = role.title;
-      linkedRoleId = role._id;
+  const lookup = async (q) => {
+    const key = JSON.stringify([q.technology, q.tags]);
+    if (!cache.has(key)) {
+      cache.set(
+        key,
+        getRecommendedResources({ technology: q.technology, tags: q.tags, difficulty: level, learningStyle, branch })
+      );
     }
-  }
+    return cache.get(key);
+  };
 
-  // Call Groq
-  const groq = getGroqClient();
-  const prompt = buildAIRoadmapPrompt(roleTitle, branch, roleGuidance, preferences);
-
-  const completion = await groq.chat.completions.create({
-    model: GROQ_MODEL,
-    messages: [{ role: "user", content: prompt }],
-    response_format: { type: "json_object" },
-    temperature: 0.3,
-    max_tokens: 3000,
-  });
-
-  let roadmapData;
-  try {
-    roadmapData = JSON.parse(completion.choices[0]?.message?.content || "{}");
-  } catch {
-    const error = new Error("AI failed to generate a valid roadmap. Please try again.");
-    error.statusCode = 500;
-    throw error;
-  }
-
-  // Map AI resource search queries to actual DB resources
-  if (Array.isArray(roadmapData.sections)) {
-    for (const section of roadmapData.sections) {
-      if (Array.isArray(section.topics)) {
-        for (const topicObj of section.topics) {
-          if (Array.isArray(topicObj.resources)) {
-            const mappedResources = [];
-            for (const aiResource of topicObj.resources) {
-              if (aiResource.searchQuery) {
-                const { technology, tags } = aiResource.searchQuery;
-                const difficulty = roadmapData.level || "beginner";
-                const learningStyle = preferences.learningStyle || "";
-
-                const dbResources = await getRecommendedResources(
-                  technology,
-                  tags,
-                  difficulty,
-                  learningStyle,
-                  branch
-                );
-
-                if (dbResources && dbResources.length > 0) {
-                  const matched = dbResources[0];
-                  mappedResources.push({
-                    title: matched.title,
-                    type: matched.type,
-                    url: matched.url,
-                  });
-                } else {
-                  // Fallback — use AI suggested title but no URL
-                  mappedResources.push({
-                    title: aiResource.title || `Learn ${tags?.[0] || technology}`,
-                    type: aiResource.type || "article",
-                    url: "",
-                  });
-                }
-              }
-            }
-            topicObj.resources = mappedResources;
-          }
+  for (const section of sections) {
+    for (const topic of section.topics) {
+      const mapped = [];
+      for (const aiRes of topic.resources) {
+        const matches = aiRes.searchQuery ? await lookup(aiRes.searchQuery) : [];
+        if (matches.length) {
+          mapped.push({ title: matches[0].title, type: matches[0].type, url: matches[0].url });
+        } else {
+          mapped.push({
+            title: aiRes.title || `Learn ${topic.title}`,
+            type: RESOURCE_TYPES.includes(aiRes.type) ? aiRes.type : "article",
+            url: "",
+          });
         }
       }
+      topic.resources = mapped;
     }
   }
+}
 
-  // Save to DB
-  const roadmap = await AIRoadmap.create({
-    studentId,
-    roleId: linkedRoleId,
+/** Coerces raw model output into something that always passes the AIRoadmap schema. */
+function sanitizeSections(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((s) => s && typeof s.title === "string")
+    .map((s) => ({
+      title: s.title,
+      description: typeof s.description === "string" ? s.description : "",
+      topics: (Array.isArray(s.topics) ? s.topics : [])
+        .filter((t) => t && typeof t.title === "string")
+        .map((t) => ({
+          title: t.title,
+          description: typeof t.description === "string" ? t.description : "",
+          resources: (Array.isArray(t.resources) ? t.resources : []).filter((r) => r && typeof r === "object"),
+        })),
+    }))
+    .filter((s) => s.topics.length > 0);
+}
+
+/**
+ * Generates and stores a personalised roadmap.
+ * With roleId: uses that Role's curated steps/skills as context and stores the link.
+ * Without: `topic` is used as the role title.
+ */
+export async function generateAIRoadmap(student, { topic, roleId }) {
+  const role = await getRoleContext(roleId);
+  const roleTitle = role?.title || topic?.trim();
+  if (!roleTitle) throw ApiError.badRequest("Provide a topic or a roleId");
+
+  const branch = role?.branch || student.branch || "";
+  const prefs = student.doc?.preferences?.toObject?.() ?? student.doc?.preferences ?? {};
+
+  const prompt = buildRoadmapPrompt({
     roleTitle,
     branch,
-    title: roadmapData.title || `Learning Path: ${roleTitle}`,
-    description: roadmapData.description || "",
-    level: roadmapData.level || "beginner",
-    estimatedWeeks: roadmapData.estimatedWeeks || 4,
-    sections: roadmapData.sections || [],
+    roleGuidance: { steps: role?.steps, skills: role?.skills },
+    preferences: prefs,
+    knownTechnologies: await listTechnologies(),
   });
 
+  const data = await jsonCompletion(prompt, { temperature: 0.3, maxTokens: 3500 });
+
+  const sections = sanitizeSections(data.sections);
+  if (!sections.length) throw ApiError.internal("AI returned an empty roadmap. Please try again.");
+
+  const level = LEVELS.includes(data.level) ? data.level : prefs.experienceLevel || "beginner";
+  await attachResources(sections, { level, learningStyle: prefs.learningStyle || "", branch });
+
+  return AIRoadmap.create({
+    studentId: student.id,
+    roleId: role?.id || null,
+    roleTitle,
+    branch,
+    title: typeof data.title === "string" && data.title ? data.title : `Learning Path: ${roleTitle}`,
+    description: typeof data.description === "string" ? data.description : "",
+    level,
+    estimatedWeeks: Math.min(Math.max(parseInt(data.estimatedWeeks, 10) || 8, 1), 104),
+    sections,
+  });
+}
+
+export async function listRoadmaps(studentId, { page = 1, limit = 20 } = {}) {
+  const filter = { studentId };
+  const [items, total] = await Promise.all([
+    // sections are needed by the list view to show per-roadmap progress bars
+    AIRoadmap.find(filter).sort({ updatedAt: -1 }).skip((page - 1) * limit).limit(limit),
+    AIRoadmap.countDocuments(filter),
+  ]);
+  return { items, meta: { page, limit, total, totalPages: Math.max(Math.ceil(total / limit), 1) } };
+}
+
+export async function getRoadmap(id, studentId) {
+  const roadmap = await AIRoadmap.findOne({ _id: id, studentId });
+  if (!roadmap) throw ApiError.notFound("Roadmap not found");
   return roadmap;
-};
+}
 
-export const getStudentRoadmaps = async (studentId, page = 1, limit = 10) => {
-  const skip = (page - 1) * limit;
-  const roadmaps = await AIRoadmap.find({ studentId })
-    .select("title roleTitle branch level estimatedWeeks isCompleted createdAt updatedAt")
-    .sort({ updatedAt: -1 })
-    .skip(skip)
-    .limit(parseInt(limit));
+export async function setTopicCompleted(id, topicId, isCompleted, studentId) {
+  const roadmap = await getRoadmap(id, studentId);
 
-  const total = await AIRoadmap.countDocuments({ studentId });
-
-  return {
-    roadmaps,
-    total,
-    page: parseInt(page),
-    totalPages: Math.ceil(total / limit),
-  };
-};
-
-export const getRoadmapById = async (roadmapId, studentId) => {
-  const roadmap = await AIRoadmap.findOne({ _id: roadmapId, studentId });
-  if (!roadmap) {
-    const error = new Error("Roadmap not found");
-    error.statusCode = 404;
-    throw error;
-  }
-  return roadmap;
-};
-
-export const updateTopicProgress = async (roadmapId, topicId, isCompleted, studentId) => {
-  const roadmap = await AIRoadmap.findOne({ _id: roadmapId, studentId });
-  if (!roadmap) {
-    const error = new Error("Roadmap not found");
-    error.statusCode = 404;
-    throw error;
-  }
-
-  let found = false;
+  let topic = null;
   for (const section of roadmap.sections) {
-    for (const topic of section.topics) {
-      const tId = topic._id ? topic._id.toString() : "";
-      if (tId === topicId.toString()) {
-        topic.isCompleted = Boolean(isCompleted);
-        found = true;
-        break;
-      }
-    }
-    if (found) break;
+    topic = section.topics.id(topicId);
+    if (topic) break;
   }
+  if (!topic) throw ApiError.notFound("Topic not found in roadmap");
 
-  if (!found) {
-    const error = new Error("Topic not found in roadmap");
-    error.statusCode = 404;
-    throw error;
-  }
+  topic.isCompleted = Boolean(isCompleted);
+  roadmap.isCompleted = roadmap.sections.every((s) => s.topics.every((t) => t.isCompleted));
+  await roadmap.save();
+  return roadmap;
+}
 
-  // Check if all topics done
-  const allDone = roadmap.sections.every((s) =>
-    s.topics.every((t) => t.isCompleted)
-  );
-  roadmap.isCompleted = allDone;
-
-  const updated = await AIRoadmap.findOneAndUpdate(
-    { _id: roadmapId, studentId },
-    { $set: { sections: roadmap.sections, isCompleted: allDone } },
-    { new: true }
-  );
-
-  return updated;
-};
-
-export const deleteRoadmap = async (roadmapId, studentId) => {
-  const roadmap = await AIRoadmap.findOneAndDelete({ _id: roadmapId, studentId });
-  if (!roadmap) {
-    const error = new Error("Roadmap not found");
-    error.statusCode = 404;
-    throw error;
-  }
-  return { id: roadmapId, message: "Roadmap deleted successfully" };
-};
-
-export default {
-  generateAIRoadmap,
-  getStudentRoadmaps,
-  getRoadmapById,
-  updateTopicProgress,
-  deleteRoadmap,
-};
+export async function deleteRoadmap(id, studentId) {
+  const roadmap = await AIRoadmap.findOneAndDelete({ _id: id, studentId });
+  if (!roadmap) throw ApiError.notFound("Roadmap not found");
+}

@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash, FaTimes } from "react-icons/fa";
-import { useAuth } from "../context/AuthContext";
-import { fetchBranches } from "../services/branchService";
-import { fetchRoles } from "../services/rolesService";
+import { useAuth } from "../context/AuthContext.jsx";
+import { fetchBranches } from "../services/branchService.js";
+import { fetchRoles } from "../services/rolesService.js";
 
 const STUDENT_EMAIL_RE = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
 const GUIDE_EMAIL_RE = /^[^\s@]+@nbkrist\.org$/i;

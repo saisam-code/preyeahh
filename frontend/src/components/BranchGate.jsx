@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { fetchBranches } from "../services/branchService";
-import { useBranch } from "../context/BranchContext";
+import { fetchBranches } from "../services/branchService.js";
+import { useBranch } from "../context/BranchContext.jsx";
 
 const BRANCH_ICONS = { CSE: "fa-laptop-code", ECE: "fa-satellite-dish", EEE: "fa-bolt", MECH: "fa-gears", CIVIL: "fa-building" };
 

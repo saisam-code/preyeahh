@@ -1,0 +1,16 @@
+{
+  "name": "preyeah",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Pre-Yeah — MERN monorepo (dev convenience only, not deployed)",
+  "scripts": {
+    "dev": "concurrently -n API,WEB -c blue,green \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "seed:resources": "npm run seed:resources --prefix backend",
+    "create-admin": "npm run create-admin --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -23,7 +23,7 @@ export default function ResetPassword() {
     try {
       await resetPassword(token, password, role);
       setDone(true);
-      setTimeout(() => navigate("/"), 2000);
+      setTimeout(() => navigate(role === "admin" ? "/admin" : "/?login=1"), 2000);
     } catch (e) {
       setErr(e.response?.data?.message || "Reset link is invalid or has expired");
     }
@@ -34,7 +34,7 @@ export default function ResetPassword() {
       <div className="login-card">
         <h2>Reset Password</h2>
         {done ? (
-          <p style={{ color: "#16a34a" }}>Password reset successful. Redirecting to login...</p>
+          <p style={{ color: "#16a34a" }}>Password reset successful. Redirecting...</p>
         ) : (
           <>
             <div className="form-group">

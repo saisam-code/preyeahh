@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./api.js";
 
 export function fetchBranches() {
   return api.get("/branches").then((r) => r.data.data); // array of branch name strings

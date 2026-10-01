@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaXmark, FaHandPointer } from "react-icons/fa6";
 
-import { useBranch } from "../context/BranchContext";
-import { fetchBeyond } from "../services/beyondService";
-import BranchGate from "../components/BranchGate";
+import { useBranch } from "../context/BranchContext.jsx";
+import { fetchBeyond } from "../services/beyondService.js";
+import BranchGate from "../components/BranchGate.jsx";
 
 const CAT_META = {
   college: { label: "In College", icon: "fa-school", color: "#8b5cf6" },

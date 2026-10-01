@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function ForgotPassword() {
   const [params] = useSearchParams();
-  const role = params.get("role") === "guide" ? "guide" : "student";
+  const roleParam = params.get("role");
+  const role = roleParam === "guide" || roleParam === "admin" ? roleParam : "student";
   const { forgotPassword } = useAuth();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -33,7 +34,7 @@ export default function ForgotPassword() {
           <>
             <div className="form-group">
               <label>Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@nbkrist.org" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={role === "student" ? "you@gmail.com" : "you@nbkrist.org"} />
             </div>
             {err && <p style={{ color: "#ef4444", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{err}</p>}
             <button className="btn btn-primary" style={{ width: "100%" }} onClick={submit}>Send Reset Link</button>

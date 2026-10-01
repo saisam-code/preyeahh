@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaXmark, FaFire, FaEye, FaPaperPlane, FaHandPointer } from "react-icons/fa6";
 
-import { useBranch } from "../context/BranchContext";
-import { useAuth } from "../context/AuthContext";
-import { fetchRoles } from "../services/rolesService";
-import { fetchGuidanceForRole } from "../services/guidanceService";
-import { getInterestForRole, recordInterest } from "../services/studentService";
-import { submitRoleRequest } from "../services/roleRequestService";
-import BranchGate from "../components/BranchGate";
-import LoginModal from "../components/LoginModal";
+import { useBranch } from "../context/BranchContext.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
+import { fetchRoles } from "../services/rolesService.js";
+import { fetchGuidanceForRole } from "../services/guidanceService.js";
+import { getInterestForRole, recordInterest } from "../services/studentService.js";
+import { submitRoleRequest } from "../services/roleRequestService.js";
+import { generateRoadmap } from "../services/aiRoadmapService.js";
+import BranchGate from "../components/BranchGate.jsx";
+import LoginModal from "../components/LoginModal.jsx";
 
 function parseResource(str) {
   const [label, url] = str.split("|").map((s) => s?.trim());
@@ -26,6 +28,8 @@ function parseResource(str) {
 export default function Roles() {
   const { branch } = useBranch();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [generating, setGenerating] = useState(false);
 
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -112,6 +116,19 @@ export default function Roles() {
       }
     }
     openDetail(role);
+  };
+
+  const handleGenerateRoadmap = async (role) => {
+    setGenerating(true);
+    try {
+      await generateRoadmap({ roleId: role._id });
+      toast.success("Roadmap generated!");
+      navigate("/roadmaps");
+    } catch (err) {
+      toast.error(err.response?.status === 429 ? "AI is busy — try again shortly" : err.response?.data?.message || "Could not generate roadmap");
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const handleCommitChoice = (committed) => {
@@ -278,6 +295,15 @@ export default function Roles() {
                 <ul className="rd-resource-list">
                   {selectedRole.guidance.resources.map((s, i) => <li key={i}>{parseResource(s)}</li>)}
                 </ul>
+              </div>
+            )}
+
+            {user?.role === "student" && (
+              <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--border)", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <button className="btn btn-primary" style={{ flex: 1 }} disabled={generating} onClick={() => handleGenerateRoadmap(selectedRole)}>
+                  {generating ? "Generating..." : "Generate my AI roadmap for this role"}
+                </button>
+                <button className="btn btn-outline" onClick={() => navigate("/quiz")}>Quiz me</button>
               </div>
             )}
 

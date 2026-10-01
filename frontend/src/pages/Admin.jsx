@@ -5,18 +5,18 @@ import {
   FaRightFromBracket, FaBars, FaXmark,
 } from "react-icons/fa6";
 
-import AdminLogin from "../components/admin/AdminLogin";
-import AdminDashboard from "../components/admin/AdminDashboard";
-import AdminRoles from "../components/admin/AdminRoles";
-import AdminBranches from "../components/admin/AdminBranches";
-import AdminBeyond from "../components/admin/AdminBeyond";
-import AdminGuidance from "../components/admin/AdminGuidance";
-import AdminRequests from "../components/admin/AdminRequests";
-import AdminInterest from "../components/admin/AdminInterest";
-import AdminGuides from "../components/admin/AdminGuides";
+import AdminLogin from "../components/admin/AdminLogin.jsx";
+import AdminDashboard from "../components/admin/AdminDashboard.jsx";
+import AdminRoles from "../components/admin/AdminRoles.jsx";
+import AdminBranches from "../components/admin/AdminBranches.jsx";
+import AdminBeyond from "../components/admin/AdminBeyond.jsx";
+import AdminGuidance from "../components/admin/AdminGuidance.jsx";
+import AdminRequests from "../components/admin/AdminRequests.jsx";
+import AdminInterest from "../components/admin/AdminInterest.jsx";
+import AdminGuides from "../components/admin/AdminGuides.jsx";
 
-import { fetchAdminMe, refreshAdmin, logoutAdmin } from "../services/adminService";
-import { setAccessToken, getAccessToken, setActiveRole } from "../services/api";
+import { fetchAdminMe, refreshAdmin, logoutAdmin } from "../services/adminService.js";
+import { setAccessToken, getAccessToken, setActiveRole } from "../services/api.js";
 
 const SECTIONS = [
   { key: "dashboard", label: "Dashboard", icon: FaChartBar, Component: AdminDashboard },

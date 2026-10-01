@@ -1,25 +1,24 @@
-export class ApiError extends Error {
-  constructor(statusCode, message, errors = [], stack = "") {
+/**
+ * Standardized operational error thrown across controllers/services.
+ * Caught by the centralized errorHandler middleware.
+ */
+class ApiError extends Error {
+  /**
+   * @param {number} statusCode - HTTP status code
+   * @param {string} message - Human-readable error message
+   * @param {Array}  errors - Optional array of field-level validation errors
+   */
+  constructor(statusCode, message, errors = []) {
     super(message);
+    this.name = "ApiError";
     this.statusCode = statusCode;
-    this.data = null;
-    this.message = message;
-    this.success = false;
     this.errors = errors;
-
-    if (stack) {
-      this.stack = stack;
-    } else {
-      Error.captureStackTrace(this, this.constructor);
-    }
+    this.isOperational = true;
+    Error.captureStackTrace(this, this.constructor);
   }
 
-  // FIX: careerRole.controller.js, branchController.js, etc. call
-  // ApiError.notFound(...) / .forbidden(...) / .conflict(...) — these
-  // static helpers didn't exist on the class, so those calls would throw
-  // "ApiError.notFound is not a function" instead of the intended 404/403.
-  static badRequest(message = "Bad request") {
-    return new ApiError(400, message);
+  static badRequest(message = "Bad request", errors = []) {
+    return new ApiError(400, message, errors);
   }
   static unauthorized(message = "Unauthorized") {
     return new ApiError(401, message);
@@ -27,7 +26,7 @@ export class ApiError extends Error {
   static forbidden(message = "Forbidden") {
     return new ApiError(403, message);
   }
-  static notFound(message = "Not found") {
+  static notFound(message = "Resource not found") {
     return new ApiError(404, message);
   }
   static conflict(message = "Conflict") {
@@ -37,3 +36,5 @@ export class ApiError extends Error {
     return new ApiError(500, message);
   }
 }
+
+export default ApiError;

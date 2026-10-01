@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./api.js";
 
 export function loginAdmin(email, password) {
   return api.post("/admin/login", { email, password }).then((r) => r.data);

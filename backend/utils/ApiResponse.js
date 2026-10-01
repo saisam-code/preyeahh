@@ -1,12 +1,15 @@
-export class ApiResponse {
-  // FIX: careerRole.controller.js's getRoles() calls
-  // `new ApiResponse(200, roles, "Roles fetched", { page, limit, total, totalPages })`
-  // — the old constructor only took 3 params, so pagination info was silently dropped.
-  constructor(statusCode, data, message = "Success", meta = null) {
-    this.statusCode = statusCode;
-    this.data = data;
-    this.message = message;
+/**
+ * Standardized success response shape sent from controllers.
+ * Usage: res.status(200).json(new ApiResponse(200, data, "Roles fetched"));
+ */
+class ApiResponse {
+  constructor(statusCode, data = null, message = "Success", meta = null) {
     this.success = statusCode < 400;
-    if (meta) this.meta = meta;
+    this.statusCode = statusCode;
+    this.message = message;
+    this.data = data;
+    if (meta) this.meta = meta; // pagination info, counts, etc.
   }
 }
+
+export default ApiResponse;
