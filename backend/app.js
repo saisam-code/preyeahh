@@ -46,9 +46,10 @@ if (process.env.NODE_ENV === "development") {
 const allowedOrigins = new Set(
   (process.env.CLIENT_URL || "http://localhost:5173")
     .split(",")
-    .map((origin) => origin.trim())
+    .map((origin) => origin.trim().replace(/^['"]|['"]$/g, "").replace(/\/+$/, ""))
     .filter(Boolean)
 );
+console.log("[cors] allowed origins:", [...allowedOrigins]);
 
 app.use(
   cors({
