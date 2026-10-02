@@ -43,15 +43,16 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // ── CORS ────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
-  .split(",")
-  .map((o) => o.trim());
+const allowedOrigins = new Set([
+  "https://preyeahh.vercel.app",
+  ...(process.env.CLIENT_URL || "http://localhost:5173").split(",").map((o) => o.trim()),
+]);
 
 app.use(
   cors({
     origin(origin, callback) {
       // allow non-browser tools (curl/Postman) with no origin header
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.has(origin)) {
         return callback(null, true);
       }
       return callback(new Error(`CORS blocked for origin: ${origin}`));
