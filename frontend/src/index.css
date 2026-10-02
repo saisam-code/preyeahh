@@ -4165,3 +4165,116 @@ body.dark .hero-stat-card:hover {
   border-top: 1px solid var(--border);
   margin: 1.5rem 0;
 }
+
+/* ══════════════════════════════════════════
+   ROADMAP TIMELINE
+══════════════════════════════════════════ */
+.roadmap-timeline {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-top: 2rem;
+}
+.roadmap-timeline::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 7px;
+  width: 2px;
+  background: var(--border);
+}
+.roadmap-node {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.roadmap-node:last-child {
+  margin-bottom: 0;
+}
+.roadmap-node-marker {
+  position: absolute;
+  top: 1.25rem;
+  left: -1.5rem;
+  width: 16px;
+  height: 16px;
+  background: var(--surface);
+  border: 3px solid var(--primary);
+  border-radius: 50%;
+  transform: translateY(-50%) translateX(-1px);
+  z-index: 2;
+  box-shadow: 0 0 0 4px var(--surface);
+}
+.roadmap-node-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.roadmap-node-content:hover {
+  border-color: var(--primary-dim);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+.roadmap-node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.roadmap-node-topics {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.roadmap-topic-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: var(--surface-mid);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+.roadmap-topic-card:hover {
+  background: var(--surface-high);
+}
+.roadmap-topic-card.completed {
+  background: var(--primary-bg);
+  border-color: rgba(22,163,74,0.2);
+}
+.roadmap-topic-icon {
+  margin-top: 2px;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  color: var(--border);
+}
+.roadmap-topic-card.completed .roadmap-topic-icon {
+  color: var(--primary);
+}
+.roadmap-topic-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+.roadmap-topic-card.completed .roadmap-topic-title {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+.roadmap-topic-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+.roadmap-resources {
+  margin-top: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.roadmap-resources .resource-link {
+  font-size: 0.75rem;
+}
+.roadmap-resources .resource-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

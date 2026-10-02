@@ -205,46 +205,48 @@ export default function MyRoadmaps() {
                 </section>
               ) : null}
 
-              {selected.sections?.map((section, si) => (
-                <div key={idOf(section) || si} style={{ marginBottom: "1rem", border: "1px solid var(--border)", borderRadius: "10px", overflow: "hidden" }}>
-                  <div
-                    onClick={() => setExpanded((p) => ({ ...p, [si]: !p[si] }))}
-                    style={{ padding: "0.875rem 1rem", background: "var(--surface-mid)", cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
-                  >
-                    <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>{section.title}</div>
-                    {expanded[si] ? <FaChevronUp /> : <FaChevronDown />}
-                  </div>
+              <div className="roadmap-timeline">
+                {selected.sections?.map((section, si) => (
+                  <div key={idOf(section) || si} className="roadmap-node">
+                    <div className="roadmap-node-marker"></div>
+                    <div className="roadmap-node-content" onClick={() => setExpanded((p) => ({ ...p, [si]: !p[si] }))}>
+                      <div className="roadmap-node-header">
+                        <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--text)" }}>{section.title}</div>
+                        {expanded[si] ? <FaChevronUp /> : <FaChevronDown />}
+                      </div>
 
-                  {expanded[si] && (
-                    <div style={{ padding: "0.75rem" }}>
-                      {section.topics?.map((tp) => (
-                        <div
-                          key={idOf(tp)}
-                          style={{ display: "flex", gap: "0.75rem", padding: "0.75rem", borderRadius: 8, background: tp.isCompleted ? "var(--primary-bg)" : "transparent", marginBottom: "0.5rem", cursor: "pointer" }}
-                          onClick={() => handleToggleTopic(idOf(tp), tp.isCompleted)}
-                        >
-                          <FaCircleCheck style={{ color: tp.isCompleted ? "var(--primary)" : "var(--border)", marginTop: 2, flexShrink: 0, fontSize: "1.1rem" }} />
-                          <div>
-                            <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--text)", textDecoration: tp.isCompleted ? "line-through" : "none" }}>{tp.title}</div>
-                            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>{tp.description}</div>
-                            {tp.resources?.length > 0 && (
-                              <div style={{ marginTop: "0.5rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-                                {tp.resources.map((r, ri) =>
-                                  r.url ? (
-                                    <a key={ri} href={r.url} target="_blank" rel="noopener noreferrer" className="resource-link" onClick={(e) => e.stopPropagation()} style={{ fontSize: "0.75rem" }}>{r.title} ↗</a>
-                                  ) : (
-                                    <span key={ri} style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{r.title}</span>
-                                  )
+                      {expanded[si] && (
+                        <div className="roadmap-node-topics">
+                          {section.topics?.map((tp) => (
+                            <div
+                              key={idOf(tp)}
+                              className={`roadmap-topic-card ${tp.isCompleted ? 'completed' : ''}`}
+                              onClick={(e) => { e.stopPropagation(); handleToggleTopic(idOf(tp), tp.isCompleted); }}
+                            >
+                              <FaCircleCheck className="roadmap-topic-icon" />
+                              <div>
+                                <div className="roadmap-topic-title">{tp.title}</div>
+                                <div className="roadmap-topic-desc">{tp.description}</div>
+                                {tp.resources?.length > 0 && (
+                                  <div className="roadmap-resources">
+                                    {tp.resources.map((r, ri) =>
+                                      r.url ? (
+                                        <a key={ri} href={r.url} target="_blank" rel="noopener noreferrer" className="resource-link" onClick={(e) => e.stopPropagation()}>{r.title} ↗</a>
+                                      ) : (
+                                        <span key={ri} className="resource-text">{r.title}</span>
+                                      )
+                                    )}
+                                  </div>
                                 )}
                               </div>
-                            )}
-                          </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
