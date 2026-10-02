@@ -15,6 +15,7 @@ import VerifyEmail from "./pages/VerifyEmail.jsx";
 // Role-specific learning pages
 import Chat from "./pages/Chat.jsx";
 import MyRoadmaps from "./pages/MyRoadmaps.jsx";
+import RoadmapView from "./pages/RoadmapView.jsx";
 import Quiz from "./pages/Quiz.jsx";
 import Profile from "./pages/Profile.jsx";
 
@@ -42,6 +43,7 @@ export default function App() {
 
         <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/?login=1" />}>
           <Route path="/roadmaps" element={<MyRoadmaps />} />
+          <Route path="/roadmap/:id" element={<RoadmapView />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/progress" element={<Navigate to="/#student-progress" replace />} />
           <Route path="/profile" element={<Profile />} />

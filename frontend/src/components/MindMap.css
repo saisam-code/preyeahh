@@ -1,0 +1,176 @@
+/* ══════════════════════════════════════════
+   MIND MAP MODAL
+══════════════════════════════════════════ */
+.mindmap-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: mmFadeIn 0.2s ease;
+}
+
+@keyframes mmFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mindmap-modal {
+  background: #fff;
+  border: 3px solid #000;
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 1);
+  width: 100%;
+  max-width: 780px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: mmSlideUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  color: #000;
+}
+
+@keyframes mmSlideUp {
+  from { transform: translateY(40px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.mindmap-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 2px solid #000;
+  background: #1a1a2e;
+  border-radius: 13px 13px 0 0;
+}
+
+.mindmap-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  flex: 1;
+  font-family: var(--font-display);
+}
+
+.mindmap-subtitle {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.6);
+  font-weight: 500;
+}
+
+.mindmap-close {
+  background: transparent;
+  border: 2px solid rgba(255,255,255,0.3);
+  color: #fff;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.mindmap-close:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+.mindmap-canvas-wrap {
+  padding: 1rem;
+  background: #fafafa;
+  flex: 1;
+}
+
+.mindmap-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Legend */
+.mindmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  border-top: 2px solid #000;
+  background: #fff;
+  border-radius: 0 0 13px 13px;
+}
+
+.mindmap-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px 4px 6px;
+  border: 2px solid #000;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.mindmap-legend-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0 #000;
+}
+.mindmap-legend-item.done {
+  background: #d9ead3;
+  border-color: #27ae60;
+}
+
+.mindmap-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.3);
+  flex-shrink: 0;
+}
+
+.mindmap-legend-label {
+  color: #000;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mindmap-legend-check {
+  color: #27ae60;
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+/* Section node "View Mind Map" hint in roadmap */
+.roadmap-section-node {
+  position: relative;
+}
+.section-mindmap-btn {
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2980b9;
+  color: white;
+  border: 2px solid #000;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 2px 2px 0 #000;
+  transition: all 0.15s;
+}
+.section-mindmap-btn:hover {
+  background: #1f6ca0;
+  transform: translateX(-50%) translateY(-1px);
+}
