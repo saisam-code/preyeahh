@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { FaPaperPlane, FaPlus, FaTrash } from "react-icons/fa6";
+import { FaDownload, FaPaperPlane, FaPlus, FaTrash } from "react-icons/fa6";
 import {
-  fetchChats, createChat, fetchChat, sendChatMessage, clearChatHistory, deleteChat,
+  fetchChats, createChat, fetchChat, exportChat, sendChatMessage, clearChatHistory, deleteChat,
 } from "../services/chatService.js";
 import { fetchRoles } from "../services/rolesService.js";
 import { useBranch } from "../context/BranchContext.jsx";
@@ -89,6 +89,22 @@ export default function Chat() {
     }
   };
 
+  const handleDownload = async (chatId) => {
+    try {
+      const blob = await exportChat(chatId);
+      const link = document.createElement("a");
+      const fileName = `chat-${chatId}.json`;
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.download = fileName;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("Chat downloaded");
+    } catch {
+      toast.error("Failed to download chat");
+    }
+  };
+
   const handleDelete = async (chatId) => {
     try {
       await deleteChat(chatId);
@@ -148,12 +164,20 @@ export default function Chat() {
                   <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{chat.title}</div>
                   {chat.topic && <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{chat.topic}</div>}
                 </div>
-                <button
-                  className="btn btn-sm"
-                  style={{ background: "transparent", color: "var(--text-muted)", padding: "0.2rem 0.4rem" }}
-                  onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}
-                  title="Delete chat"
-                ><FaTrash /></button>
+                <div style={{ display: "flex", gap: "0.25rem" }}>
+                  <button
+                    className="btn btn-sm"
+                    style={{ background: "transparent", color: "var(--text-muted)", padding: "0.2rem 0.4rem" }}
+                    onClick={(e) => { e.stopPropagation(); handleDownload(chat.id); }}
+                    title="Download chat"
+                  ><FaDownload /></button>
+                  <button
+                    className="btn btn-sm"
+                    style={{ background: "transparent", color: "var(--text-muted)", padding: "0.2rem 0.4rem" }}
+                    onClick={(e) => { e.stopPropagation(); handleDelete(chat.id); }}
+                    title="Delete chat"
+                  ><FaTrash /></button>
+                </div>
               </div>
             ))
           )}
@@ -175,7 +199,10 @@ export default function Chat() {
                   {[activeChat.branch, activeChat.topic].filter(Boolean).join(" · ")}
                 </div>
               </div>
-              <button className="btn btn-outline btn-sm" onClick={handleClear}>Clear History</button>
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <button className="btn btn-outline btn-sm" onClick={() => handleDownload(activeChat.id)}>Download</button>
+                <button className="btn btn-outline btn-sm" onClick={handleClear}>Clear History</button>
+              </div>
             </div>
 
             <div style={{ flex: 1, overflowY: "auto", padding: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>

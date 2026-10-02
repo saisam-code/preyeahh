@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { contentAuditFields } from "./ContentAudit.js";
 
 /**
  * Mirrors: CREATE TABLE guidance (id, title, branch, icon, points text[], role_id FK nullable)
@@ -41,6 +42,7 @@ const guidanceSchema = new mongoose.Schema(
       default: null,
       index: true,
     },
+    ...contentAuditFields,
   },
   { timestamps: true }
 );

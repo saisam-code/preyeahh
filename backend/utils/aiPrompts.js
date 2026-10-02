@@ -20,7 +20,7 @@ export function buildChatContextPrompt({ topic = "", branch = "", roleContext = 
       `\n- Key Skills For That Role: ${list(roleContext.skills, "not listed")}`
     : "";
 
-  return `You are Pre-Yeah AI, a supportive and knowledgeable career and engineering learning mentor for college students.
+  return `You are Preyeahh AI, a supportive and knowledgeable career and engineering learning mentor for college students.
 Guide students in mastering technical concepts, answering programming questions, preparing for placements and building engineering skills.
 
 Student context:
@@ -59,24 +59,37 @@ export function buildRoadmapPrompt({
   const level = preferences.experienceLevel || "beginner";
   const style = preferences.learningStyle || "hands-on";
   const known = list(skillNames(preferences.skills), "None specified");
+  const skillLevels = Array.isArray(preferences.skills)
+    ? preferences.skills.map((skill) => typeof skill === "string" ? skill : `${skill.name} (${skill.level || "level not set"})`).filter(Boolean)
+    : [];
   const steps = list(roleGuidance.steps, "Standard industry path");
   const required = list(roleGuidance.skills, "Standard role skills");
   const weekly = preferences.weeklyHoursAvailable > 0 ? `${preferences.weeklyHoursAvailable} hours/week` : "not specified";
+  const goals = list(preferences.goals, "not specified");
+  const interests = list(preferences.interests, "not specified");
   const techHint = knownTechnologies.length
     ? `\nFor each resource "searchQuery.technology", choose ONE value from this list when a match exists: ${knownTechnologies.join(", ")}.`
     : "";
 
-  return `You are an expert engineering career advisor and curriculum planner.
+  return `You are an expert engineering career advisor and curriculum planner for Preyeahh.
 Create an actionable learning roadmap for the role "${roleTitle}"${branch ? ` for a ${branch} student` : ""}.
 
 Context:
 - Academic Branch: ${branch || "Engineering"}
+- Current Role: ${preferences.currentRole || "not specified"}
+- Target Role: ${preferences.targetRole || roleTitle}
 - Learner Level: ${level}
 - Learning Style: ${style}
 - Weekly Time Available: ${weekly}
 - Current Skills: ${known}
+- Skill Levels: ${list(skillLevels, "not specified")}
+- Goals: ${goals}
+- Interests: ${interests}
+- Learner Summary: ${preferences.aiProfileSummary || "not provided"}
 - Suggested Path Steps (curated by mentors): ${steps}
 - Skills This Role Needs: ${required}
+
+Personalize the plan using the evidence above. Be honest when profile details are missing. Do not invent student experience, preferences, or constraints. Include a short fit snapshot that explains why this path is a reasonable match and compares up to two plausible alternatives. Describe alternative paths as trade-offs, not as bad choices or paths the student cannot succeed in. Ground every statement in provided profile details or curated role guidance.
 
 Return ONLY a JSON object with exactly this shape (3-5 sections, 2-4 topics each):
 {
@@ -84,6 +97,13 @@ Return ONLY a JSON object with exactly this shape (3-5 sections, 2-4 topics each
   "description": "2-3 sentence overview",
   "level": "beginner | intermediate | advanced",
   "estimatedWeeks": 8,
+  "fitSnapshot": {
+    "whyThisFits": ["Short evidence-based reason", "Short evidence-based reason"],
+    "whyNotAlternatives": [
+      { "path": "Plausible alternative", "tradeoff": "What the chosen path prioritizes instead, based on the student's details" }
+    ],
+    "basedOn": ["Specific profile or curated guidance signal"]
+  },
   "sections": [
     {
       "title": "1. Foundations",

@@ -29,6 +29,8 @@ const preferencesSchema = new mongoose.Schema(
     weeklyHoursAvailable: { type: Number, default: 0, min: 0, max: 168 },
     preferredLanguage: { type: String, default: "English", trim: true },
     aiProfileSummary: { type: String, default: "" },
+    shareContactWithGuides: { type: Boolean, default: false },
+    shareLearningActivityWithGuides: { type: Boolean, default: false },
     onboardingCompleted: { type: Boolean, default: false },
     onboardingSkipped: { type: Boolean, default: false },
     lastExtractedAt: { type: Date, default: null },

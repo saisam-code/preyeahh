@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { contentAuditFields } from "./ContentAudit.js";
 
 /**
  * Mirrors: CREATE TABLE beyond (title, branch, category, description,
@@ -33,6 +34,7 @@ const beyondSchema = new mongoose.Schema(
     howto: { type: String, default: "", trim: true, maxlength: 1000 },
     skills: { type: [String], default: [] },
     resources: { type: [String], default: [] },
+    ...contentAuditFields,
   },
   { timestamps: true }
 );

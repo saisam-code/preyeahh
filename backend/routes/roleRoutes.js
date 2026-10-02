@@ -20,7 +20,7 @@ router.get("/:id", idParamRule, validate, getRoleById);
 router.post("/", protect, authorize("admin", "guide"), createRoleRules, validate, createRole);
 router.put("/:id", protect, authorize("admin", "guide"), updateRoleRules, validate, updateRole);
 
-// Admin only
-router.delete("/:id", protect, authorize("admin"), idParamRule, validate, deleteRole);
+// Admin or branch guide
+router.delete("/:id", protect, authorize("admin", "guide"), idParamRule, validate, deleteRole);
 
 export default router;

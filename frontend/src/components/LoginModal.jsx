@@ -32,6 +32,22 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   const registerForm = useForm({
     defaultValues: { name: "", email: "", password: "", branch: "", roleName: "", newRoleName: "", newRoleDesc: "", bio: "" },
   });
+  const demoAccounts = [
+    {
+      key: "student",
+      label: "Demo student",
+      email: "demo.student@gmail.com",
+      password: "DemoStudent123!",
+      accent: "student",
+    },
+    {
+      key: "guide",
+      label: "Demo guide",
+      email: "demo.guide@nbkrist.org",
+      password: "DemoGuide123!",
+      accent: "guide",
+    },
+  ];
 
   const watchedBranch = registerForm.watch("branch");
   const watchedRole = registerForm.watch("roleName");
@@ -65,6 +81,18 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
       } else {
         toast.error(msg);
       }
+    }
+  };
+
+  const handleDemoLogin = async (account) => {
+    try {
+      await login(account.email, account.password);
+      navigate("/", { replace: true });
+      toast.success(`${account.label} signed in.`);
+      onClose();
+    } catch (err) {
+      const msg = err.response?.data?.message || "Unable to sign in with the demo account.";
+      toast.error(msg);
     }
   };
 
@@ -110,7 +138,7 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
           <div>
             <h2>{tab === "login" ? "Sign In" : "Create Account"}</h2>
             <p className="modal-sub">
-              {tab === "login" ? "Welcome back — enter your details below." : "Join Pre-Yeah to track your career interests."}
+              {tab === "login" ? "Welcome back — enter your details below." : "Join Preyeahh to track your career interests."}
             </p>
           </div>
           <button className="modal-close" onClick={onClose}><FaTimes /></button>
@@ -138,6 +166,24 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
             </div>
             {loginForm.formState.errors.root && (
               <p className="ulm-err" style={{ display: "block" }}>{loginForm.formState.errors.root.message}</p>
+            )}
+            {import.meta.env.DEV && (
+              <div className="demo-login-box" aria-label="Demo access shortcuts">
+                <span className="demo-login-label">Quick demo access</span>
+                <div className="demo-login-actions">
+                  {demoAccounts.map((account) => (
+                    <button
+                      key={account.key}
+                      type="button"
+                      className={`demo-login-btn demo-login-btn--${account.accent}`}
+                      onClick={() => handleDemoLogin(account)}
+                    >
+                      {account.label}
+                    </button>
+                  ))}
+                </div>
+                <small>Local-only test accounts for student and guide flows.</small>
+              </div>
             )}
             <button className="btn btn-primary" style={{ width: "100%" }} type="submit" disabled={loginForm.formState.isSubmitting}>
               {loginForm.formState.isSubmitting ? "Signing in..." : "Login"}

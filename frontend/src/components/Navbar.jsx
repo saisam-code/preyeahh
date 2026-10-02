@@ -65,7 +65,6 @@ export default function Navbar() {
   const effectiveUser = user || adminUser;
 
   const isStudent = user?.role === "student";
-  const isGuide = user?.role === "guide";
   const visibleItems = NAV_ITEMS.filter((item) => {
     if (item.studentOnly && !isStudent) return false;
     if (item.requiresRole && !item.requiresRole.includes(effectiveUser?.role)) return false;
@@ -99,7 +98,7 @@ export default function Navbar() {
   return (
     <>
       <nav>
-        <NavLink to="/" className="nav-logo">Pre-<span>Yeah</span></NavLink>
+        <NavLink to="/" className="nav-logo">Pre<span>yeahh</span></NavLink>
 
         <div className="nav-links">
           {visibleItems.map((item) => (

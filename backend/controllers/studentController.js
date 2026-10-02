@@ -28,8 +28,8 @@ export const registerStudent = asyncHandler(async (req, res) => {
 
   await sendEmail({
     to: student.email,
-    subject: "Verify your Pre-Yeah account",
-    html: `<p>Hi ${student.name},</p><p>Welcome to Pre-Yeah. Verify your email to activate your account:</p><p><a href="${verifyUrl}">Verify Email</a></p><p>This link expires in 24 hours.</p>`,
+    subject: "Verify your Preyeahh account",
+    html: `<p>Hi ${student.name},</p><p>Welcome to Preyeahh. Verify your email to activate your account:</p><p><a href="${verifyUrl}">Verify Email</a></p><p>This link expires in 24 hours.</p>`,
   });
 
   res.status(201).json(
@@ -117,7 +117,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     }
     await sendEmail({
       to: student.email,
-      subject: "Reset your Pre-Yeah password",
+      subject: "Reset your Preyeahh password",
       html: `<p>Hi ${student.name},</p><p>Click below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">Reset Password</a></p><p>If you didn't request this, ignore this email.</p>`,
     });
   }
@@ -177,7 +177,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
     }
     await sendEmail({
       to: student.email,
-      subject: "Verify your Pre-Yeah account",
+      subject: "Verify your Preyeahh account",
       html: `<p>Click below to verify your email:</p><p><a href="${verifyUrl}">Verify Email</a></p>`,
     });
   }

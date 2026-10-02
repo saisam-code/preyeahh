@@ -13,9 +13,9 @@ function linesToArray(str) {
   return str.split("\n").map((s) => s.trim()).filter(Boolean);
 }
 
-export default function AdminRoles() {
+export default function AdminRoles({ fixedBranch = null } = {}) {
   const [branches, setBranches] = useState([]);
-  const [branchFilter, setBranchFilter] = useState("all");
+  const [branchFilter, setBranchFilter] = useState(fixedBranch || "all");
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -36,11 +36,12 @@ export default function AdminRoles() {
   };
 
   useEffect(() => { fetchBranches().then(setBranches); }, []);
+  useEffect(() => { if (fixedBranch) setBranchFilter(fixedBranch); }, [fixedBranch]);
   useEffect(() => { load(); }, [branchFilter]);
 
   const openAdd = () => {
     setEditingId(null);
-    setForm({ ...emptyRole, branch: branches[0] || "" });
+    setForm({ ...emptyRole, branch: fixedBranch || branches[0] || "" });
     setRoadmap([]);
     setModalOpen(true);
   };
@@ -130,10 +131,12 @@ export default function AdminRoles() {
       <div className="admin-header">
         <h2>Manage Roles</h2>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-          <select className="filter-select" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
-            <option value="all">All Branches</option>
-            {branches.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
+          {!fixedBranch && (
+            <select className="filter-select" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
+              <option value="all">All Branches</option>
+              {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          )}
           <button className="btn btn-primary" onClick={openAdd}>+ Add Role</button>
         </div>
       </div>
@@ -178,8 +181,13 @@ export default function AdminRoles() {
             <div className="form-row">
               <div className="form-group">
                 <label>Branch</label>
-                <select className="filter-select" value={form.branch} onChange={(e) => setForm({ ...form, branch: e.target.value })}>
-                  {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+                <select
+                  className="filter-select"
+                  value={fixedBranch || form.branch}
+                  onChange={(e) => setForm({ ...form, branch: e.target.value })}
+                  disabled={Boolean(fixedBranch)}
+                >
+                  {(fixedBranch ? [fixedBranch] : branches).map((b) => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div className="form-group">

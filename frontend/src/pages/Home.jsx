@@ -222,7 +222,7 @@ export default function Home() {
               {isStudent ? (
                 <>Welcome back, <span>{user.name.split(" ")[0]}</span></>
               ) : (
-                <>Welcome to <span>Pre-Yeah</span></>
+                <>Welcome to <span>Preyeahh</span></>
               )}
             </motion.h1>
 

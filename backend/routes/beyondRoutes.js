@@ -20,8 +20,8 @@ const router = express.Router();
 router.get("/", listQueryRules, validate, getBeyond);
 router.get("/:id", idParamRule, validate, getBeyondById);
 
-router.post("/", protect, authorize("admin"), createBeyondRules, validate, createBeyond);
-router.put("/:id", protect, authorize("admin"), updateBeyondRules, validate, updateBeyond);
-router.delete("/:id", protect, authorize("admin"), idParamRule, validate, deleteBeyond);
+router.post("/", protect, authorize("admin", "guide"), createBeyondRules, validate, createBeyond);
+router.put("/:id", protect, authorize("admin", "guide"), updateBeyondRules, validate, updateBeyond);
+router.delete("/:id", protect, authorize("admin", "guide"), idParamRule, validate, deleteBeyond);
 
 export default router;

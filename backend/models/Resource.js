@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { contentAuditFields } from "./ContentAudit.js";
 
 const resourceSchema = new mongoose.Schema(
   {
@@ -35,6 +36,7 @@ const resourceSchema = new mongoose.Schema(
 
     // Audit
     isCurated: { type: Boolean, default: true },
+    ...contentAuditFields,
   },
   { timestamps: true }
 );

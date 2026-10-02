@@ -21,7 +21,7 @@ async function sendEmail({ to, subject, html }) {
   }
   const t = getTransporter();
   await t.sendMail({
-    from: process.env.SMTP_FROM || `"Pre-Yeah" <no-reply@preyeah.dev>`,
+    from: process.env.SMTP_FROM || `"Preyeahh" <no-reply@preyeah.dev>`,
     to,
     subject,
     html,

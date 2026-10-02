@@ -1,9 +1,12 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
+import { param } from "express-validator";
 import {
   registerGuide,
   loginGuide,
   getMe,
+  getGuideBranchOverview,
+  getGuideStudentActivity,
   listGuides,
   setGuideStatus,
   assignGuideRoles,
@@ -57,6 +60,15 @@ router.get("/verify-email/:token", verifyEmail);
 router.post("/resend-verification", sensitiveLimiter, resendVerificationRules, validate, resendVerification);
 
 router.get("/me", protect, authorize("guide"), getMe);
+router.get("/me/branch-overview", protect, authorize("guide"), getGuideBranchOverview);
+router.get(
+  "/me/students/:studentId/activity",
+  protect,
+  authorize("guide"),
+  [param("studentId").isMongoId().withMessage("Invalid student id")],
+  validate,
+  getGuideStudentActivity
+);
 
 router.get("/", protect, authorize("admin"), listGuides);
 router.put("/:id/status", protect, authorize("admin"), setStatusRules, validate, setGuideStatus);

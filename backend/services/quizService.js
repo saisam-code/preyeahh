@@ -1,5 +1,6 @@
 import Quiz from "../models/Quiz.js";
 import ApiError from "../utils/ApiError.js";
+import { getRetentionExpiryDate } from "../utils/aiRetention.js";
 import { jsonCompletion } from "./groqService.js";
 import { getRoleContext } from "./roleContextService.js";
 import { buildQuizPrompt } from "../utils/aiPrompts.js";
@@ -58,9 +59,17 @@ function toDto(quiz) {
   };
 }
 
+async function purgeExpiredQuizzes(studentId) {
+  await Quiz.deleteMany({ studentId, expiresAt: { $lte: new Date() } });
+}
+
 async function findOwnedQuiz(id, studentId) {
   const quiz = await Quiz.findOne({ _id: id, studentId });
   if (!quiz) throw ApiError.notFound("Quiz not found");
+  if (quiz.expiresAt && quiz.expiresAt <= new Date()) {
+    await Quiz.deleteOne({ _id: quiz._id });
+    throw ApiError.notFound("Quiz not found");
+  }
   return quiz;
 }
 
@@ -87,11 +96,13 @@ export async function generateQuiz(student, { topic, difficulty = "beginner", ro
     topic: subject,
     difficulty: level,
     questions,
+    expiresAt: getRetentionExpiryDate(new Date()),
   });
   return toDto(quiz);
 }
 
 export async function listQuizzes(studentId, { page = 1, limit = 20 } = {}) {
+  await purgeExpiredQuizzes(studentId);
   const filter = { studentId };
   const [quizzes, total] = await Promise.all([
     Quiz.find(filter)
@@ -132,8 +143,33 @@ export async function submitQuiz(id, studentId, answers) {
   quiz.score = Math.round((correct / quiz.questions.length) * 100);
   quiz.userAnswers = answers.map(String);
   quiz.isCompleted = true;
+  quiz.expiresAt = getRetentionExpiryDate(new Date());
   await quiz.save();
   return toDto(quiz);
+}
+
+export async function exportQuiz(id, studentId) {
+  const quiz = await findOwnedQuiz(id, studentId);
+  return {
+    id: quiz._id.toString(),
+    title: quiz.title,
+    topic: quiz.topic,
+    branch: quiz.branch,
+    roleTitle: quiz.roleTitle,
+    difficulty: quiz.difficulty,
+    isCompleted: quiz.isCompleted,
+    score: quiz.score,
+    createdAt: quiz.createdAt,
+    updatedAt: quiz.updatedAt,
+    expiresAt: quiz.expiresAt,
+    questions: quiz.questions.map((q) => ({
+      questionText: q.questionText,
+      options: q.options,
+      correctAnswer: q.correctAnswer,
+      explanation: q.explanation,
+    })),
+    userAnswers: quiz.userAnswers,
+  };
 }
 
 export async function deleteQuiz(id, studentId) {

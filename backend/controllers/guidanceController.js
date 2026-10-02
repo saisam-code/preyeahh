@@ -74,6 +74,14 @@ export const updateGuidance = asyncHandler(async (req, res) => {
     if (req.body[f] !== undefined) entry[f] = req.body[f];
   });
 
+  if (entry.role) {
+    const role = await Role.findById(entry.role);
+    if (!role) throw ApiError.notFound("Role not found");
+    if (role.branch !== entry.branch) {
+      throw ApiError.badRequest("Role-specific guidance must match the entry's branch");
+    }
+  }
+
   await entry.save();
   res.status(200).json(new ApiResponse(200, entry, "Guidance entry updated"));
 });

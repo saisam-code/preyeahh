@@ -62,6 +62,46 @@ function sanitizeSections(raw) {
     .filter((s) => s.topics.length > 0);
 }
 
+function cleanTextList(value, limit = 3) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item) => typeof item === "string")
+    .map((item) => item.trim().slice(0, 280))
+    .filter(Boolean)
+    .slice(0, limit);
+}
+
+function sanitizeFitSnapshot(raw, { roleTitle, branch, level, preferences, roleGuidance }) {
+  const whyThisFits = cleanTextList(raw?.whyThisFits);
+  const alternatives = Array.isArray(raw?.whyNotAlternatives)
+    ? raw.whyNotAlternatives
+      .filter((item) => item && typeof item.path === "string" && typeof item.tradeoff === "string")
+      .map((item) => ({ path: item.path.trim().slice(0, 100), tradeoff: item.tradeoff.trim().slice(0, 280) }))
+      .filter((item) => item.path && item.tradeoff)
+      .slice(0, 2)
+    : [];
+
+  const basedOn = cleanTextList(raw?.basedOn, 4);
+  if (!whyThisFits.length) {
+    whyThisFits.push(`This plan is organized around your selected ${roleTitle} goal${branch ? ` in ${branch}` : ""} and starts at the ${level} level.`);
+    if (preferences.learningStyle) whyThisFits.push(`Its learning activities account for your ${preferences.learningStyle} learning preference.`);
+    else if (roleGuidance.steps?.length) whyThisFits.push("It incorporates the mentor-curated steps for this role.");
+  }
+
+  if (!basedOn.length) {
+    if (preferences.targetRole) basedOn.push(`Target role: ${preferences.targetRole}`);
+    if (preferences.skills?.length) basedOn.push(`Recorded skills: ${preferences.skills.map((skill) => typeof skill === "string" ? skill : skill.name).filter(Boolean).slice(0, 4).join(", ")}`);
+    if (preferences.weeklyHoursAvailable > 0) basedOn.push(`${preferences.weeklyHoursAvailable} study hours per week`);
+    if (roleGuidance.steps?.length) basedOn.push("Mentor-curated role guidance");
+  }
+
+  return {
+    whyThisFits: whyThisFits.slice(0, 3),
+    whyNotAlternatives: alternatives,
+    basedOn: basedOn.slice(0, 4),
+  };
+}
+
 /**
  * Generates and stores a personalised roadmap.
  * With roleId: uses that Role's curated steps/skills as context and stores the link.
@@ -89,6 +129,13 @@ export async function generateAIRoadmap(student, { topic, roleId }) {
   if (!sections.length) throw ApiError.internal("AI returned an empty roadmap. Please try again.");
 
   const level = LEVELS.includes(data.level) ? data.level : prefs.experienceLevel || "beginner";
+  const fitSnapshot = sanitizeFitSnapshot(data.fitSnapshot, {
+    roleTitle,
+    branch,
+    level,
+    preferences: prefs,
+    roleGuidance: { steps: role?.steps, skills: role?.skills },
+  });
   await attachResources(sections, { level, learningStyle: prefs.learningStyle || "", branch });
 
   return AIRoadmap.create({
@@ -100,6 +147,7 @@ export async function generateAIRoadmap(student, { topic, roleId }) {
     description: typeof data.description === "string" ? data.description : "",
     level,
     estimatedWeeks: Math.min(Math.max(parseInt(data.estimatedWeeks, 10) || 8, 1), 104),
+    fitSnapshot,
     sections,
   });
 }

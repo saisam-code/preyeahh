@@ -22,8 +22,11 @@ const quizSchema = new mongoose.Schema(
     isCompleted: { type: Boolean, default: false },
     score: { type: Number, default: 0 },
     userAnswers: [{ type: String }],
+    expiresAt: { type: Date, default: null, index: true },
   },
   { timestamps: true }
 );
+
+quizSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("Quiz", quizSchema);

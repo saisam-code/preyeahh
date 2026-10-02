@@ -10,9 +10,9 @@ function linesToArray(str) {
   return str.split("\n").map((s) => s.trim()).filter(Boolean);
 }
 
-export default function AdminGuidance() {
+export default function AdminGuidance({ fixedBranch = null } = {}) {
   const [branches, setBranches] = useState([]);
-  const [branchFilter, setBranchFilter] = useState("all");
+  const [branchFilter, setBranchFilter] = useState(fixedBranch || "all");
   const [scopeFilter, setScopeFilter] = useState("all");
   const [entries, setEntries] = useState([]);
   const [rolesByBranch, setRolesByBranch] = useState([]);
@@ -28,7 +28,7 @@ export default function AdminGuidance() {
       const params = {};
       if (branchFilter !== "all") params.branch = branchFilter;
       const list = await fetchGuidance(params);
-      setEntries(list);
+      setEntries(fixedBranch ? list.filter((entry) => entry.branch === fixedBranch) : list);
 
       const roleIds = [...new Set(list.filter((g) => g.role).map((g) => g.role))];
       if (roleIds.length) {
@@ -43,6 +43,7 @@ export default function AdminGuidance() {
   };
 
   useEffect(() => { fetchBranches().then(setBranches); }, []);
+  useEffect(() => { if (fixedBranch) setBranchFilter(fixedBranch); }, [fixedBranch]);
   useEffect(() => { load(); }, [branchFilter]);
 
   const loadRolesForBranch = async (branch) => {
@@ -51,7 +52,7 @@ export default function AdminGuidance() {
     setRolesByBranch(res.data);
   };
 
-  const openAdd = () => { setEditingId(null); setForm(emptyForm); setRolesByBranch([]); setModalOpen(true); };
+  const openAdd = () => { setEditingId(null); setForm({ ...emptyForm, branch: fixedBranch || emptyForm.branch }); setRolesByBranch([]); setModalOpen(true); };
   const openEdit = async (g) => {
     setEditingId(g._id);
     setForm({ title: g.title, branch: g.branch, role: g.role || "", points: g.points.join("\n") });
@@ -101,10 +102,12 @@ const visibleEntries = entries.filter((g) => {
     <div>
       <div className="admin-header">
         <h2>Manage Guidance</h2><div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
-          <select className="filter-select" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
-            <option value="all">All Branches</option>
-            {branches.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
+          {!fixedBranch && (
+            <select className="filter-select" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
+              <option value="all">All Branches</option>
+              {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          )}
           <select className="filter-select" value={scopeFilter} onChange={(e) => setScopeFilter(e.target.value)}>
             <option value="all">All Entries</option>
             <option value="global">Global (branch-wide) only</option>
@@ -147,9 +150,8 @@ const visibleEntries = entries.filter((g) => {
           </div>
           <div className="form-group">
             <label>Branch</label>
-            <select value={form.branch} onChange={(e) => handleBranchChange(e.target.value)}>
-              <option value="All">All Branches</option>
-              {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+            <select value={fixedBranch || form.branch} onChange={(e) => handleBranchChange(e.target.value)} disabled={Boolean(fixedBranch)}>
+              {(fixedBranch ? [fixedBranch] : ["All", ...branches]).map((b) => <option key={b} value={b}>{b === "All" ? "All Branches" : b}</option>)}
             </select>
           </div>
           <div className="form-group">

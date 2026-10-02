@@ -73,7 +73,7 @@ app.use("/api", globalLimiter);
 // ── Health check ────────────────────────────────────────────────
 app.get("/api/health", (req, res) => {
   res.status(200).json(
-    new ApiResponse(200, { uptime: process.uptime(), timestamp: Date.now() }, "Pre-Yeah API is healthy")
+    new ApiResponse(200, { uptime: process.uptime(), timestamp: Date.now() }, "Preyeahh API is healthy")
   );
 });
 

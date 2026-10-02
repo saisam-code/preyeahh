@@ -43,8 +43,20 @@ export const getBeyondById = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, item, "Beyond entry fetched"));
 });
 
-// POST /api/beyond — admin only (guide.html has no Beyond management UI in the original app)
+function enforceGuideBranch(req, branchValue) {
+  if (req.user?.role !== "guide") return;
+  const branch = String(branchValue || "").toUpperCase();
+  if (!branch || branch !== String(req.user.branch || "").toUpperCase()) {
+    throw ApiError.forbidden("You can only manage beyond entries in your own branch");
+  }
+}
+
+// POST /api/beyond — admin or branch guide
 export const createBeyond = asyncHandler(async (req, res) => {
+  if (req.user?.role === "guide") {
+    req.body.branch = req.user.branch;
+  }
+  enforceGuideBranch(req, req.body.branch);
   const item = await Beyond.create(req.body);
   res.status(201).json(new ApiResponse(201, item, "Beyond entry created"));
 });
@@ -52,13 +64,24 @@ export const createBeyond = asyncHandler(async (req, res) => {
 export const updateBeyond = asyncHandler(async (req, res) => {
   const item = await Beyond.findById(req.params.id);
   if (!item) throw ApiError.notFound("Beyond entry not found");
+  if (req.user?.role === "guide" && item.branch !== req.user.branch) {
+    throw ApiError.forbidden("You can only update beyond entries in your own branch");
+  }
+  if (req.user?.role === "guide") {
+    req.body.branch = req.user.branch;
+  }
+  enforceGuideBranch(req, req.body.branch ?? item.branch);
   Object.assign(item, req.body);
   await item.save();
   res.status(200).json(new ApiResponse(200, item, "Beyond entry updated"));
 });
 
 export const deleteBeyond = asyncHandler(async (req, res) => {
-  const item = await Beyond.findByIdAndDelete(req.params.id);
+  const item = await Beyond.findById(req.params.id);
   if (!item) throw ApiError.notFound("Beyond entry not found");
+  if (req.user?.role === "guide" && item.branch !== req.user.branch) {
+    throw ApiError.forbidden("You can only delete beyond entries in your own branch");
+  }
+  await item.deleteOne();
   res.status(200).json(new ApiResponse(200, null, "Beyond entry deleted"));
 });

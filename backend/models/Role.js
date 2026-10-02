@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { contentAuditFields } from "./ContentAudit.js";
 
 /**
  * Mirrors: CREATE TABLE roles (... guidance_overview, guidance_steps,
@@ -45,6 +46,7 @@ const roleSchema = new mongoose.Schema(
     },
     description: { type: String, default: "", trim: true, maxlength: 500 },
     guidance: { type: roleGuidanceSchema, default: () => ({}) },
+    ...contentAuditFields,
   },
   { timestamps: true }
 );

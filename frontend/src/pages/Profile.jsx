@@ -23,6 +23,8 @@ export default function Profile() {
     goals: csv(prefs.goals),
     interests: csv(prefs.interests),
     skills: csv((prefs.skills || []).map((s) => s.name)),
+    shareContactWithGuides: prefs.shareContactWithGuides || false,
+    shareLearningActivityWithGuides: prefs.shareLearningActivityWithGuides || false,
   });
 
   const syncForm = (p) =>
@@ -34,6 +36,8 @@ export default function Profile() {
       goals: csv(p.goals),
       interests: csv(p.interests),
       skills: csv((p.skills || []).map((s) => s.name)),
+      shareContactWithGuides: p.shareContactWithGuides || false,
+      shareLearningActivityWithGuides: p.shareLearningActivityWithGuides || false,
     });
 
   const handleExtract = async () => {
@@ -63,6 +67,8 @@ export default function Profile() {
         weeklyHoursAvailable: form.weeklyHoursAvailable === "" ? undefined : Number(form.weeklyHoursAvailable),
         goals: splitCsv(form.goals),
         interests: splitCsv(form.interests),
+        shareContactWithGuides: form.shareContactWithGuides,
+        shareLearningActivityWithGuides: form.shareLearningActivityWithGuides,
         // keep the level of skills the AI already rated; new ones start as beginner
         skills: splitCsv(form.skills).map((name) => ({ name, level: existing.get(name.toLowerCase()) || "beginner" })),
       });
@@ -129,6 +135,17 @@ export default function Profile() {
           <div className="form-group"><label>Skills (comma separated)</label><input value={form.skills} onChange={set("skills")} placeholder="Python, SQL, React" /></div>
           <div className="form-group"><label>Goals (comma separated)</label><input value={form.goals} onChange={set("goals")} placeholder="Get a placement, build a project" /></div>
           <div className="form-group"><label>Interests (comma separated)</label><input value={form.interests} onChange={set("interests")} placeholder="Web, AI" /></div>
+          <fieldset style={{ border: "1px solid var(--border)", borderRadius: 8, padding: "0.85rem 1rem", marginBottom: "1rem" }}>
+            <legend style={{ padding: "0 0.35rem", fontWeight: 700, color: "var(--text)" }}>Sharing with branch guides</legend>
+            <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>
+              <input type="checkbox" checked={form.shareContactWithGuides} onChange={(event) => setForm({ ...form, shareContactWithGuides: event.target.checked })} />
+              Share my email address with approved guides in my branch
+            </label>
+            <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>
+              <input type="checkbox" checked={form.shareLearningActivityWithGuides} onChange={(event) => setForm({ ...form, shareLearningActivityWithGuides: event.target.checked })} />
+              Share my AI chats, quiz results, and roadmap progress with approved guides in my branch
+            </label>
+          </fieldset>
           <button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save preferences"}</button>
         </div>
       </div>

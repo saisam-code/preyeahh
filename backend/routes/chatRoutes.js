@@ -13,6 +13,7 @@ import {
   createChat,
   listChats,
   getChat,
+  exportChat,
   sendMessage,
   updateChat,
   clearChatHistory,
@@ -25,6 +26,7 @@ router.use(protect, authorize("student"));
 
 router.post("/", createChatRules, validate, createChat);
 router.get("/", listChatsRules, validate, listChats);
+router.get("/:chatId/export", chatIdParamRule, validate, exportChat);
 router.get("/:chatId", chatIdParamRule, validate, getChat);
 router.post("/:chatId/message", aiLimiter, sendMessageRules, validate, sendMessage);
 router.patch("/:chatId", updateChatRules, validate, updateChat);

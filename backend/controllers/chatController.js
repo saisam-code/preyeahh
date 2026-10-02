@@ -20,6 +20,15 @@ export const getChat = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, chat, "Chat fetched"));
 });
 
+// GET /api/chat/:chatId/export
+export const exportChat = asyncHandler(async (req, res) => {
+  const payload = await chatService.exportChat(req.params.chatId, req.user.id);
+  const fileName = `${(payload.title || "chat").replace(/\s+/g, "-").toLowerCase() || "chat"}.json`;
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+  res.status(200).send(JSON.stringify(payload, null, 2));
+});
+
 // POST /api/chat/:chatId/message
 export const sendMessage = asyncHandler(async (req, res) => {
   const result = await chatService.sendMessage(req.params.chatId, req.user, req.body.message);

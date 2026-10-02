@@ -11,7 +11,7 @@ async function start() {
   await connectDB();
 
   const server = app.listen(PORT, () => {
-    logger.info(`[server] Pre-Yeah API running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);
+    logger.info(`[server] Preyeahh API running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);
   });
 
   // Fail loudly on unhandled promise rejections instead of a silent hang

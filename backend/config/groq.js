@@ -16,4 +16,4 @@ export function getGroqClient() {
  *  - llama-3.1-8b-instant     fastest, highest limits
  * Override with GROQ_MODEL in .env.
  */
-export const GROQ_MODEL = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+export const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";

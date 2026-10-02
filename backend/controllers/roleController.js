@@ -113,7 +113,13 @@ export const updateRole = asyncHandler(async (req, res) => {
  * fires, deleting any Guidance entries linked to this role.
  */
 export const deleteRole = asyncHandler(async (req, res) => {
-  const role = await Role.findByIdAndDelete(req.params.id);
+  const role = await Role.findById(req.params.id);
   if (!role) throw ApiError.notFound("Role not found");
+
+  if (req.user.role === "guide" && role.branch !== req.user.branch) {
+    throw ApiError.forbidden("You can only delete roles in your own branch");
+  }
+
+  await Role.findByIdAndDelete(role._id);
   res.status(200).json(new ApiResponse(200, null, "Role deleted"));
 });

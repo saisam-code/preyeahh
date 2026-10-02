@@ -1,5 +1,5 @@
 /* ============================================================
-   PRE-YEAH — Design System v4.0 "Command Center"
+  PREYEAHH — Design System v4.0 "Command Center"
    Single Dark Theme · No Glassmorphism · Editorial Layout
    ============================================================ */
 
@@ -1577,6 +1577,67 @@ body.dark .search-input:focus {
   display: flex;
   gap: 0.5rem;
   align-items: flex-start;
+}
+
+.demo-login-box {
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--r-lg);
+  padding: 0.9rem;
+  margin-bottom: var(--sp-lg);
+}
+
+.demo-login-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary-dim);
+  margin-bottom: 0.7rem;
+}
+
+.demo-login-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.demo-login-btn {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--r-md);
+  padding: 0.7rem 0.75rem;
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.demo-login-btn:hover {
+  transform: translateY(-1px);
+}
+
+.demo-login-btn--student {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.08);
+  color: var(--success);
+}
+
+.demo-login-btn--guide {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.08);
+  color: #7c3aed;
+}
+
+.demo-login-box small {
+  display: block;
+  margin-top: 0.8rem;
+  color: var(--text-dim);
+  font-size: 0.72rem;
 }
 
 .ulm-reg-toggle {

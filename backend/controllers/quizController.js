@@ -20,6 +20,15 @@ export const getQuiz = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, quiz, "Quiz fetched"));
 });
 
+// GET /api/quiz/:id/export
+export const exportQuiz = asyncHandler(async (req, res) => {
+  const payload = await quizService.exportQuiz(req.params.id, req.user.id);
+  const fileName = `${(payload.title || "quiz").replace(/\s+/g, "-").toLowerCase() || "quiz"}.json`;
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+  res.status(200).send(JSON.stringify(payload, null, 2));
+});
+
 // POST /api/quiz/:id/submit   body: { answers: string[] }
 export const submitQuiz = asyncHandler(async (req, res) => {
   const quiz = await quizService.submitQuiz(req.params.id, req.user.id, req.body.answers);

@@ -66,7 +66,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     }
     await sendEmail({
       to: admin.email,
-      subject: "Reset your Pre-Yeah admin password",
+      subject: "Reset your Preyeahh admin password",
       html: `<p>Click below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">Reset Password</a></p>`,
     });
   }

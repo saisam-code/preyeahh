@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FaPlus, FaTrash, FaCircleCheck, FaCircleXmark } from "react-icons/fa6";
-import { generateQuiz, fetchQuizzes, fetchQuiz, submitQuiz, deleteQuiz } from "../services/quizService.js";
+import { FaDownload, FaPlus, FaTrash, FaCircleCheck, FaCircleXmark } from "react-icons/fa6";
+import { generateQuiz, fetchQuizzes, fetchQuiz, exportQuiz, submitQuiz, deleteQuiz } from "../services/quizService.js";
 import { fetchRoles } from "../services/rolesService.js";
 import { useBranch } from "../context/BranchContext.jsx";
 
@@ -82,6 +82,21 @@ export default function Quiz() {
     }
   };
 
+  const handleDownload = async (id) => {
+    try {
+      const blob = await exportQuiz(id);
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.href = url;
+      link.download = `quiz-${id}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("Quiz downloaded");
+    } catch {
+      toast.error("Failed to download quiz");
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this quiz?")) return;
     try {
@@ -155,7 +170,10 @@ export default function Quiz() {
                       {q.difficulty} {q.isCompleted ? `· ${q.score}%` : "· Not taken"}
                     </div>
                   </div>
-                  <button className="btn btn-sm" style={{ background: "transparent", color: "var(--text-muted)" }} onClick={(e) => { e.stopPropagation(); handleDelete(q.id); }} title="Delete"><FaTrash /></button>
+                  <div style={{ display: "flex", gap: "0.25rem" }}>
+                    <button className="btn btn-sm" style={{ background: "transparent", color: "var(--text-muted)" }} onClick={(e) => { e.stopPropagation(); handleDownload(q.id); }} title="Download"><FaDownload /></button>
+                    <button className="btn btn-sm" style={{ background: "transparent", color: "var(--text-muted)" }} onClick={(e) => { e.stopPropagation(); handleDelete(q.id); }} title="Delete"><FaTrash /></button>
+                  </div>
                 </div>
               ))
             )}
@@ -201,7 +219,10 @@ export default function Quiz() {
                 );
               })}
 
-              {!submitted && <button className="btn btn-primary" style={{ width: "100%" }} onClick={handleSubmit}>Submit Quiz</button>}
+              <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
+                <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => handleDownload(active.id)}>Download</button>
+                {!submitted && <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSubmit}>Submit Quiz</button>}
+              </div>
             </div>
           )}
         </div>

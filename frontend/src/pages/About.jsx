@@ -82,7 +82,7 @@ const STEPS = [
   { title: "Explore Other Branches Freely", body: "You can browse and read roles from any branch. But committing to a role outside your registered branch is blocked — your interest profile stays focused on your stream." },
   { title: "Check Leadership Opportunities", body: "Head to the Leadership tab to find clubs, competitions, and positions relevant to your branch. Tap any card to see how to get involved." },
   { title: "Request a Missing Role", body: 'Scroll to the bottom of the Roles page and tap "Request a Role". Fill in the role name and a brief summary — the admin will review it.' },
-  { title: "Come Back as You Grow", body: "Pre-Yeah is most useful when revisited each year. Your roadmap evolves — check back each semester to see what's next and adjust your focus." },
+  { title: "Come Back as You Grow", body: "Preyeahh is most useful when revisited each year. Your roadmap evolves — check back each semester to see what's next and adjust your focus." },
 ];
 
 export default function About() {
@@ -93,7 +93,7 @@ export default function About() {
       <div className="about-hero">
         <div className="about-hero-inner">
           <motion.div className="hero-badge" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-            About Pre-Yeah
+            About Preyeahh
           </motion.div>
           <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
             Built for <span>NBKRIST Students</span>
@@ -111,20 +111,20 @@ export default function About() {
       </div>
 
       <div className="about-wrap">
-        <Section icon={FaLightbulb} title="Why Pre-Yeah Exists" sub="The problem we set out to solve">
+        <Section icon={FaLightbulb} title="Why Preyeahh Exists" sub="The problem we set out to solve">
           <p>
             Most engineering students spend their first two years unsure of what career path to take,
             which skills to build, or even what roles exist in their field. By the time placements
             arrive, it feels too late to course-correct.
           </p>
           <p>
-            Pre-Yeah was built to fix that — give every NBKRIST student a clear picture of where you can
+            Preyeahh was built to fix that — give every NBKRIST student a clear picture of where you can
             go, what it takes to get there, and how to start building toward it from year one. No fluff,
             no generic advice. Just branch-specific, role-specific guidance that actually applies to you.
           </p>
         </Section>
 
-        <Section icon={FaCircleCheck} title="What Pre-Yeah Gives You" sub="Every problem, solved">
+        <Section icon={FaCircleCheck} title="What Preyeahh Gives You" sub="Every problem, solved">
           <motion.div className="about-problems-grid" variants={staggerGroup} initial="hidden" whileInView="show" viewport={{ once: true }}>
             {PROBLEMS.map((p) => (
               <motion.div className="apg-item" key={p.q} variants={staggerChild}>
@@ -154,7 +154,7 @@ export default function About() {
           </motion.div>
         </Section>
 
-        <Section icon={FaRocket} title="What Pre-Yeah Offers" sub="Everything you need, nothing you don't">
+        <Section icon={FaRocket} title="What Preyeahh Offers" sub="Everything you need, nothing you don't">
           <motion.div className="about-features-grid" variants={staggerGroup} initial="hidden" whileInView="show" viewport={{ once: true }}>
             {FEATURES.map((f) => (
               <motion.div className="about-feature-card" key={f.title} variants={staggerChild} whileHover={{ y: -4 }}>
@@ -176,7 +176,7 @@ export default function About() {
           </motion.div>
         </Section>
 
-        <Section icon={FaSignsPost} title="How to Use Pre-Yeah" sub="Seven steps to get started">
+        <Section icon={FaSignsPost} title="How to Use Preyeahh" sub="Seven steps to get started">
           <motion.div className="steps-list" variants={staggerGroup} initial="hidden" whileInView="show" viewport={{ once: true }}>
             {STEPS.map((s, i) => (
               <motion.div className="step-item" key={s.title} variants={staggerChild}>
@@ -223,7 +223,7 @@ export default function About() {
             </div>
           </div>
           <p>
-            Pre-Yeah is created by students, for students — under the guidance of HODs, faculty, seniors,
+            Preyeahh is created by students, for students — under the guidance of HODs, faculty, seniors,
             alumni, and industry experts. Every piece of advice comes from people who know your college,
             your curriculum, and your challenges.
           </p>

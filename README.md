@@ -1,4 +1,4 @@
-# Pre-Yeah
+# Preyeahh
 
 Branch → Role → Guidance → Beyond career platform (Student / Guide / Admin) with an AI learning layer (Groq): chat, roadmaps, quizzes, resources, progress.
 

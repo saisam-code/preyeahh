@@ -26,8 +26,8 @@ router.patch("/:id/view", idParamRule, validate, incrementViews);
 // Student
 router.post("/recommend", protect, authorize("student"), recommendRules, validate, recommendResources);
 
-// Admin — curate the library
-router.post("/", protect, authorize("admin"), createResourceRules, validate, createResource);
-router.delete("/:id", protect, authorize("admin"), idParamRule, validate, deleteResource);
+// Admin or branch guide — curate the library
+router.post("/", protect, authorize("admin", "guide"), createResourceRules, validate, createResource);
+router.delete("/:id", protect, authorize("admin", "guide"), idParamRule, validate, deleteResource);
 
 export default router;

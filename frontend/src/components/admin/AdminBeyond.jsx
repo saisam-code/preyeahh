@@ -17,9 +17,9 @@ function linesToArray(str) {
 
 const emptyForm = { title: "", branch: "All", category: "college", description: "", howto: "", skills: "", resources: "" };
 
-export default function AdminBeyond() {
+export default function AdminBeyond({ fixedBranch = null } = {}) {
   const [branches, setBranches] = useState([]);
-  const [branchFilter, setBranchFilter] = useState("all");
+  const [branchFilter, setBranchFilter] = useState(fixedBranch || "all");
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -32,16 +32,17 @@ export default function AdminBeyond() {
       const params = { limit: 100 };
       if (branchFilter !== "all") params.branch = branchFilter;
       const res = await fetchBeyond(params);
-      setItems(res.data);
+      setItems(fixedBranch ? res.data.filter((item) => item.branch === fixedBranch) : res.data);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => { fetchBranches().then(setBranches); }, []);
+  useEffect(() => { if (fixedBranch) setBranchFilter(fixedBranch); }, [fixedBranch]);
   useEffect(() => { load(); }, [branchFilter]);
 
-  const openAdd = () => { setEditingId(null); setForm(emptyForm); setModalOpen(true); };
+  const openAdd = () => { setEditingId(null); setForm({ ...emptyForm, branch: fixedBranch || emptyForm.branch }); setModalOpen(true); };
   const openEdit = (item) => {
     setEditingId(item._id);
     setForm({
@@ -89,10 +90,12 @@ export default function AdminBeyond() {
       <div className="admin-header">
         <h2>Manage Beyond</h2>
         <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
-          <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
-            <option value="all">All Branches</option>
-            {branches.map((b) => <option key={b} value={b}>{b}</option>)}
-          </select>
+          {!fixedBranch && (
+            <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
+              <option value="all">All Branches</option>
+              {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+            </select>
+          )}
           <button className="btn btn-primary" onClick={openAdd}>+ Add Entry</button>
         </div>
       </div>
@@ -136,9 +139,8 @@ export default function AdminBeyond() {
           <div className="form-row">
             <div className="form-group">
               <label>Branch</label>
-              <select value={form.branch} onChange={(e) => setForm({ ...form, branch: e.target.value })}>
-                <option value="All">All Branches</option>
-                {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+              <select value={fixedBranch || form.branch} onChange={(e) => setForm({ ...form, branch: e.target.value })} disabled={Boolean(fixedBranch)}>
+                {(fixedBranch ? [fixedBranch] : ["All", ...branches]).map((b) => <option key={b} value={b}>{b === "All" ? "All Branches" : b}</option>)}
               </select>
             </div>
             <div className="form-group">

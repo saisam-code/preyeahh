@@ -32,6 +32,23 @@ const sectionSchema = new mongoose.Schema(
   { _id: true }
 );
 
+const fitAlternativeSchema = new mongoose.Schema(
+  {
+    path: { type: String, default: "" },
+    tradeoff: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
+const fitSnapshotSchema = new mongoose.Schema(
+  {
+    whyThisFits: { type: [String], default: [] },
+    whyNotAlternatives: { type: [fitAlternativeSchema], default: [] },
+    basedOn: { type: [String], default: [] },
+  },
+  { _id: false }
+);
+
 // AI-generated, per-student learning path. Distinct from the human-curated Role/Guidance content.
 const aiRoadmapSchema = new mongoose.Schema(
   {
@@ -44,6 +61,7 @@ const aiRoadmapSchema = new mongoose.Schema(
     description: { type: String, default: "" },
     level: { type: String, enum: ["beginner", "intermediate", "advanced"], default: "beginner" },
     estimatedWeeks: { type: Number, default: 4 },
+    fitSnapshot: { type: fitSnapshotSchema, default: () => ({}) },
     sections: [sectionSchema],
     isCompleted: { type: Boolean, default: false },
   },

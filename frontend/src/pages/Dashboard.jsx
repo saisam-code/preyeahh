@@ -8,10 +8,10 @@ import {
   FaGraduationCap,
   FaMap,
   FaUser,
-  FaBookOpen,
 } from "react-icons/fa6";
 
 import { useAuth } from "../context/AuthContext.jsx";
+import GuidePanel from "./GuidePanel.jsx";
 
 export default function Dashboard() {
   const { user, initialized } = useAuth();
@@ -31,6 +31,8 @@ export default function Dashboard() {
   if (!initialized || !user || !['student', 'guide'].includes(user.role)) {
     return null;
   }
+
+  if (user.role === "guide") return <GuidePanel />;
 
   const branchTarget = user.branch ? `?branch=${encodeURIComponent(user.branch)}` : "";
 
@@ -74,35 +76,7 @@ export default function Dashboard() {
     },
   ];
 
-  const guideCards = [
-    {
-      title: "Role Guidance",
-      description: "Review your branch role library, update guidance, and keep your mentoring content relevant.",
-      icon: FaBookOpen,
-      to: `/roles${branchTarget}`,
-      highlight: true,
-    },
-    {
-      title: "Resources",
-      description: "Share useful material, learning paths, and practical references across your branch community.",
-      icon: FaMap,
-      to: "/resources",
-    },
-    {
-      title: "Beyond Paths",
-      description: "Help students discover startup, higher-study, and national or international opportunities in your branch.",
-      icon: FaCompass,
-      to: `/beyond${branchTarget}`,
-    },
-    {
-      title: "Role Library",
-      description: "Keep a close eye on your role coverage and help students see the most relevant path for their branch.",
-      icon: FaCompass,
-      to: `/roles${branchTarget}`,
-    },
-  ];
-
-  const cards = user.role === "student" ? studentCards : guideCards;
+  const cards = studentCards;
 
   return (
     <div className="dashboard-shell">

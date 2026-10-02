@@ -20,10 +20,12 @@ const chatSchema = new mongoose.Schema(
     branch: { type: String, default: "", uppercase: true, trim: true },
     messages: { type: [messageSchema], default: [] },
     isArchived: { type: Boolean, default: false }, // soft delete
+    expiresAt: { type: Date, default: null, index: true },
   },
   { timestamps: true }
 );
 
 chatSchema.index({ studentId: 1, isArchived: 1, updatedAt: -1 });
+chatSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model("Chat", chatSchema);

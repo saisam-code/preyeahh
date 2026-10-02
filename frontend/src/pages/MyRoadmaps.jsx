@@ -161,6 +161,39 @@ export default function MyRoadmaps() {
                 <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{selected.estimatedWeeks} weeks</span>
               </div>
 
+              {(selected.fitSnapshot?.whyThisFits?.length || selected.fitSnapshot?.whyNotAlternatives?.length) ? (
+                <section style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", padding: "1rem 0", marginBottom: "1.25rem" }}>
+                  <h3 style={{ fontSize: "0.95rem", color: "var(--text)", marginBottom: "0.75rem" }}>Personalized fit snapshot</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+                    {selected.fitSnapshot.whyThisFits?.length > 0 && (
+                      <div>
+                        <h4 style={{ fontSize: "0.82rem", color: "var(--primary-dim)", marginBottom: "0.35rem" }}>Why this roadmap fits</h4>
+                        <ul style={{ paddingLeft: "1.15rem", color: "var(--text-dim)", fontSize: "0.8rem" }}>
+                          {selected.fitSnapshot.whyThisFits.map((reason, index) => <li key={index}>{reason}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                    <div>
+                      <h4 style={{ fontSize: "0.82rem", color: "var(--text)", marginBottom: "0.35rem" }}>Why this path over alternatives</h4>
+                      {selected.fitSnapshot.whyNotAlternatives?.length > 0 ? (
+                        <ul style={{ paddingLeft: "1.15rem", color: "var(--text-dim)", fontSize: "0.8rem" }}>
+                          {selected.fitSnapshot.whyNotAlternatives.map((alternative, index) => (
+                            <li key={`${alternative.path}-${index}`}><strong>{alternative.path}:</strong> {alternative.tradeoff}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>No confident alternative comparison was available for this roadmap.</p>
+                      )}
+                    </div>
+                  </div>
+                  {selected.fitSnapshot.basedOn?.length > 0 && (
+                    <p style={{ color: "var(--text-muted)", fontSize: "0.75rem", marginTop: "0.75rem" }}>
+                      Based on: {selected.fitSnapshot.basedOn.join(" · ")}
+                    </p>
+                  )}
+                </section>
+              ) : null}
+
               {selected.sections?.map((section, si) => (
                 <div key={idOf(section) || si} style={{ marginBottom: "1rem", border: "1px solid var(--border)", borderRadius: "10px", overflow: "hidden" }}>
                   <div
