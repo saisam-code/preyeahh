@@ -3,6 +3,8 @@ import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
 import { FaComments, FaDownload, FaPaperPlane, FaPlus, FaTrash } from "react-icons/fa6";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   fetchChats, createChat, fetchChat, exportChat, sendChatMessage, clearChatHistory, deleteChat,
 } from "../services/chatService.js";
@@ -255,9 +257,19 @@ export default function Chat() {
                     border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
                     padding: "0.75rem 1rem",
                     borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                    fontSize: "0.9rem", lineHeight: 1.6, whiteSpace: "pre-wrap",
+                    fontSize: "0.9rem", lineHeight: 1.6,
+                    overflowWrap: "break-word",
                   }}
-                >{msg.content}</div>
+                  className={msg.role === "assistant" ? "markdown-body" : ""}
+                >
+                  {msg.role === "assistant" ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
+                  )}
+                </div>
               ))}
               {sending && <div style={{ alignSelf: "flex-start", color: "var(--text-muted)", fontSize: "0.85rem" }}>AI is typing...</div>}
               <div ref={bottomRef} />

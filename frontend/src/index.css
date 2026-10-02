@@ -4079,3 +4079,89 @@ body.dark .hero-stat-card:hover {
     box-shadow: 0 0 40px rgba(34,197,94,0.5), 0 0 60px rgba(34,197,94,0.3);
   }
 }
+
+/* ══════════════════════════════════════════
+   MARKDOWN BODY (AI CHAT)
+══════════════════════════════════════════ */
+.markdown-body {
+  font-family: var(--font-body);
+  line-height: 1.6;
+  color: var(--text);
+}
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body table,
+.markdown-body pre,
+.markdown-body blockquote {
+  margin-bottom: 1rem;
+}
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.markdown-body h1 { font-size: 1.4rem; }
+.markdown-body h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+.markdown-body h3 { font-size: 1.1rem; }
+.markdown-body h4 { font-size: 1rem; }
+.markdown-body a { color: var(--primary-dim); text-decoration: none; font-weight: 500; }
+.markdown-body a:hover { text-decoration: underline; }
+.markdown-body ul, .markdown-body ol { padding-left: 1.5rem; }
+.markdown-body li { margin-bottom: 0.25rem; }
+.markdown-body code {
+  background: var(--surface-high);
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: Consolas, Monaco, monospace;
+}
+.markdown-body pre {
+  background: var(--surface-mid);
+  padding: 1rem;
+  border-radius: var(--r-md);
+  overflow-x: auto;
+  border: 1px solid var(--border);
+}
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9em;
+  color: var(--text-dim);
+}
+.markdown-body blockquote {
+  border-left: 4px solid var(--primary-dim);
+  padding-left: 1rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.markdown-body table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.markdown-body th,
+.markdown-body td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.markdown-body th {
+  background: var(--surface-high);
+  font-weight: 600;
+}
+.markdown-body tr:nth-child(2n) {
+  background: var(--surface-mid);
+}
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0;
+}
