@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FaBars, FaXmark, FaHouse, FaBriefcase, FaCompass, FaCircleInfo,
@@ -11,14 +11,15 @@ import LoginModal from "./LoginModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useBranch } from "../context/BranchContext.jsx";
 import { setAccessToken } from "../services/api.js";
+import { listMentorshipConversations } from "../services/mentorshipService.js";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home", icon: FaHouse, exact: true },
-  { to: "/dashboard", label: "Dashboard", icon: FaGauge, requiresRole: ["student", "guide"] },
+  { to: "/admin", label: "Admin Panel", icon: FaGauge, requiresRole: ["admin"] },
   { to: "/roles", label: "Roles", icon: FaBriefcase, branchGated: true },
   { to: "/beyond", label: "Beyond", icon: FaCompass, branchGated: true },
   { to: "/resources", label: "Resources", icon: FaBookmark, mobile: false },
-  { to: "/chat", label: "Chat", icon: FaCommentDots, studentOnly: true },
+  { to: "/chat", label: "Chat", icon: FaCommentDots, requiresRole: ["student", "guide"] },
   { to: "/roadmaps", label: "Roadmaps", icon: FaMap, studentOnly: true },
   { to: "/quiz", label: "Quiz", icon: FaGraduationCap, studentOnly: true, mobile: false },
   { to: "/about", label: "About", icon: FaCircleInfo, mobile: false },
@@ -40,7 +41,6 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { branch } = useBranch();
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // "/?login=1" (used by post-verify / post-reset redirects) opens the login modal
@@ -62,6 +62,47 @@ export default function Navbar() {
   }, []);
 
   const effectiveUser = user || adminUser;
+  const [unreadGuideChats, setUnreadGuideChats] = useState(0);
+
+  useEffect(() => {
+    if (effectiveUser?.role !== "guide") {
+      setUnreadGuideChats(0);
+      return undefined;
+    }
+
+    let active = true;
+    const refreshUnread = async () => {
+      try {
+        const conversations = await listMentorshipConversations("guide");
+        if (active) setUnreadGuideChats(conversations.filter((item) => item.hasUnreadForGuide).length);
+      } catch {
+        // Keep the last known badge count when the inbox is temporarily unavailable.
+      }
+    };
+
+    refreshUnread();
+    const interval = window.setInterval(refreshUnread, 15000);
+    window.addEventListener("guide-mentorship-updated", refreshUnread);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("guide-mentorship-updated", refreshUnread);
+    };
+  }, [effectiveUser?.role]);
+
+  const renderItemLabel = (item) => {
+    const unreadCount = item.to === "/chat" && effectiveUser?.role === "guide" ? unreadGuideChats : 0;
+    return (
+      <span className="nav-item-label">
+        {item.label}
+        {unreadCount > 0 && (
+          <span className="nav-unread-badge" aria-label={`${unreadCount} unread conversations`}>
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </span>
+    );
+  };
 
   const isStudent = user?.role === "student";
   const visibleItems = NAV_ITEMS.filter((item) => {
@@ -87,13 +128,6 @@ export default function Navbar() {
     navigate("/");
   };
 
-  const rawDashboardHref =
-    effectiveUser?.role === "admin"
-      ? "/admin"
-      : effectiveUser?.role === "student" || effectiveUser?.role === "guide"
-        ? "/dashboard"
-        : null;
-  const dashboardHref = rawDashboardHref && location.pathname !== rawDashboardHref ? rawDashboardHref : null;
   return (
     <>
       <nav>
@@ -108,7 +142,7 @@ export default function Navbar() {
               onClick={() => setDrawerOpen(false)}
               className={({ isActive }) => (isActive ? "active" : "")}
             >
-              {item.label}
+              {renderItemLabel(item)}
             </NavLink>
           ))}
         </div>
@@ -127,14 +161,6 @@ export default function Navbar() {
                 <FaChevronDown className="chip-caret" />
               </button>
               <div className={`user-dropdown-menu ${menuOpen ? "open" : ""}`}>
-                {dashboardHref && (
-                  <>
-                    <NavLink to={dashboardHref} className="udm-item" onClick={() => setMenuOpen(false)}>
-                      <FaGauge /> Dashboard
-                    </NavLink>
-                    <hr className="udm-divider" />
-                  </>
-                )}
                 {isStudent && (
                   <NavLink to="/profile" className="udm-item" onClick={() => setMenuOpen(false)}>
                     <FaUser /> My Profile
@@ -165,7 +191,7 @@ export default function Navbar() {
               onClick={() => setDrawerOpen(false)}
               className={({ isActive }) => (isActive ? "active" : "")}
             >
-              <item.icon /> {item.label}
+              <item.icon /> {renderItemLabel(item)}
             </NavLink>
           ))}
         </div>
@@ -181,7 +207,7 @@ export default function Navbar() {
               onClick={() => setDrawerOpen(false)}
               className={({ isActive }) => `bottom-nav-item ${isActive ? "active" : ""}`}
             >
-              <item.icon />{item.label}
+              <item.icon />{renderItemLabel(item)}
             </NavLink>
           ))}
         </div>

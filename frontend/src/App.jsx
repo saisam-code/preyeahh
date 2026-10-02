@@ -12,12 +12,11 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
 
-// Student-only AI pages
+// Role-specific learning pages
 import Chat from "./pages/Chat.jsx";
 import MyRoadmaps from "./pages/MyRoadmaps.jsx";
 import Quiz from "./pages/Quiz.jsx";
 import Profile from "./pages/Profile.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
 
 export default function App() {
   return (
@@ -31,19 +30,20 @@ export default function App() {
         <Route path="/resources" element={<Resources />} />
         <Route path="/admin" element={<Admin />} />
 
-        <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/?login=1" />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Route>
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
-        <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/?login=1" />}>
+        <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/?login=1" />}>
           <Route path="/chat" element={<Chat />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/?login=1" />}>
           <Route path="/roadmaps" element={<MyRoadmaps />} />
           <Route path="/quiz" element={<Quiz />} />
-          <Route path="/progress" element={<Navigate to="/dashboard#student-progress" replace />} />
+          <Route path="/progress" element={<Navigate to="/#student-progress" replace />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
 

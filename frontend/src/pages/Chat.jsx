@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext.jsx";
 import { FaComments, FaDownload, FaPaperPlane, FaPlus, FaTrash } from "react-icons/fa6";
 import {
   fetchChats, createChat, fetchChat, exportChat, sendChatMessage, clearChatHistory, deleteChat,
@@ -13,6 +14,8 @@ const errMsg = (err, fallback) =>
   err.response?.status === 429 ? "AI is busy — wait a moment and try again." : err.response?.data?.message || fallback;
 
 export default function Chat() {
+  const { user } = useAuth();
+  const isGuide = user?.role === "guide";
   const { branch } = useBranch();
   const location = useLocation();
   const roleIntent = location.state?.mentorRole || null;
@@ -46,13 +49,15 @@ export default function Chat() {
     }
   }, []);
 
-  useEffect(() => { loadChats(); }, [loadChats]);
+  useEffect(() => {
+    if (!isGuide) loadChats();
+  }, [isGuide, loadChats]);
 
   // Role picker is scoped to the selected branch so the AI gets branch-relevant context
   useEffect(() => {
-    if (!branch) { setRoles([]); return; }
+    if (!branch || isGuide) { setRoles([]); return; }
     fetchRoles({ branch, limit: 100 }).then((res) => setRoles(res.data || [])).catch(() => setRoles([]));
-  }, [branch]);
+  }, [branch, isGuide]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, sending]);
 
@@ -141,15 +146,21 @@ export default function Chat() {
   return (
     <div className="chat-workspace">
       <aside className="chat-mode-rail" aria-label="Chat types">
-        <button type="button" className={`chat-mode-button ${chatMode === "ai" ? "active" : ""}`} aria-pressed={chatMode === "ai"} title="AI Chat" onClick={() => setChatMode("ai")}>
-          <FaPaperPlane /><span>AI</span>
-        </button>
-        <button type="button" className={`chat-mode-button ${chatMode === "mentor" ? "active" : ""}`} aria-pressed={chatMode === "mentor"} title="Guide Messages" onClick={() => setChatMode("mentor")}>
-          <FaComments /><span>Guides</span>
+        {!isGuide && (
+          <button type="button" className={`chat-mode-button ${chatMode === "ai" ? "active" : ""}`} aria-pressed={chatMode === "ai"} title="AI Chat" onClick={() => setChatMode("ai")}>
+            <FaPaperPlane /><span>AI</span>
+          </button>
+        )}
+        <button type="button" className={`chat-mode-button ${isGuide || chatMode === "mentor" ? "active" : ""}`} aria-pressed={isGuide || chatMode === "mentor"} title={isGuide ? "Student Messages" : "Guide Messages"} onClick={() => setChatMode("mentor")}>
+          <FaComments /><span>{isGuide ? "Students" : "Guides"}</span>
         </button>
       </aside>
 
-      {chatMode === "mentor" ? (
+      {isGuide ? (
+        <div className="chat-mentor-area">
+          <MentorshipInbox mode="guide" />
+        </div>
+      ) : chatMode === "mentor" ? (
         <div className="chat-mentor-area">
           <MentorshipInbox mode="student" roleIntent={roleIntent} />
         </div>

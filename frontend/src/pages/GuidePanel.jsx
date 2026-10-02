@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
-import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
+import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser, FaComments } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchGuideBranchOverview } from "../services/guideService.js";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
 import AdminBeyond from "../components/admin/AdminBeyond.jsx";
 import AdminGuidance from "../components/admin/AdminGuidance.jsx";
 import GuideResources from "../components/admin/GuideResources.jsx";
-import MentorshipInbox from "../components/MentorshipInbox.jsx";
 
 export default function GuidePanel() {
   const { user, initialized } = useAuth();
+  const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
   const [activeSection, setActiveSection] = useState("students");
 
@@ -62,7 +63,10 @@ export default function GuidePanel() {
         <section id="guide-students" style={{ marginBottom: "2rem", scrollMarginTop: "5rem" }}>
           <div className="admin-header">
             <h2>Students following your roles</h2>
-            <span style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>{overview.students?.length || 0} tracked</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <span style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>{overview.students?.length || 0} tracked</span>
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => navigate("/chat")}><FaComments /> Open chat</button>
+            </div>
           </div>
           <table className="admin-table">
             <thead>
@@ -103,9 +107,6 @@ export default function GuidePanel() {
             </tbody>
           </table>
         </section>
-        <div id="guide-messages" style={{ scrollMarginTop: "5rem" }}>
-          <MentorshipInbox mode="guide" />
-        </div>
         </>
       )}
 

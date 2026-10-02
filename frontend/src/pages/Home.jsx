@@ -3,14 +3,15 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FaCompass, FaChartLine, FaArrowRight, FaLaptopCode, FaSatelliteDish,
-  FaBolt, FaGears, FaBuilding, FaGraduationCap, FaUser,
-  FaCommentDots, FaMap, FaBookmark,
+  FaBolt, FaGears, FaBuilding, FaGraduationCap, FaUser, FaCrosshairs,
+  FaMedal, FaMap, FaEnvelope,
 } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useBranch } from "../context/BranchContext.jsx";
 import { fetchBranches } from "../services/branchService.js";
 import { fetchRoles } from "../services/rolesService.js";
 import { fetchBeyond } from "../services/beyondService.js";
+import Dashboard from "./Dashboard.jsx";
 
 const BRANCH_META = {
   CSE: { icon: FaLaptopCode, color: "#1a56db", desc: "Computer Science & Engineering" },
@@ -32,10 +33,30 @@ const cardVariants = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
 };
 
+const ADMIN_ACTIONS = [
+  { title: "Manage roles", description: "Create and update career paths across branches.", section: "roles", icon: FaCrosshairs },
+  { title: "Manage branches", description: "Review the branches available across the platform.", section: "branches", icon: FaBuilding },
+  { title: "Beyond opportunities", description: "Maintain non-placement paths and opportunities.", section: "beyond", icon: FaMedal },
+  { title: "Guidance", description: "Manage role guidance and learning recommendations.", section: "guidance", icon: FaMap },
+  { title: "Role requests", description: "Review requested roles from the community.", section: "requests", icon: FaEnvelope },
+  { title: "Guide requests", description: "Review guide applications and approvals.", section: "guides", icon: FaGraduationCap },
+  { title: "Role interest", description: "Review student interest across roles.", section: "interest", icon: FaChartLine },
+];
+
+function readStoredAdmin() {
+  try {
+    const raw = localStorage.getItem("pp_admin_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
   const { user } = useAuth();
   const { setBranch } = useBranch();
   const navigate = useNavigate();
+  const [adminUser, setAdminUser] = useState(readStoredAdmin);
 
   const [branches, setBranches] = useState([]);
   const [counts, setCounts] = useState({});
@@ -43,6 +64,16 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const sync = () => setAdminUser(readStoredAdmin());
+    window.addEventListener("admin-auth-changed", sync);
+    return () => window.removeEventListener("admin-auth-changed", sync);
+  }, []);
+
+  useEffect(() => {
+    if (user || adminUser) {
+      setLoading(false);
+      return undefined;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -74,121 +105,41 @@ export default function Home() {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [user, adminUser]);
 
   const handleSelectBranch = (b) => {
     setBranch(b);
     navigate(`/roles?branch=${b}`);
   };
 
-  const isStudent = user?.role === "student";
+  if (user?.role === "student" || user?.role === "guide") return <Dashboard />;
 
-  if (user?.role === "student" || user?.role === "guide") {
-    const branchQuery = user.branch ? `?branch=${encodeURIComponent(user.branch)}` : "";
-    const dashboardActions = user.role === "student"
-      ? [
-          {
-            title: "Explore core roles",
-            description: `Start with the core career paths for ${user.branch || "your branch"}. Compare roles and open one to see its guidance.`,
-            icon: FaCompass,
-            to: `/roles${branchQuery}`,
-            primary: true,
-          },
-          {
-            title: "Build a role roadmap",
-            description: "Open a role and generate a learning plan based on its skills, resources, and guidance.",
-            icon: FaMap,
-            to: `/roles${branchQuery}`,
-          },
-          {
-            title: "Ask career chat",
-            description: "Get branch-aware help comparing paths, skills, and your next steps.",
-            icon: FaCommentDots,
-            to: "/chat",
-          },
-          {
-            title: "Practice a topic",
-            description: "Create an AI quiz for a topic or select a role to focus your practice.",
-            icon: FaGraduationCap,
-            to: "/quiz",
-          },
-          {
-            title: "Track your progress",
-            description: "Review completed roadmap topics and your recent quiz performance.",
-            icon: FaChartLine,
-            to: "/dashboard#student-progress",
-          },
-          {
-            title: "Learning resources",
-            description: "Browse curated resources relevant to your learning and career goals.",
-            icon: FaBookmark,
-            to: "/resources",
-          },
-        ]
-      : [
-          {
-            title: "Your branch roles",
-            description: `Review core and non-core career paths for ${user.branch || "your branch"} and open role guidance.`,
-            icon: FaCompass,
-            to: `/roles${branchQuery}`,
-            primary: true,
-          },
-          {
-            title: "Branch opportunities",
-            description: "Review beyond-placement opportunities and guidance for students in your branch.",
-            icon: FaChartLine,
-            to: `/beyond${branchQuery}`,
-          },
-          {
-            title: "Learning resources",
-            description: "Browse the resources students can use to build skills and prepare for their goals.",
-            icon: FaBookmark,
-            to: "/resources",
-          },
-        ];
-
+  if (adminUser) {
     return (
       <main className="dashboard-shell home-dashboard">
         <section className="home-dashboard-welcome">
           <div>
-            <div className="dashboard-role-badge">
-              {user.role === "student" ? "Student Workspace" : "Guide Workspace"}
-            </div>
-            <h1>Welcome back, <span>{user.name?.split(" ")[0] || "there"}</span></h1>
-            <p>
-              {user.role === "student"
-                ? "You’re signed in. Start with your branch’s core roles, then use guidance and AI tools when you need them."
-                : "You’re signed in. Your branch guidance and student resources are ready to review."}
-            </p>
-          </div>
-          <div className="home-dashboard-branch">
-            <span>Your branch</span>
-            <strong>{user.branch || "Not set"}</strong>
+            <div className="dashboard-role-badge">Admin Workspace</div>
+            <h1>Welcome back, <span>{adminUser.name?.split(" ")[0] || "Admin"}</span></h1>
+            <p>Choose a management area to continue maintaining Preyeahh.</p>
           </div>
         </section>
-
-        <section className="home-dashboard-section" aria-labelledby="home-actions-title">
+        <section className="home-dashboard-section" aria-labelledby="admin-actions-title">
           <div className="home-dashboard-section-heading">
-            <div>
-              <h2 id="home-actions-title">{user.role === "student" ? "Pick up where you want to go" : "Your guide workspace"}</h2>
-              <p>{user.role === "student" ? "Career paths first. Learning tools are here when they fit your next step." : "Branch-first links to the areas students use most."}</p>
-            </div>
+            <div><h2 id="admin-actions-title">Platform management</h2></div>
           </div>
           <div className="dashboard-grid">
-            {dashboardActions.map((action) => {
+            {ADMIN_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (
                 <button
-                  key={action.title}
+                  key={action.section}
                   type="button"
-                  className={`dashboard-card ${action.primary ? "dashboard-card--highlight" : ""}`}
-                  onClick={() => navigate(action.to)}
+                  className="dashboard-card"
+                  onClick={() => navigate("/admin", { state: { section: action.section } })}
                 >
                   <div className="dashboard-card-icon"><Icon /></div>
-                  <div>
-                    <h3>{action.title}</h3>
-                    <p>{action.description}</p>
-                  </div>
+                  <div><h3>{action.title}</h3><p>{action.description}</p></div>
                   <div className="dashboard-card-footer">Open <FaArrowRight /></div>
                 </button>
               );
@@ -198,6 +149,8 @@ export default function Home() {
       </main>
     );
   }
+
+  const isStudent = user?.role === "student";
 
   return (
     <>

@@ -23,6 +23,7 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
       const items = await listMentorshipConversations(mode);
       setConversations(items);
       setSelected((current) => current ? items.find((item) => item.id === current.id) || current : null);
+      if (mode === "guide") window.dispatchEvent(new Event("guide-mentorship-updated"));
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not load guide messages");
     } finally {
@@ -59,6 +60,7 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
   const openConversation = async (conversation) => {
     try {
       setSelected(await fetchMentorshipConversation(mode, conversation.id));
+      await loadConversations();
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not open conversation");
     }

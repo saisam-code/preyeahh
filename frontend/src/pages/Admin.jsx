@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FaChartBar, FaCrosshairs, FaSchool, FaMedal, FaMap, FaEnvelope,
@@ -6,7 +7,6 @@ import {
 } from "react-icons/fa6";
 
 import AdminLogin from "../components/admin/AdminLogin.jsx";
-import AdminDashboard from "../components/admin/AdminDashboard.jsx";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
 import AdminBranches from "../components/admin/AdminBranches.jsx";
 import AdminBeyond from "../components/admin/AdminBeyond.jsx";
@@ -19,7 +19,6 @@ import { fetchAdminMe, refreshAdmin, logoutAdmin } from "../services/adminServic
 import { setAccessToken, getAccessToken, setActiveRole } from "../services/api.js";
 
 const SECTIONS = [
-  { key: "dashboard", label: "Dashboard", icon: FaChartBar, Component: AdminDashboard },
   { key: "roles", label: "Manage Roles", icon: FaCrosshairs, Component: AdminRoles },
   { key: "branches", label: "Manage Branches", icon: FaSchool, Component: AdminBranches },
   { key: "beyond", label: "Beyond", icon: FaMedal, Component: AdminBeyond },
@@ -30,9 +29,13 @@ const SECTIONS = [
 ];
 
 export default function Admin() {
+  const location = useLocation();
   const [admin, setAdmin] = useState(null);
   const [checking, setChecking] = useState(true);
-  const [section, setSection] = useState("dashboard");
+  const [section, setSection] = useState(() => {
+    const requestedSection = location.state?.section;
+    return SECTIONS.some((item) => item.key === requestedSection) ? requestedSection : "roles";
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -61,7 +64,7 @@ export default function Admin() {
 
   const handleLoginSuccess = (user) => {
     setAdmin(user);
-    setSection("dashboard");
+    setSection("roles");
     setActiveRole("admin");
     window.dispatchEvent(new Event("admin-auth-changed"));
   };
@@ -87,7 +90,7 @@ export default function Admin() {
 
   if (!admin) return <AdminLogin onSuccess={handleLoginSuccess} />;
 
-  const ActiveComponent = SECTIONS.find((s) => s.key === section)?.Component || AdminDashboard;
+  const ActiveComponent = SECTIONS.find((s) => s.key === section)?.Component || AdminRoles;
 
   return (
     <div>

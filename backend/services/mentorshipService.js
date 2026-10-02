@@ -9,6 +9,7 @@ function idOf(value) {
 }
 
 function conversationDto(conversation) {
+  const latestMessage = conversation.messages.at(-1);
   return {
     id: idOf(conversation._id),
     branch: conversation.branch,
@@ -28,6 +29,10 @@ function conversationDto(conversation) {
       content: message.content,
       createdAt: message.createdAt,
     })),
+    hasUnreadForGuide: Boolean(
+      latestMessage?.senderRole === "student" &&
+      (!conversation.guideReadAt || latestMessage.createdAt > conversation.guideReadAt)
+    ),
     lastMessageAt: conversation.lastMessageAt,
     createdAt: conversation.createdAt,
   };
@@ -110,7 +115,12 @@ export async function listConversations(user) {
 }
 
 export async function getConversation(conversationId, user) {
-  return conversationDto(await findConversationForUser(conversationId, user));
+  const conversation = await findConversationForUser(conversationId, user);
+  if (user.role === "guide") {
+    conversation.guideReadAt = new Date();
+    await conversation.save();
+  }
+  return conversationDto(conversation);
 }
 
 export async function sendConversationMessage(conversationId, user, content) {

@@ -17,6 +17,7 @@ const mentorshipConversationSchema = new mongoose.Schema(
     branch: { type: String, required: true, uppercase: true, trim: true, index: true },
     messages: { type: [mentorshipMessageSchema], default: [] },
     lastMessageAt: { type: Date, default: Date.now },
+    guideReadAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
