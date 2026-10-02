@@ -20,7 +20,7 @@ const chatSchema = new mongoose.Schema(
     branch: { type: String, default: "", uppercase: true, trim: true },
     messages: { type: [messageSchema], default: [] },
     isArchived: { type: Boolean, default: false }, // soft delete
-    expiresAt: { type: Date, default: null, index: true },
+    expiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

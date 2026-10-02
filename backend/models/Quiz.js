@@ -22,7 +22,7 @@ const quizSchema = new mongoose.Schema(
     isCompleted: { type: Boolean, default: false },
     score: { type: Number, default: 0 },
     userAnswers: [{ type: String }],
-    expiresAt: { type: Date, default: null, index: true },
+    expiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
