@@ -31,7 +31,6 @@ export const extractProfileRules = [
 export const preferencesRules = [
   body("shareContactWithGuides").optional().isBoolean().toBoolean(),
   body("shareProfileWithGuides").optional().isBoolean().toBoolean(),
-  body("shareLearningActivityWithGuides").optional().isBoolean().toBoolean(),
   body("currentRole").optional().isString().trim().isLength({ max: 120 }),
   body("targetRole").optional().isString().trim().isLength({ max: 120 }),
   body("experienceLevel").optional().isIn(LEVELS).withMessage(`experienceLevel must be one of: ${LEVELS.join(", ")}`),

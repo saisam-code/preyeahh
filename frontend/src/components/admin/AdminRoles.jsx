@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { fetchRoles, createRole, updateRole, deleteRole } from "../../services/rolesService.js";
 import { fetchBranches } from "../../services/branchService.js";
@@ -24,7 +24,7 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null } 
   const [form, setForm] = useState(emptyRole);
   const [roadmap, setRoadmap] = useState([]); // [{ id: mongoId|null, title, points }]
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = { limit: 100 };
@@ -34,11 +34,11 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null } 
     } finally {
       setLoading(false);
     }
-  };
+  }, [branchFilter]);
 
   useEffect(() => { fetchBranches().then(setBranches); }, []);
   useEffect(() => { if (fixedBranch) setBranchFilter(fixedBranch); }, [fixedBranch]);
-  useEffect(() => { load(); }, [branchFilter]);
+  useEffect(() => { load(); }, [load]);
 
   const openAdd = () => {
     setEditingId(null);

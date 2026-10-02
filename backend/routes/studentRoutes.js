@@ -16,6 +16,13 @@ import {
   updatePreferences,
   skipOnboarding,
 } from "../controllers/studentController.js";
+import {
+  listRoleMentors,
+  startConversation,
+  listConversations,
+  getConversation,
+  sendMessage,
+} from "../controllers/mentorshipController.js";
 
 import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -33,6 +40,12 @@ import {
   resetPasswordRules,
   resendVerificationRules,
 } from "../validators/authValidator.js";
+import {
+  roleMentorsRules,
+  startConversationRules,
+  conversationIdRule,
+  sendMentorshipMessageRules,
+} from "../validators/mentorshipValidator.js";
 
 const router = express.Router();
 
@@ -62,6 +75,12 @@ router.post("/resend-verification", sensitiveLimiter, resendVerificationRules, v
 router.get("/me", protect, authorize("student"), getMe);
 router.get("/interest/:roleId", protect, authorize("student"), roleIdParamRule, validate, getInterestForRole);
 router.post("/interest", protect, authorize("student"), interestRules, validate, recordInterest);
+
+router.get("/mentorship/mentors", protect, authorize("student"), roleMentorsRules, validate, listRoleMentors);
+router.get("/mentorship", protect, authorize("student"), listConversations);
+router.post("/mentorship", protect, authorize("student"), startConversationRules, validate, startConversation);
+router.get("/mentorship/:id", protect, authorize("student"), conversationIdRule, validate, getConversation);
+router.post("/mentorship/:id/messages", protect, authorize("student"), sendMentorshipMessageRules, validate, sendMessage);
 
 // AI learning profile (onboarding)
 router.post("/profile/extract", protect, authorize("student"), aiLimiter, extractProfileRules, validate, extractProfile);

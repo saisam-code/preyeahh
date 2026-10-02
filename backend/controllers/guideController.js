@@ -4,7 +4,6 @@ import Role from "../models/Role.js";
 import RoleInterest from "../models/RoleInterest.js";
 import Guidance from "../models/Guidance.js";
 import Beyond from "../models/Beyond.js";
-import Chat from "../models/Chat.js";
 import Quiz from "../models/Quiz.js";
 import AIRoadmap from "../models/AIRoadmap.js";
 import Guide from "../models/Guide.js";
@@ -94,7 +93,7 @@ export const getGuideBranchOverview = asyncHandler(async (req, res) => {
 
   const [students, branchRoleInterests, totalRoles, totalGuidance, totalBeyond] = await Promise.all([
     Student.find({ branch }).select("name email branch preferences createdAt").sort({ createdAt: -1 }).lean(),
-    RoleInterest.find({ branch }).populate("student", "name email branch").populate("role", "title branch").sort({ createdAt: -1 }).lean(),
+    RoleInterest.find({ branch }).populate("role", "title branch").sort({ createdAt: -1 }).lean(),
     Role.countDocuments({ branch }),
     Guidance.countDocuments({ $or: [{ branch }, { branch: "All" }] }),
     Beyond.countDocuments({ $or: [{ branch }, { branch: "All" }] }),
@@ -119,91 +118,94 @@ export const getGuideBranchOverview = asyncHandler(async (req, res) => {
     interestMap.set(studentId, bucket);
   }
 
-  const studentsWithInterests = students.filter((student) => interestMap.has(String(student._id))).map((student) => ({
+  const studentsWithInterests = students.filter((student) => interestMap.has(String(student._id))).map((student) => {
+    const profileShared = Boolean(student.preferences?.shareProfileWithGuides);
+    return {
     id: student._id,
     name: student.name,
     email: student.preferences?.shareContactWithGuides ? student.email : "",
     contactShared: Boolean(student.preferences?.shareContactWithGuides),
-    profileShared: Boolean(student.preferences?.shareProfileWithGuides),
-    activityShared: Boolean(student.preferences?.shareLearningActivityWithGuides),
     branch: student.branch,
-    currentRole: student.preferences?.shareProfileWithGuides ? student.preferences.currentRole || "" : "",
-    targetRole: student.preferences?.shareProfileWithGuides ? student.preferences.targetRole || "" : "",
+    profile: profileShared ? {
+      currentRole: student.preferences.currentRole || "",
+      targetRole: student.preferences.targetRole || "",
+      experienceLevel: student.preferences.experienceLevel || "",
+      learningStyle: student.preferences.learningStyle || "",
+      goals: student.preferences.goals || [],
+      interests: student.preferences.interests || [],
+      skills: (student.preferences.skills || []).map((skill) => skill.name),
+    } : null,
     interests: interestMap.get(String(student._id)) || [],
     createdAt: student.createdAt,
-  }));
+  };
+  });
+
+  const progressStudentIds = studentsWithInterests.filter((student) => student.profile).map((student) => student.id);
+  const expiryFilter = { $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }] };
+  const [roadmapProgress, quizProgress] = await Promise.all([
+    AIRoadmap.aggregate([
+      { $match: { studentId: { $in: progressStudentIds } } },
+      {
+        $project: {
+          studentId: 1,
+          topics: {
+            $reduce: {
+              input: "$sections",
+              initialValue: [],
+              in: { $concatArrays: ["$$value", "$$this.topics"] },
+            },
+          },
+        },
+      },
+      { $unwind: "$topics" },
+      {
+        $group: {
+          _id: "$studentId",
+          totalRoadmapTopics: { $sum: 1 },
+          completedRoadmapTopics: { $sum: { $cond: ["$topics.isCompleted", 1, 0] } },
+        },
+      },
+    ]),
+    Quiz.aggregate([
+      { $match: { studentId: { $in: progressStudentIds }, isCompleted: true, ...expiryFilter } },
+      {
+        $group: {
+          _id: "$studentId",
+          completedQuizzes: { $sum: 1 },
+          averageQuizScore: { $avg: "$score" },
+        },
+      },
+    ]),
+  ]);
+
+  const roadmapByStudent = new Map(roadmapProgress.map((item) => [String(item._id), item]));
+  const quizzesByStudent = new Map(quizProgress.map((item) => [String(item._id), item]));
+  const studentsWithProgress = studentsWithInterests.map((student) => {
+    if (!student.profile) return { ...student, trackRecord: null };
+    const roadmap = roadmapByStudent.get(String(student.id));
+    const quizzes = quizzesByStudent.get(String(student.id));
+    return {
+      ...student,
+      trackRecord: {
+        completedRoadmapTopics: roadmap?.completedRoadmapTopics || 0,
+        totalRoadmapTopics: roadmap?.totalRoadmapTopics || 0,
+        completedQuizzes: quizzes?.completedQuizzes || 0,
+        averageQuizScore: quizzes ? Math.round(quizzes.averageQuizScore) : null,
+      },
+    };
+  });
 
   res.status(200).json(new ApiResponse(200, {
     branch,
-    totalStudents: studentsWithInterests.length,
-    totalInterestedStudents: new Set(roleInterests.map((interest) => String(interest.student?._id || interest.student))).size,
-    totalContactSharedStudents: studentsWithInterests.filter((student) => student.contactShared).length,
-    totalProfileSharedStudents: studentsWithInterests.filter((student) => student.profileShared).length,
-    totalActivitySharedStudents: studentsWithInterests.filter((student) => student.activityShared).length,
+    totalStudents: studentsWithProgress.length,
+    totalInterestedStudents: studentsWithProgress.length,
+    totalContactSharedStudents: studentsWithProgress.filter((student) => student.contactShared).length,
+    totalProfileSharedStudents: studentsWithProgress.filter((student) => student.profile).length,
     totalRoles,
     totalGuidance,
     totalBeyond,
-    students: studentsWithInterests,
+    students: studentsWithProgress,
   }, "Branch overview retrieved"));
-});
-
-export const getGuideStudentActivity = asyncHandler(async (req, res) => {
-  const student = await Student.findOne({ _id: req.params.studentId, branch: req.user.branch })
-    .select("name branch preferences");
-  if (!student) throw ApiError.notFound("Student not found in your branch");
-  if (!student.preferences?.shareLearningActivityWithGuides) {
-    throw ApiError.forbidden("This student has not shared their AI learning activity");
-  }
-
-  const activeExpiry = { $or: [{ expiresAt: null }, { expiresAt: { $gt: new Date() } }] };
-  const [chats, quizzes, roadmaps] = await Promise.all([
-    Chat.find({ studentId: student._id, isArchived: false, ...activeExpiry }).sort({ updatedAt: -1 }).limit(20).lean(),
-    Quiz.find({ studentId: student._id, ...activeExpiry }).sort({ updatedAt: -1 }).limit(20).lean(),
-    AIRoadmap.find({ studentId: student._id }).sort({ updatedAt: -1 }).limit(20).lean(),
-  ]);
-
-  res.status(200).json(new ApiResponse(200, {
-    student: { id: student._id, name: student.name, branch: student.branch },
-    chats: chats.map((chat) => ({
-      id: chat._id,
-      title: chat.title,
-      topic: chat.topic,
-      updatedAt: chat.updatedAt,
-      messages: chat.messages.slice(-30).map((message) => ({
-        role: message.role,
-        content: message.content,
-        createdAt: message.createdAt,
-      })),
-    })),
-    quizzes: quizzes.map((quiz) => ({
-      id: quiz._id,
-      title: quiz.title,
-      topic: quiz.topic,
-      difficulty: quiz.difficulty,
-      isCompleted: quiz.isCompleted,
-      score: quiz.isCompleted ? quiz.score : null,
-      createdAt: quiz.createdAt,
-      questions: quiz.questions.map((question, index) => ({
-        questionText: question.questionText,
-        options: question.options,
-        selectedAnswer: quiz.isCompleted ? quiz.userAnswers[index] || "" : "",
-        correctAnswer: quiz.isCompleted ? question.correctAnswer : undefined,
-        explanation: quiz.isCompleted ? question.explanation : undefined,
-      })),
-    })),
-    roadmaps: roadmaps.map((roadmap) => {
-      const topics = roadmap.sections.flatMap((section) => section.topics);
-      return {
-        id: roadmap._id,
-        title: roadmap.title,
-        roleTitle: roadmap.roleTitle,
-        updatedAt: roadmap.updatedAt,
-        completedTopics: topics.filter((topic) => topic.isCompleted).length,
-        totalTopics: topics.length,
-        estimatedWeeks: roadmap.estimatedWeeks,
-      };
-    }),
-  }, "Shared student learning activity fetched"));
 });
 
 export const forgotPassword = asyncHandler(async (req, res) => {

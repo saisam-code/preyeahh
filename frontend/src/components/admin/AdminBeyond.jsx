@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { fetchBeyond, createBeyond, updateBeyond, deleteBeyond } from "../../services/beyondService.js";
 import { fetchBranches } from "../../services/branchService.js";
@@ -27,7 +27,7 @@ export default function AdminBeyond({ fixedBranch = null, currentUserId = null }
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = { limit: 100 };
@@ -37,11 +37,11 @@ export default function AdminBeyond({ fixedBranch = null, currentUserId = null }
     } finally {
       setLoading(false);
     }
-  };
+  }, [branchFilter, fixedBranch]);
 
   useEffect(() => { fetchBranches().then(setBranches); }, []);
   useEffect(() => { if (fixedBranch) setBranchFilter(fixedBranch); }, [fixedBranch]);
-  useEffect(() => { load(); }, [branchFilter]);
+  useEffect(() => { load(); }, [load]);
 
   const openAdd = () => { setEditingId(null); setForm({ ...emptyForm, branch: fixedBranch || emptyForm.branch }); setModalOpen(true); };
   const openEdit = (item) => {

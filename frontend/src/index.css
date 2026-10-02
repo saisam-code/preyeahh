@@ -3181,6 +3181,22 @@ body.dark .type-tabs .tab.active {
   background: var(--bg);
 }
 
+.mentorship-layout {
+  grid-template-columns: minmax(200px, 280px) minmax(0, 1fr);
+}
+
+@media (max-width: 720px) {
+  .mentorship-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .mentorship-inbox-sidebar {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--border);
+    padding: 0 0 0.75rem !important;
+  }
+}
+
 .sidebar {
   background: var(--surface);
   border-right: 1px solid var(--border);

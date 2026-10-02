@@ -25,7 +25,6 @@ export default function Profile() {
     skills: csv((prefs.skills || []).map((s) => s.name)),
     shareContactWithGuides: prefs.shareContactWithGuides || false,
     shareProfileWithGuides: prefs.shareProfileWithGuides || false,
-    shareLearningActivityWithGuides: prefs.shareLearningActivityWithGuides || false,
   });
 
   const syncForm = (p) =>
@@ -39,7 +38,6 @@ export default function Profile() {
       skills: csv((p.skills || []).map((s) => s.name)),
       shareContactWithGuides: p.shareContactWithGuides || false,
       shareProfileWithGuides: p.shareProfileWithGuides || false,
-      shareLearningActivityWithGuides: p.shareLearningActivityWithGuides || false,
     });
 
   const handleExtract = async () => {
@@ -71,7 +69,6 @@ export default function Profile() {
         interests: splitCsv(form.interests),
         shareContactWithGuides: form.shareContactWithGuides,
         shareProfileWithGuides: form.shareProfileWithGuides,
-        shareLearningActivityWithGuides: form.shareLearningActivityWithGuides,
         // keep the level of skills the AI already rated; new ones start as beginner
         skills: splitCsv(form.skills).map((name) => ({ name, level: existing.get(name.toLowerCase()) || "beginner" })),
       });
@@ -146,11 +143,7 @@ export default function Profile() {
             </label>
             <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>
               <input type="checkbox" checked={form.shareProfileWithGuides} onChange={(event) => setForm({ ...form, shareProfileWithGuides: event.target.checked })} />
-              Share my current and target career roles with approved guides in my branch
-            </label>
-            <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>
-              <input type="checkbox" checked={form.shareLearningActivityWithGuides} onChange={(event) => setForm({ ...form, shareLearningActivityWithGuides: event.target.checked })} />
-              Share my AI chats, quiz results, and roadmap progress with approved guides in my branch
+              Share my profile basics and high-level learning progress with approved guides in my branch. This never shares chat transcripts, prompts, quiz answers, or individual AI sessions.
             </label>
           </fieldset>
           <button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save preferences"}</button>

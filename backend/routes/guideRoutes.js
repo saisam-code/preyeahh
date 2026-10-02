@@ -1,12 +1,10 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
-import { param } from "express-validator";
 import {
   registerGuide,
   loginGuide,
   getMe,
   getGuideBranchOverview,
-  getGuideStudentActivity,
   listGuides,
   setGuideStatus,
   assignGuideRoles,
@@ -18,6 +16,11 @@ import {
   verifyEmail,
   resendVerification,
 } from "../controllers/guideController.js";
+import {
+  listConversations,
+  getConversation,
+  sendMessage,
+} from "../controllers/mentorshipController.js";
 
 import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -33,6 +36,7 @@ import {
   resetPasswordRules,
   resendVerificationRules,
 } from "../validators/authValidator.js";
+import { conversationIdRule, sendMentorshipMessageRules } from "../validators/mentorshipValidator.js";
 
 const router = express.Router();
 
@@ -61,14 +65,9 @@ router.post("/resend-verification", sensitiveLimiter, resendVerificationRules, v
 
 router.get("/me", protect, authorize("guide"), getMe);
 router.get("/me/branch-overview", protect, authorize("guide"), getGuideBranchOverview);
-router.get(
-  "/me/students/:studentId/activity",
-  protect,
-  authorize("guide"),
-  [param("studentId").isMongoId().withMessage("Invalid student id")],
-  validate,
-  getGuideStudentActivity
-);
+router.get("/me/conversations", protect, authorize("guide"), listConversations);
+router.get("/me/conversations/:id", protect, authorize("guide"), conversationIdRule, validate, getConversation);
+router.post("/me/conversations/:id/messages", protect, authorize("guide"), sendMentorshipMessageRules, validate, sendMessage);
 
 router.get("/", protect, authorize("admin"), listGuides);
 router.put("/:id/status", protect, authorize("admin"), setStatusRules, validate, setGuideStatus);

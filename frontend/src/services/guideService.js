@@ -8,10 +8,6 @@ export function fetchGuideBranchOverview() {
   return api.get("/guides/me/branch-overview").then((r) => r.data.data);
 }
 
-export function fetchGuideStudentActivity(studentId) {
-  return api.get(`/guides/me/students/${studentId}/activity`).then((r) => r.data.data);
-}
-
 export function setGuideStatus(id, status) {
   return api.put(`/guides/${id}/status`, { status }).then((r) => r.data.data);
 }

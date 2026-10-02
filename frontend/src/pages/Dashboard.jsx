@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   FaArrowRight,
   FaChartLine,
@@ -8,14 +8,17 @@ import {
   FaGraduationCap,
   FaMap,
   FaUser,
+  FaComments,
 } from "react-icons/fa6";
 
 import { useAuth } from "../context/AuthContext.jsx";
 import GuidePanel from "./GuidePanel.jsx";
+import MentorshipInbox from "../components/MentorshipInbox.jsx";
 
 export default function Dashboard() {
   const { user, initialized } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (!initialized) return;
@@ -27,6 +30,12 @@ export default function Dashboard() {
       navigate("/", { replace: true });
     }
   }, [initialized, navigate, user]);
+
+  useEffect(() => {
+    if (location.state?.mentorRole || location.hash === "#guide-messages" || new URLSearchParams(location.search).get("section") === "messages") {
+      requestAnimationFrame(() => document.getElementById("guide-messages")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }
+  }, [location.hash, location.search, location.state]);
 
   if (!initialized || !user || !['student', 'guide'].includes(user.role)) {
     return null;
@@ -49,6 +58,12 @@ export default function Dashboard() {
       description: "Ask questions, compare career paths, and get contextual guidance based on your branch and goals.",
       icon: FaCommentDots,
       to: "/chat",
+    },
+    {
+      title: "Chat with a Guide",
+      description: "Message approved guides assigned to roles you have committed to.",
+      icon: FaComments,
+      to: "/dashboard?section=messages",
     },
     {
       title: "AI Roadmaps",
@@ -116,6 +131,9 @@ export default function Dashboard() {
             </button>
           );
         })}
+      </div>
+      <div id="guide-messages" style={{ scrollMarginTop: "5rem" }}>
+        <MentorshipInbox mode="student" roleIntent={location.state?.mentorRole || null} />
       </div>
     </div>
   );

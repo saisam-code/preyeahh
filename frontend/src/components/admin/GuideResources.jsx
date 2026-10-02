@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { searchResources, createResource, deleteResource } from "../../services/resourceService.js";
 
@@ -10,7 +10,7 @@ export default function GuideResources({ branch, currentUserId }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const result = await searchResources({ branch, limit: 50 });
@@ -20,9 +20,9 @@ export default function GuideResources({ branch, currentUserId }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [branch]);
 
-  useEffect(() => { load(); }, [branch]);
+  useEffect(() => { load(); }, [load]);
 
   const handleSave = async (event) => {
     event.preventDefault();

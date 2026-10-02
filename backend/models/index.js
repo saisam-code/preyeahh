@@ -20,3 +20,4 @@ import "./Chat.js";
 import "./Resource.js";
 import "./AIRoadmap.js";
 import "./Quiz.js";
+import "./MentorshipConversation.js";

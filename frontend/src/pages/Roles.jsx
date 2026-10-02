@@ -105,6 +105,14 @@ export default function Roles() {
     } else {
       try {
         const existing = await getInterestForRole(role._id);
+        if (existing?.committed === committed) {
+          if (committed) {
+            navigate("/dashboard", { state: { mentorRole: { id: role._id, title: role.title } } });
+            return;
+          }
+          openDetail(role);
+          return;
+        }
         if (existing) {
           const prev = existing.committed ? "Committed" : "Exploring";
           const curr = committed ? "Committed" : "Exploring";
@@ -114,6 +122,11 @@ export default function Roles() {
           }
         }
         await recordInterest(role._id, committed);
+        if (committed) {
+          toast.success("Commitment saved. Find your guide on the dashboard.");
+          navigate("/dashboard", { state: { mentorRole: { id: role._id, title: role.title } } });
+          return;
+        }
         toast.success("Saved");
       } catch (err) {
         toast.error(err.response?.data?.message || "Could not record interest");

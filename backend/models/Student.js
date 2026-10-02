@@ -31,7 +31,6 @@ const preferencesSchema = new mongoose.Schema(
     aiProfileSummary: { type: String, default: "" },
     shareContactWithGuides: { type: Boolean, default: false },
     shareProfileWithGuides: { type: Boolean, default: false },
-    shareLearningActivityWithGuides: { type: Boolean, default: false },
     onboardingCompleted: { type: Boolean, default: false },
     onboardingSkipped: { type: Boolean, default: false },
     lastExtractedAt: { type: Date, default: null },
