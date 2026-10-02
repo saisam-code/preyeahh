@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaPlus, FaTrash, FaChevronDown, FaChevronUp, FaCircleCheck } from "react-icons/fa6";
 import {
@@ -17,6 +18,7 @@ const percentDone = (rm) => {
 
 export default function MyRoadmaps() {
   const { branch } = useBranch();
+  const location = useLocation();
   const [roadmaps, setRoadmaps] = useState([]);
   const [selected, setSelected] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,15 @@ export default function MyRoadmaps() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const roadmapId = location.state?.roadmapId;
+    if (!roadmapId) return;
+    fetchRoadmap(roadmapId).then((roadmap) => {
+      setSelected(roadmap);
+      setExpanded({ 0: true });
+    }).catch(() => toast.error("Failed to load roadmap"));
+  }, [location.state?.roadmapId]);
 
   const select = async (rm) => {
     try {

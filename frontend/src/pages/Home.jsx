@@ -116,7 +116,7 @@ export default function Home() {
             title: "Track your progress",
             description: "Review completed roadmap topics and your recent quiz performance.",
             icon: FaChartLine,
-            to: "/progress",
+            to: "/dashboard#student-progress",
           },
           {
             title: "Learning resources",

@@ -1,5 +1,6 @@
 import AIRoadmap from "../models/AIRoadmap.js";
 import Quiz from "../models/Quiz.js";
+import { getProfileCompleteness } from "../utils/profileCompleteness.js";
 
 const STALE_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -36,8 +37,9 @@ export async function getPerformance(student) {
     suggestions.push({ id: `s${suggestions.length + 1}`, severity, title, description });
 
   const prefs = student.doc?.preferences;
-  if (!prefs?.onboardingCompleted) {
-    add("info", "Complete your learning profile", "Tell the AI about your goals and skills (or just chat with it) so roadmaps and quizzes match you.");
+  const profileCompleteness = getProfileCompleteness(prefs);
+  if (!profileCompleteness.isComplete) {
+    add("info", "Complete your learning profile", `Add ${profileCompleteness.missingFields.map((field) => field.label).join(", ")} so roadmaps and quizzes can be tailored to you.`);
   }
   if (roadmaps.length === 0) {
     add("info", "Generate your first roadmap", "Open any role and tap “Generate AI Roadmap”, or create one from My Roadmaps.");
@@ -74,6 +76,8 @@ export async function getPerformance(student) {
   suggestions.sort((a, b) => order[a.severity] - order[b.severity]);
 
   return {
+    profileComplete: profileCompleteness.isComplete,
+    missingProfileFields: profileCompleteness.missingFields,
     quizzesTaken: quizzes.length,
     averageScore: quizzes.length ? Math.round(quizzes.reduce((s, q) => s + q.score, 0) / quizzes.length) : 0,
     weakTopics,

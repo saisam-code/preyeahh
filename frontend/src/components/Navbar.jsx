@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import {
   FaBars, FaXmark, FaHouse, FaBriefcase, FaCompass, FaCircleInfo,
   FaCircleUser, FaChevronDown, FaGauge, FaRightFromBracket,
-  FaCommentDots, FaMap, FaGraduationCap, FaBookmark, FaChartLine, FaUser,
+  FaCommentDots, FaMap, FaGraduationCap, FaBookmark, FaUser,
 } from "react-icons/fa6";
 import ThemeToggle from "./ThemeToggle.jsx";
 import LoginModal from "./LoginModal.jsx";
@@ -21,7 +21,6 @@ const NAV_ITEMS = [
   { to: "/chat", label: "Chat", icon: FaCommentDots, studentOnly: true },
   { to: "/roadmaps", label: "Roadmaps", icon: FaMap, studentOnly: true },
   { to: "/quiz", label: "Quiz", icon: FaGraduationCap, studentOnly: true, mobile: false },
-  { to: "/progress", label: "Progress", icon: FaChartLine, studentOnly: true },
   { to: "/about", label: "About", icon: FaCircleInfo, mobile: false },
 ];
 

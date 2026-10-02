@@ -1,17 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FaDownload, FaPaperPlane, FaPlus, FaTrash } from "react-icons/fa6";
+import { FaComments, FaDownload, FaPaperPlane, FaPlus, FaTrash } from "react-icons/fa6";
 import {
   fetchChats, createChat, fetchChat, exportChat, sendChatMessage, clearChatHistory, deleteChat,
 } from "../services/chatService.js";
 import { fetchRoles } from "../services/rolesService.js";
 import { useBranch } from "../context/BranchContext.jsx";
+import MentorshipInbox from "../components/MentorshipInbox.jsx";
 
 const errMsg = (err, fallback) =>
   err.response?.status === 429 ? "AI is busy — wait a moment and try again." : err.response?.data?.message || fallback;
 
 export default function Chat() {
   const { branch } = useBranch();
+  const location = useLocation();
+  const roleIntent = location.state?.mentorRole || null;
+  const initialMode = roleIntent || new URLSearchParams(location.search).get("mode") === "mentor" ? "mentor" : "ai";
+  const [chatMode, setChatMode] = useState(initialMode);
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -22,6 +28,11 @@ export default function Chat() {
   const [roleId, setRoleId] = useState("");
   const [roles, setRoles] = useState([]);
   const bottomRef = useRef(null);
+
+  useEffect(() => {
+    const shouldShowMentors = Boolean(roleIntent) || new URLSearchParams(location.search).get("mode") === "mentor";
+    setChatMode(shouldShowMentors ? "mentor" : "ai");
+  }, [location.search, roleIntent]);
 
   const loadChats = useCallback(async () => {
     setLoading(true);
@@ -128,8 +139,23 @@ export default function Chat() {
   };
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "280px 1fr", height: "calc(100vh - 68px)" }}>
-      <div style={{ background: "var(--surface)", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div className="chat-workspace">
+      <aside className="chat-mode-rail" aria-label="Chat types">
+        <button type="button" className={`chat-mode-button ${chatMode === "ai" ? "active" : ""}`} aria-pressed={chatMode === "ai"} title="AI Chat" onClick={() => setChatMode("ai")}>
+          <FaPaperPlane /><span>AI</span>
+        </button>
+        <button type="button" className={`chat-mode-button ${chatMode === "mentor" ? "active" : ""}`} aria-pressed={chatMode === "mentor"} title="Guide Messages" onClick={() => setChatMode("mentor")}>
+          <FaComments /><span>Guides</span>
+        </button>
+      </aside>
+
+      {chatMode === "mentor" ? (
+        <div className="chat-mentor-area">
+          <MentorshipInbox mode="student" roleIntent={roleIntent} />
+        </div>
+      ) : (
+        <>
+      <div className="chat-ai-sidebar" style={{ background: "var(--surface)", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
         <div style={{ padding: "1rem", borderBottom: "1px solid var(--border)", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           <input className="search-input" placeholder="Topic (optional)" value={topic} onChange={(e) => setTopic(e.target.value)} />
           <select
@@ -184,7 +210,7 @@ export default function Chat() {
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      <div className="chat-ai-main" style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {!activeChat ? (
           <div className="empty" style={{ margin: "auto" }}>
             <div className="icon"><FaPaperPlane /></div>
@@ -242,6 +268,8 @@ export default function Chat() {
           </>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -19,7 +19,7 @@ export default function Quiz() {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState(location.state?.topic || "");
   const [roleId, setRoleId] = useState(location.state?.roleId || "");
   const [roles, setRoles] = useState([]);
   const [difficulty, setDifficulty] = useState("beginner");

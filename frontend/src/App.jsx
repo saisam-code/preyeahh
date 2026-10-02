@@ -16,7 +16,6 @@ import VerifyEmail from "./pages/VerifyEmail.jsx";
 import Chat from "./pages/Chat.jsx";
 import MyRoadmaps from "./pages/MyRoadmaps.jsx";
 import Quiz from "./pages/Quiz.jsx";
-import Progress from "./pages/Progress.jsx";
 import Profile from "./pages/Profile.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 
@@ -44,7 +43,7 @@ export default function App() {
           <Route path="/chat" element={<Chat />} />
           <Route path="/roadmaps" element={<MyRoadmaps />} />
           <Route path="/quiz" element={<Quiz />} />
-          <Route path="/progress" element={<Progress />} />
+          <Route path="/progress" element={<Navigate to="/dashboard#student-progress" replace />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
 
