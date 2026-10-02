@@ -6,23 +6,30 @@ let transporter;
 
 function getTransporter() {
   if (transporter) return transporter;
+  
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  const port = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
+  const secure = port === 465;
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+
   transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: Number(process.env.SMTP_PORT) === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    host,
+    port,
+    secure,
+    auth: { user, pass },
   });
   return transporter;
 }
 
 export function isEmailConfigured() {
-  return Boolean(
-    process.env.SMTP_HOST &&
-    process.env.SMTP_USER &&
-    process.env.SMTP_PASS &&
-    process.env.SMTP_FROM &&
-    process.env.CLIENT_URL
-  );
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || user;
+  const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL;
+
+  return Boolean(host && user && pass && from && clientUrl);
 }
 
 export function assertEmailConfigured() {
@@ -32,7 +39,8 @@ export function assertEmailConfigured() {
 }
 
 export function getClientUrl() {
-  return (process.env.CLIENT_URL || "http://localhost:5173")
+  const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173";
+  return clientUrl
     .split(",")[0]
     .trim()
     .replace(/^['"]|['"]$/g, "")
@@ -54,15 +62,19 @@ export async function verifyEmailTransport() {
 }
 
 async function sendEmail({ to, subject, html }) {
-  if (!process.env.SMTP_HOST) {
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  if (!host) {
     if (process.env.NODE_ENV === "production") assertEmailConfigured();
     logger.warn("[sendEmail] SMTP not configured; skipping email in development.");
     return;
   }
   assertEmailConfigured();
   const t = getTransporter();
+  
+  const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.EMAIL_USER || `"Preyeahh" <no-reply@preyeah.dev>`;
+  
   await t.sendMail({
-    from: process.env.SMTP_FROM || `"Preyeahh" <no-reply@preyeah.dev>`,
+    from,
     to,
     subject,
     html,
@@ -70,3 +82,4 @@ async function sendEmail({ to, subject, html }) {
 }
 
 export default sendEmail;
+
