@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import "./RoadmapGraph.css";
-import MindMap from "./MindMap.jsx";
 
 // Layout constants
 const SECTION_SPACING_Y = 250;
@@ -14,7 +13,6 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [activePopover, setActivePopover] = useState(null); // topicId
   const [activeDrawer, setActiveDrawer] = useState(null);   // topic object
-  const [mindMapSection, setMindMapSection] = useState(null); // section object for mind map modal
 
   // --- Layout Calculation ---
   const { nodes, edges } = useMemo(() => {
@@ -103,8 +101,7 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
   const handlePointerDown = (e) => {
     if (
       e.target.closest(".roadmap-topic-node") ||
-      e.target.closest(".topic-popover") ||
-      e.target.closest(".section-mindmap-btn")
+      e.target.closest(".topic-popover")
     )
       return;
     setIsDragging(true);
@@ -149,21 +146,6 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
   const progressPct =
     totalTopics === 0 ? 0 : Math.round((completedTopics / totalTopics) * 100);
 
-  // When a topic is toggled inside MindMap, keep mindMapSection in sync
-  const handleMindMapTopicToggle = (topicId, isCompleted) => {
-    onTopicStatusChange(topicId, isCompleted);
-    // Update mindMapSection optimistically so the mind map re-renders
-    setMindMapSection((prev) => {
-      if (!prev) return prev;
-      return {
-        ...prev,
-        topics: prev.topics.map((t) =>
-          t._id === topicId ? { ...t, isCompleted } : t
-        ),
-      };
-    });
-  };
-
   return (
     <div
       className="roadmap-canvas-container"
@@ -201,23 +183,8 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
           {nodes.map((node) => {
             if (node.type === "section") {
               return (
-                <div key={node.id} style={{ position: "absolute", left: node.x, top: node.y, transform: "translate(-50%, -50%)" }}>
-                  <div className="roadmap-section-node" style={{ position: "relative", left: 0, top: 0, transform: "none" }}>
-                    {node.title}
-                  </div>
-                  <button
-                    className="section-mindmap-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Pull the live section data from roadmap (has up-to-date isCompleted)
-                      const liveSection = roadmap.sections.find(
-                        (s) => s.title === node.sectionData.title
-                      );
-                      setMindMapSection(liveSection || node.sectionData);
-                    }}
-                  >
-                    🧠 Mind Map
-                  </button>
+                <div key={node.id} className="roadmap-section-node" style={{ left: node.x, top: node.y }}>
+                  {node.title}
                 </div>
               );
             } else if (node.type === "topic") {
@@ -314,7 +281,7 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
             ></div>
           </div>
           <p style={{ fontSize: "0.7rem", color: "#888", marginTop: "8px" }}>
-            Tip: Drag to pan • Ctrl+scroll to zoom • Click section → 🧠 Mind Map
+            Tip: Drag to pan • Ctrl+scroll to zoom
           </p>
         </div>
       </div>
@@ -382,14 +349,6 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
         </>
       )}
 
-      {/* Mind Map Modal */}
-      {mindMapSection && (
-        <MindMap
-          section={mindMapSection}
-          onClose={() => setMindMapSection(null)}
-          onTopicStatusChange={handleMindMapTopicToggle}
-        />
-      )}
     </div>
   );
 }
