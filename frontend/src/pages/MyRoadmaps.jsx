@@ -131,14 +131,14 @@ export default function MyRoadmaps() {
         </div>
 
         {/* Two-column layout */}
-        <div style={{ display: "grid", gridTemplateColumns: selected ? "280px 1fr" : "1fr", gap: "1.5rem", alignItems: "start" }}>
+        <div style={{ display: "grid", gridTemplateColumns: selected ? "320px 1fr" : "1fr", gap: "1.5rem", alignItems: "start" }}>
 
-          {/* LEFT: roadmap list */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
+          {/* LEFT: roadmap cards grid */}
+          <div style={{ display: "grid", gridTemplateColumns: selected ? "1fr" : "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.85rem" }}>
             {loading ? (
-              <div className="empty"><p>Loading...</p></div>
+              <div className="empty" style={{ gridColumn: "1 / -1" }}><p>Loading...</p></div>
             ) : roadmaps.length === 0 ? (
-              <div className="empty"><p>No roadmaps yet — generate one above</p></div>
+              <div className="empty" style={{ gridColumn: "1 / -1" }}><p>No roadmaps yet — generate one above</p></div>
             ) : (
               roadmaps.map((rm) => {
                 const id = idOf(rm);
@@ -150,29 +150,39 @@ export default function MyRoadmaps() {
                     onClick={() => selectCard(rm)}
                     style={{
                       background: active ? "var(--primary-bg)" : "var(--surface)",
-                      border: `1px solid ${active ? "var(--primary)" : "var(--border)"}`,
-                      borderRadius: "10px",
-                      padding: "0.9rem 1rem",
+                      border: `1.5px solid ${active ? "var(--primary)" : "var(--border)"}`,
+                      borderRadius: "12px",
+                      padding: "1rem",
                       cursor: "pointer",
                       transition: "all 0.15s",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.6rem",
+                      position: "relative",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{rm.title}</div>
-                        <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>{rm.level} · {rm.estimatedWeeks}w</div>
-                      </div>
-                      <button
-                        className="btn btn-sm"
-                        style={{ background: "transparent", color: "var(--text-muted)", padding: "2px 6px", marginLeft: "6px", flexShrink: 0 }}
-                        onClick={(e) => { e.stopPropagation(); handleDelete(id); }}
-                        title="Delete"
-                      >
-                        <FaTrash />
-                      </button>
-                    </div>
-                    <div style={{ marginTop: "0.6rem" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "3px" }}>
+                    {/* Delete button */}
+                    <button
+                      className="btn btn-sm"
+                      style={{ position: "absolute", top: "8px", right: "8px", background: "transparent", color: "var(--text-muted)", padding: "2px 6px" }}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(id); }}
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
+
+                    {/* Level badge */}
+                    <span className="type-badge badge-core" style={{ alignSelf: "flex-start", fontSize: "0.65rem" }}>{rm.level}</span>
+
+                    {/* Title */}
+                    <div style={{ fontWeight: 800, fontSize: "0.9rem", color: "var(--text)", lineHeight: 1.3, paddingRight: "1.5rem" }}>{rm.title}</div>
+
+                    {/* Meta */}
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{rm.branch || "General"} · {rm.estimatedWeeks} weeks</div>
+
+                    {/* Progress */}
+                    <div style={{ marginTop: "auto" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "4px" }}>
                         <span>Progress</span><span>{pct}%</span>
                       </div>
                       <div style={{ height: 5, background: "var(--border)", borderRadius: 999, overflow: "hidden" }}>
