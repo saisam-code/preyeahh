@@ -78,15 +78,23 @@ export function AuthProvider({ children }) {
         storeUser(data.data.user);
         return data.data.user;
       } catch (studentErr) {
-        if (studentErr.response?.status !== 401) throw studentErr;
+        if (studentErr.response?.status !== 401) {
+          studentErr.authRole = "student";
+          throw studentErr;
+        }
       }
 
-      const { data } = await api.post("/guides/login", { email, password });
-      setAccessToken(data.data.accessToken);
-      setActiveRole("guide");
-      setUser(data.data.user);
-      storeUser(data.data.user);
-      return data.data.user;
+      try {
+        const { data } = await api.post("/guides/login", { email, password });
+        setAccessToken(data.data.accessToken);
+        setActiveRole("guide");
+        setUser(data.data.user);
+        storeUser(data.data.user);
+        return data.data.user;
+      } catch (guideErr) {
+        guideErr.authRole = "guide";
+        throw guideErr;
+      }
     } finally {
       setLoading(false);
     }

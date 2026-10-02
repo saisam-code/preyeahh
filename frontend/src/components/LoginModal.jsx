@@ -11,7 +11,7 @@ const STUDENT_EMAIL_RE = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
 const GUIDE_EMAIL_RE = /^[^\s@]+@nbkrist\.org$/i;
 
 export default function LoginModal({ open, onClose, startTab = "login" }) {
-  const { login, registerStudent, registerGuide } = useAuth();
+  const { login, registerStudent, registerGuide, resendVerification } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState(startTab);
   const [regType, setRegType] = useState("student");
@@ -19,6 +19,8 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   const [rolesForBranch, setRolesForBranch] = useState([]);
   const [showPass, setShowPass] = useState({ login: false, register: false });
   const [regSuccess, setRegSuccess] = useState("");
+  const [verificationRole, setVerificationRole] = useState(null);
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -52,6 +54,7 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   if (!open) return null;
 
   const onLoginSubmit = async (data) => {
+    setVerificationRole(null);
     try {
       await login(data.email.trim(), data.password);
       navigate("/", { replace: true });
@@ -61,9 +64,25 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
       const msg = err.response?.data?.message || "Invalid email or password.";
       if (msg.toLowerCase().includes("verify")) {
         loginForm.setError("root", { message: msg });
+        setVerificationRole(err.authRole || null);
       } else {
         toast.error(msg);
       }
+    }
+  };
+
+  const handleResendVerification = async () => {
+    const email = loginForm.getValues("email").trim();
+    if (!email || !verificationRole || resendingVerification) return;
+
+    setResendingVerification(true);
+    try {
+      const result = await resendVerification(email, verificationRole);
+      toast.success(result.message || "If the account needs verification, a link has been sent.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not resend the verification email.");
+    } finally {
+      setResendingVerification(false);
     }
   };
 
@@ -137,6 +156,17 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
             </div>
             {loginForm.formState.errors.root && (
               <p className="ulm-err" style={{ display: "block" }}>{loginForm.formState.errors.root.message}</p>
+            )}
+            {verificationRole && (
+              <button
+                className="btn btn-outline"
+                style={{ width: "100%", marginBottom: "0.75rem" }}
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendingVerification}
+              >
+                {resendingVerification ? "Sending verification email..." : "Resend verification email"}
+              </button>
             )}
             <button className="btn btn-primary" style={{ width: "100%" }} type="submit" disabled={loginForm.formState.isSubmitting}>
               {loginForm.formState.isSubmitting ? "Signing in..." : "Login"}
