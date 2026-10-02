@@ -11,7 +11,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { assertEmailConfigured, getClientUrl } from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 
 export const registerGuide = asyncHandler(async (req, res) => {
@@ -19,13 +19,14 @@ export const registerGuide = asyncHandler(async (req, res) => {
 
   const existing = await Guide.findOne({ email: email.toLowerCase() });
   if (existing) throw ApiError.conflict("An account with this email already exists");
+  assertEmailConfigured();
 
   const guide = await Guide.create({ name, email, password, branch, roleNames, bio });
 
   const rawToken = guide.createEmailVerificationToken();
   await guide.save({ validateBeforeSave: false });
 
-  const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=guide`;
+  const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=guide`;
   if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
     logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
   }
@@ -215,7 +216,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   if (guide) {
     const rawToken = guide.createPasswordResetToken();
     await guide.save({ validateBeforeSave: false });
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=guide`;
+    const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=guide`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Guide password reset link for ${guide.email}: ${resetUrl}`);
     }
@@ -275,7 +276,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
   if (guide && !guide.isVerified) {
     const rawToken = guide.createEmailVerificationToken();
     await guide.save({ validateBeforeSave: false });
-    const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=guide`;
+    const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=guide`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
     }

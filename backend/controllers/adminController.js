@@ -11,7 +11,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { getClientUrl } from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 
 export const loginAdmin = asyncHandler(async (req, res) => {
@@ -60,7 +60,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   if (admin) {
     const rawToken = admin.createPasswordResetToken();
     await admin.save({ validateBeforeSave: false });
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=admin`;
+    const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=admin`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Admin password reset link for ${admin.email}: ${resetUrl}`);
     }

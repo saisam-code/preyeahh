@@ -6,7 +6,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { assertEmailConfigured, getClientUrl } from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 import * as profileService from "../services/profileService.js";
 
@@ -15,13 +15,14 @@ export const registerStudent = asyncHandler(async (req, res) => {
 
   const existing = await Student.findOne({ email: email.toLowerCase() });
   if (existing) throw ApiError.conflict("An account with this email already exists. Try logging in instead.");
+  assertEmailConfigured();
 
   const student = await Student.create({ name, email, password, branch });
 
   const rawToken = student.createEmailVerificationToken();
   await student.save({ validateBeforeSave: false });
 
-  const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=student`;
+  const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=student`;
   if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
     logger.dev(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
   }
@@ -111,7 +112,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   if (student) {
     const rawToken = student.createPasswordResetToken();
     await student.save({ validateBeforeSave: false });
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=student`;
+    const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=student`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Student password reset link for ${student.email}: ${resetUrl}`);
     }
@@ -171,7 +172,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
   if (student && !student.isVerified) {
     const rawToken = student.createEmailVerificationToken();
     await student.save({ validateBeforeSave: false });
-    const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=student`;
+    const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=student`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
     }
