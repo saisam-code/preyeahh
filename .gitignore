@@ -1,27 +1,108 @@
+# ==========================================
 # Dependencies
+# ==========================================
 node_modules/
 **/node_modules/
 
-# Build output and tool caches
-dist/
-**/dist/
-coverage/
-.vite/
-**/.vite/
-.vercel/
 
-# Environment secrets (keep example templates tracked)
+# ==========================================
+# Environment variables / secrets
+# ==========================================
 .env
 .env.*
 !.env.example
 
-# Logs and debug output
+# Backend / frontend environment files
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+
+# ==========================================
+# Build output
+# ==========================================
+dist/
+build/
+.vite/
+**/dist/
+**/build/
+
+
+# ==========================================
+# Logs
+# ==========================================
 *.log
+logs/
 npm-debug.log*
 yarn-debug.log*
+yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Local OS/editor artifacts
+
+# ==========================================
+# Test / coverage
+# ==========================================
+coverage/
+.nyc_output/
+*.lcov
+
+
+# ==========================================
+# Runtime / temporary files
+# ==========================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.cache
+
+
+# ==========================================
+# VS Code
+# ==========================================
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+
+# ==========================================
+# Other IDEs
+# ==========================================
+.idea/
+*.iml
+*.swp
+*.swo
+
+
+# ==========================================
+# OS files
+# ==========================================
 .DS_Store
 Thumbs.db
-*.tsbuildinfo
+Desktop.ini
+
+
+# ==========================================
+# Vercel
+# ==========================================
+.vercel/
+
+
+# ==========================================
+# Local database / generated database files
+# ==========================================
+*.sqlite
+*.sqlite3
+*.db
+
+
+# ==========================================
+# Generated / temporary files
+# ==========================================
+*.bak
+*.backup
+*.orig
