@@ -2,6 +2,7 @@ import Beyond from "../models/Beyond.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { assertGuideOwnsContent, contributorSnapshot, recordContentEdit } from "../utils/contentAuthorization.js";
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -57,7 +58,7 @@ export const createBeyond = asyncHandler(async (req, res) => {
     req.body.branch = req.user.branch;
   }
   enforceGuideBranch(req, req.body.branch);
-  const item = await Beyond.create(req.body);
+  const item = await Beyond.create({ ...req.body, createdBy: contributorSnapshot(req.user), editHistory: [] });
   res.status(201).json(new ApiResponse(201, item, "Beyond entry created"));
 });
 
@@ -67,11 +68,16 @@ export const updateBeyond = asyncHandler(async (req, res) => {
   if (req.user?.role === "guide" && item.branch !== req.user.branch) {
     throw ApiError.forbidden("You can only update beyond entries in your own branch");
   }
+  assertGuideOwnsContent(item, req.user);
   if (req.user?.role === "guide") {
     req.body.branch = req.user.branch;
   }
   enforceGuideBranch(req, req.body.branch ?? item.branch);
-  Object.assign(item, req.body);
+  const editableFields = ["title", "branch", "category", "description", "howto", "skills", "resources"];
+  editableFields.forEach((field) => {
+    if (req.body[field] !== undefined) item[field] = req.body[field];
+  });
+  recordContentEdit(item, req.user);
   await item.save();
   res.status(200).json(new ApiResponse(200, item, "Beyond entry updated"));
 });
@@ -82,6 +88,7 @@ export const deleteBeyond = asyncHandler(async (req, res) => {
   if (req.user?.role === "guide" && item.branch !== req.user.branch) {
     throw ApiError.forbidden("You can only delete beyond entries in your own branch");
   }
+  assertGuideOwnsContent(item, req.user);
   await item.deleteOne();
   res.status(200).json(new ApiResponse(200, null, "Beyond entry deleted"));
 });

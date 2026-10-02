@@ -4,6 +4,7 @@ import { FaXmark, FaHandPointer } from "react-icons/fa6";
 import { useBranch } from "../context/BranchContext.jsx";
 import { fetchBeyond } from "../services/beyondService.js";
 import BranchGate from "../components/BranchGate.jsx";
+import ContributorLabel from "../components/ContributorLabel.jsx";
 
 const CAT_META = {
   college: { label: "In College", icon: "fa-school", color: "#8b5cf6" },
@@ -102,6 +103,7 @@ export default function Beyond() {
                   <div className="role-card-body">
                     <h3>{l.title}</h3>
                     <p>{l.description}</p>
+                    <ContributorLabel item={l} />
                     <div className="role-card-footer">
                       <span className="tap-hint"><FaHandPointer /> Tap for guidance &amp; resources</span>
                     </div>
@@ -123,6 +125,7 @@ export default function Beyond() {
             <div className="rd-meta">
               <span className="branch-tag">{selected.branch === "All" ? "All Branches" : selected.branch}</span>
               <p className="rd-desc">{selected.description}</p>
+              <ContributorLabel item={selected} />
             </div>
             {selected.howto && (
               <div className="rd-block rd-block--steps">

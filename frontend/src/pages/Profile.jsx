@@ -24,6 +24,7 @@ export default function Profile() {
     interests: csv(prefs.interests),
     skills: csv((prefs.skills || []).map((s) => s.name)),
     shareContactWithGuides: prefs.shareContactWithGuides || false,
+    shareProfileWithGuides: prefs.shareProfileWithGuides || false,
     shareLearningActivityWithGuides: prefs.shareLearningActivityWithGuides || false,
   });
 
@@ -37,6 +38,7 @@ export default function Profile() {
       interests: csv(p.interests),
       skills: csv((p.skills || []).map((s) => s.name)),
       shareContactWithGuides: p.shareContactWithGuides || false,
+      shareProfileWithGuides: p.shareProfileWithGuides || false,
       shareLearningActivityWithGuides: p.shareLearningActivityWithGuides || false,
     });
 
@@ -68,6 +70,7 @@ export default function Profile() {
         goals: splitCsv(form.goals),
         interests: splitCsv(form.interests),
         shareContactWithGuides: form.shareContactWithGuides,
+        shareProfileWithGuides: form.shareProfileWithGuides,
         shareLearningActivityWithGuides: form.shareLearningActivityWithGuides,
         // keep the level of skills the AI already rated; new ones start as beginner
         skills: splitCsv(form.skills).map((name) => ({ name, level: existing.get(name.toLowerCase()) || "beginner" })),
@@ -140,6 +143,10 @@ export default function Profile() {
             <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>
               <input type="checkbox" checked={form.shareContactWithGuides} onChange={(event) => setForm({ ...form, shareContactWithGuides: event.target.checked })} />
               Share my email address with approved guides in my branch
+            </label>
+            <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>
+              <input type="checkbox" checked={form.shareProfileWithGuides} onChange={(event) => setForm({ ...form, shareProfileWithGuides: event.target.checked })} />
+              Share my current and target career roles with approved guides in my branch
             </label>
             <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>
               <input type="checkbox" checked={form.shareLearningActivityWithGuides} onChange={(event) => setForm({ ...form, shareLearningActivityWithGuides: event.target.checked })} />

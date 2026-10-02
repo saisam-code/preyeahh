@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { fetchBeyond, createBeyond, updateBeyond, deleteBeyond } from "../../services/beyondService.js";
 import { fetchBranches } from "../../services/branchService.js";
+import ContributorLabel from "../ContributorLabel.jsx";
 
 const CATEGORIES = [
   { value: "college", label: "In College" },
@@ -17,7 +18,7 @@ function linesToArray(str) {
 
 const emptyForm = { title: "", branch: "All", category: "college", description: "", howto: "", skills: "", resources: "" };
 
-export default function AdminBeyond({ fixedBranch = null } = {}) {
+export default function AdminBeyond({ fixedBranch = null, currentUserId = null } = {}) {
   const [branches, setBranches] = useState([]);
   const [branchFilter, setBranchFilter] = useState(fixedBranch || "all");
   const [items, setItems] = useState([]);
@@ -104,7 +105,7 @@ export default function AdminBeyond({ fixedBranch = null } = {}) {
         <div className="empty"><div className="icon"><i className="fa fa-spinner fa-spin" /></div><p>Loading...</p></div>
       ) : (
         <table className="admin-table">
-          <thead><tr><th>Title</th><th>Branch</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Title</th><th>Branch</th><th>Contributor</th><th>Actions</th></tr></thead>
           <tbody>
             {items.map((l) => (
               <tr key={l._id}>
@@ -113,15 +114,16 @@ export default function AdminBeyond({ fixedBranch = null } = {}) {
                   <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.2rem" }}>{catLabel(l.category)}</div>
                 </td>
                 <td><span className="branch-tag">{l.branch === "All" ? "All Branches" : l.branch}</span></td>
+                <td><ContributorLabel item={l} /></td>
                 <td>
                   <div className="table-actions">
-                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(l)}>Edit</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(l._id)}>Delete</button>
+                    <button className="btn btn-outline btn-sm" disabled={Boolean(fixedBranch && String(l.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(l.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Edit"} onClick={() => openEdit(l)}>Edit</button>
+                    <button className="btn btn-danger btn-sm" disabled={Boolean(fixedBranch && String(l.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(l.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Delete"} onClick={() => handleDelete(l._id)}>Delete</button>
                   </div>
                 </td>
               </tr>
             ))}
-            {!items.length && <tr><td colSpan={3} style={{ textAlign: "center", color: "var(--muted)" }}>No entries found</td></tr>}
+            {!items.length && <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--muted)" }}>No entries found</td></tr>}
           </tbody>
         </table>
       )}

@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import { searchResources, recordResourceView } from "../services/resourceService.js";
 import { useBranch } from "../context/BranchContext.jsx";
+import ContributorLabel from "../components/ContributorLabel.jsx";
 
 const TYPE_COLORS = {
   video: "#ef4444", article: "#3b82f6", documentation: "#8b5cf6", course: "#f97316",
@@ -95,6 +96,7 @@ export default function Resources() {
                     <div className="role-card-body">
                       <h3 style={{ fontSize: "1rem" }}>{r.title}</h3>
                       <p style={{ fontSize: "0.825rem" }}>{r.description}</p>
+                      <ContributorLabel item={r} />
                       {r.provider && (
                         <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
                           {r.provider}{r.estimatedDuration > 0 && ` · ${r.estimatedDuration} min`}

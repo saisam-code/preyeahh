@@ -3,6 +3,7 @@ import Role from "../models/Role.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { assertGuideOwnsContent, contributorSnapshot, recordContentEdit } from "../utils/contentAuthorization.js";
 
 // GET /api/guidance?branch=CSE&role=<id> — public, powers admin/guide guidance tables
 export const getGuidance = asyncHandler(async (req, res) => {
@@ -54,7 +55,7 @@ export const createGuidance = asyncHandler(async (req, res) => {
     }
   }
 
-  const entry = await Guidance.create({ title, branch, points, role: roleId });
+  const entry = await Guidance.create({ title, branch, points, role: roleId, createdBy: contributorSnapshot(req.user) });
   res.status(201).json(new ApiResponse(201, entry, "Guidance entry created"));
 });
 
@@ -66,6 +67,7 @@ export const updateGuidance = asyncHandler(async (req, res) => {
     if (entry.branch !== req.user.branch) {
       throw ApiError.forbidden("You can only edit guidance entries in your own branch");
     }
+    assertGuideOwnsContent(entry, req.user);
     delete req.body.branch;
   }
 
@@ -82,6 +84,7 @@ export const updateGuidance = asyncHandler(async (req, res) => {
     }
   }
 
+  recordContentEdit(entry, req.user);
   await entry.save();
   res.status(200).json(new ApiResponse(200, entry, "Guidance entry updated"));
 });
@@ -93,6 +96,7 @@ export const deleteGuidance = asyncHandler(async (req, res) => {
   if (req.user.role === "guide" && entry.branch !== req.user.branch) {
     throw ApiError.forbidden("You can only delete guidance entries in your own branch");
   }
+  assertGuideOwnsContent(entry, req.user);
 
   await entry.deleteOne();
   res.status(200).json(new ApiResponse(200, null, "Guidance entry deleted"));

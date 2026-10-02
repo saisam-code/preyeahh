@@ -4,7 +4,7 @@ import { searchResources, createResource, deleteResource } from "../../services/
 
 const initialForm = { title: "", description: "", type: "article", url: "", technology: "", difficulty: "all" };
 
-export default function GuideResources({ branch }) {
+export default function GuideResources({ branch, currentUserId }) {
   const [items, setItems] = useState([]);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
@@ -92,15 +92,16 @@ export default function GuideResources({ branch }) {
       </form>
       {loading ? <div className="empty"><p>Loading...</p></div> : (
         <table className="admin-table">
-          <thead><tr><th>Resource</th><th>Technology</th><th>Type</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Resource</th><th>Technology</th><th>Type</th><th>Contributor</th><th>Actions</th></tr></thead>
           <tbody>
             {items.map((item) => (
               <tr key={item.id}>
                 <td>{item.title}</td><td>{item.technology}</td><td>{item.type}</td>
-                <td><button type="button" className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}>Delete</button></td>
+                <td>{item.createdBy?.name || "Original contributor not recorded"}{item.editHistory?.length > 0 && ` · Edited by ${[...new Set(item.editHistory.map((edit) => edit.name).filter(Boolean))].join(", ")}`}</td>
+                <td><button type="button" className="btn btn-danger btn-sm" disabled={String(item.createdBy?.userId || "") !== currentUserId} title={String(item.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Delete"} onClick={() => handleDelete(item.id)}>Delete</button></td>
               </tr>
             ))}
-            {!items.length && <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--muted)" }}>No branch resources found</td></tr>}
+            {!items.length && <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--muted)" }}>No branch resources found</td></tr>}
           </tbody>
         </table>
       )}

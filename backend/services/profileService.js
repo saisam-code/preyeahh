@@ -30,6 +30,7 @@ function normalizeSkills(v) {
 function toSetFields(raw) {
   const set = {};
   if (typeof raw.shareContactWithGuides === "boolean") set["preferences.shareContactWithGuides"] = raw.shareContactWithGuides;
+  if (typeof raw.shareProfileWithGuides === "boolean") set["preferences.shareProfileWithGuides"] = raw.shareProfileWithGuides;
   if (typeof raw.shareLearningActivityWithGuides === "boolean") set["preferences.shareLearningActivityWithGuides"] = raw.shareLearningActivityWithGuides;
   if (str(raw.currentRole)) set["preferences.currentRole"] = str(raw.currentRole);
   if (str(raw.targetRole)) set["preferences.targetRole"] = str(raw.targetRole);

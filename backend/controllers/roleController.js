@@ -2,6 +2,7 @@ import Role from "../models/Role.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import { assertGuideOwnsContent, contributorSnapshot, recordContentEdit } from "../utils/contentAuthorization.js";
 
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -71,6 +72,7 @@ export const createRole = asyncHandler(async (req, res) => {
     type,
     description,
     guidance: guidance || {},
+    createdBy: contributorSnapshot(req.user),
   });
 
   res.status(201).json(new ApiResponse(201, role, "Role created"));
@@ -90,6 +92,7 @@ export const updateRole = asyncHandler(async (req, res) => {
     if (role.branch !== req.user.branch) {
       throw ApiError.forbidden("You can only edit roles in your own branch");
     }
+    assertGuideOwnsContent(role, req.user);
     delete req.body.branch;
   }
 
@@ -102,6 +105,7 @@ export const updateRole = asyncHandler(async (req, res) => {
     role.guidance = { ...role.guidance.toObject(), ...req.body.guidance };
   }
 
+  recordContentEdit(role, req.user);
   await role.save();
   res.status(200).json(new ApiResponse(200, role, "Role updated"));
 });
@@ -119,6 +123,7 @@ export const deleteRole = asyncHandler(async (req, res) => {
   if (req.user.role === "guide" && role.branch !== req.user.branch) {
     throw ApiError.forbidden("You can only delete roles in your own branch");
   }
+  assertGuideOwnsContent(role, req.user);
 
   await Role.findByIdAndDelete(role._id);
   res.status(200).json(new ApiResponse(200, null, "Role deleted"));

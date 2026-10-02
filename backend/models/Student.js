@@ -30,6 +30,7 @@ const preferencesSchema = new mongoose.Schema(
     preferredLanguage: { type: String, default: "English", trim: true },
     aiProfileSummary: { type: String, default: "" },
     shareContactWithGuides: { type: Boolean, default: false },
+    shareProfileWithGuides: { type: Boolean, default: false },
     shareLearningActivityWithGuides: { type: Boolean, default: false },
     onboardingCompleted: { type: Boolean, default: false },
     onboardingSkipped: { type: Boolean, default: false },

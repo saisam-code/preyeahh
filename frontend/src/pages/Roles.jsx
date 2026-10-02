@@ -12,6 +12,7 @@ import { submitRoleRequest } from "../services/roleRequestService.js";
 import { generateRoadmap } from "../services/aiRoadmapService.js";
 import BranchGate from "../components/BranchGate.jsx";
 import LoginModal from "../components/LoginModal.jsx";
+import ContributorLabel from "../components/ContributorLabel.jsx";
 
 function parseResource(str) {
   const [label, url] = str.split("|").map((s) => s?.trim());
@@ -212,6 +213,7 @@ export default function Roles() {
                     <div className="role-summary">
                       <strong>Overview:</strong> {r.guidance?.overview || "Tap to view full guidance."}
                     </div>
+                    <ContributorLabel item={r} />
                     <div className="role-card-footer">
                       <span className="tap-hint"><FaHandPointer /> Tap for full guidance &amp; resources</span>
                     </div>
@@ -265,6 +267,7 @@ export default function Roles() {
               <span className="branch-tag">{selectedRole.branch}</span>
               <span className={`type-badge badge-${selectedRole.type}`}>{selectedRole.type === "core" ? "Core" : "Non-Core"}</span>
               <p className="rd-desc">{selectedRole.description}</p>
+              <ContributorLabel item={selectedRole} />
             </div>
 
             {selectedRole.guidance?.overview && (
@@ -328,6 +331,7 @@ export default function Roles() {
                   {[...roadmap.roleRoadmap, ...roadmap.branchRoadmap].map((g) => (
                     <div className="rd-roadmap-item" key={g._id}>
                       <div className="rd-roadmap-item-title">{g.title}</div>
+                      <ContributorLabel item={g} />
                       <ul>{g.points.map((p, i) => <li key={i}>{p}</li>)}</ul>
                     </div>
                   ))}

@@ -2,6 +2,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import * as resourceService from "../services/resourceService.js";
+import { assertGuideOwnsContent, contributorSnapshot } from "../utils/contentAuthorization.js";
 
 // GET /api/resources   (public)  ?q&technology&branch&difficulty&page&limit
 export const searchResources = asyncHandler(async (req, res) => {
@@ -38,7 +39,7 @@ export const createResource = asyncHandler(async (req, res) => {
     }
     req.body.branches = [req.user.branch];
   }
-  const resource = await resourceService.createResource(req.body);
+  const resource = await resourceService.createResource({ ...req.body, createdBy: contributorSnapshot(req.user), editHistory: [] });
   res.status(201).json(new ApiResponse(201, resource, "Resource added"));
 });
 
@@ -46,6 +47,7 @@ export const createResource = asyncHandler(async (req, res) => {
 export const deleteResource = asyncHandler(async (req, res) => {
   const resource = await resourceService.getResourceById(req.params.id);
   if (req.user?.role === "guide") {
+    assertGuideOwnsContent(resource, req.user);
     const branchList = Array.isArray(resource.branches) ? resource.branches : [];
     const ownsBranch = branchList.length > 0 && branchList.every((value) => String(value).toUpperCase() === String(req.user.branch || "").toUpperCase());
     if (!ownsBranch) {

@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { fetchGuidance, createGuidance, updateGuidance, deleteGuidance } from "../../services/guidanceService.js";
 import { fetchBranches } from "../../services/branchService.js";
 import { fetchRoles } from "../../services/rolesService.js";
+import ContributorLabel from "../ContributorLabel.jsx";
 
 const emptyForm = { title: "", branch: "All", role: "", points: "" };
 
@@ -10,7 +11,7 @@ function linesToArray(str) {
   return str.split("\n").map((s) => s.trim()).filter(Boolean);
 }
 
-export default function AdminGuidance({ fixedBranch = null } = {}) {
+export default function AdminGuidance({ fixedBranch = null, currentUserId = null } = {}) {
   const [branches, setBranches] = useState([]);
   const [branchFilter, setBranchFilter] = useState(fixedBranch || "all");
   const [scopeFilter, setScopeFilter] = useState("all");
@@ -121,22 +122,23 @@ const visibleEntries = entries.filter((g) => {
         <div className="empty"><div className="icon"><i className="fa fa-spinner fa-spin" /></div><p>Loading...</p></div>
       ) : (
         <table className="admin-table">
-          <thead><tr><th>Title</th><th>Branch</th><th>Role</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Title</th><th>Branch</th><th>Role</th><th>Contributor</th><th>Actions</th></tr></thead>
           <tbody>
             {visibleEntries.map((g) => (
               <tr key={g._id}>
                 <td>{g.title}</td>
                 <td><span className="branch-tag">{g.branch === "All" ? "All Branches" : g.branch}</span></td>
                 <td style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{g.role ? (rolesForFilter[g.role] || "—") : "All roles"}</td>
+                <td><ContributorLabel item={g} /></td>
                 <td>
                   <div className="table-actions">
-                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(g)}>Edit</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(g._id)}>Delete</button>
+                    <button className="btn btn-outline btn-sm" disabled={Boolean(fixedBranch && String(g.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(g.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Edit"} onClick={() => openEdit(g)}>Edit</button>
+                    <button className="btn btn-danger btn-sm" disabled={Boolean(fixedBranch && String(g.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(g.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Delete"} onClick={() => handleDelete(g._id)}>Delete</button>
                   </div>
                 </td>
               </tr>
             ))}
-            {!visibleEntries.length && <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--muted)" }}>No entries found</td></tr>}
+            {!visibleEntries.length && <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--muted)" }}>No entries found</td></tr>}
           </tbody>
         </table>
       )}

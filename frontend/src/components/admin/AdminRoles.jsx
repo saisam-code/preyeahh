@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { fetchRoles, createRole, updateRole, deleteRole } from "../../services/rolesService.js";
 import { fetchBranches } from "../../services/branchService.js";
 import { fetchGuidance, createGuidance, updateGuidance, deleteGuidance } from "../../services/guidanceService.js";
+import ContributorLabel from "../ContributorLabel.jsx";
 
 const emptyRole = {
   title: "", branch: "", type: "core", description: "",
@@ -13,7 +14,7 @@ function linesToArray(str) {
   return str.split("\n").map((s) => s.trim()).filter(Boolean);
 }
 
-export default function AdminRoles({ fixedBranch = null } = {}) {
+export default function AdminRoles({ fixedBranch = null, currentUserId = null } = {}) {
   const [branches, setBranches] = useState([]);
   const [branchFilter, setBranchFilter] = useState(fixedBranch || "all");
   const [roles, setRoles] = useState([]);
@@ -145,22 +146,23 @@ export default function AdminRoles({ fixedBranch = null } = {}) {
         <div className="empty"><div className="icon"><i className="fa fa-spinner fa-spin" /></div><p>Loading...</p></div>
       ) : (
         <table className="admin-table">
-          <thead><tr><th>Title</th><th>Branch</th><th>Type</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Title</th><th>Branch</th><th>Type</th><th>Contributor</th><th>Actions</th></tr></thead>
           <tbody>
             {roles.map((r) => (
               <tr key={r._id}>
                 <td>{r.title}</td>
                 <td><span className="branch-tag">{r.branch}</span></td>
                 <td><span className={`type-badge badge-${r.type}`}>{r.type === "core" ? "Core" : "Non-Core"}</span></td>
+                <td><ContributorLabel item={r} /></td>
                 <td>
                   <div className="table-actions">
-                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(r)}>Edit</button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)}>Delete</button>
+                    <button className="btn btn-outline btn-sm" disabled={Boolean(fixedBranch && String(r.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(r.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Edit"} onClick={() => openEdit(r)}>Edit</button>
+                    <button className="btn btn-danger btn-sm" disabled={Boolean(fixedBranch && String(r.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(r.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Delete"} onClick={() => handleDelete(r._id)}>Delete</button>
                   </div>
                 </td>
               </tr>
             ))}
-            {!roles.length && <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--muted)" }}>No roles found</td></tr>}
+            {!roles.length && <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--muted)" }}>No roles found</td></tr>}
           </tbody>
         </table>
       )}

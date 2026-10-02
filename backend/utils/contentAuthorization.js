@@ -1,4 +1,4 @@
-import ApiError from "../utils/ApiError.js";
+import ApiError from "./ApiError.js";
 
 export function contributorSnapshot(user) {
   return {

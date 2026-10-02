@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaChartLine, FaEye, FaEyeSlash } from "react-icons/fa6";
+import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaEye, FaEyeSlash } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchGuideBranchOverview, fetchGuideStudentActivity } from "../services/guideService.js";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
@@ -32,6 +32,7 @@ export default function GuidePanel() {
     }
     setActivityLoadingId(studentId);
     setActivityStudentId(studentId);
+    setActivity(null);
     try {
       setActivity(await fetchGuideStudentActivity(studentId));
     } catch (error) {
@@ -115,8 +116,8 @@ export default function GuidePanel() {
             </thead>
             <tbody>
               {overview.students?.map((student) => (
-                <>
-                  <tr key={student.id}>
+                <Fragment key={student.id}>
+                  <tr>
                     <td>{student.name}</td>
                     <td>{student.contactShared ? <a href={`mailto:${student.email}`}><FaEnvelope /> {student.email}</a> : <span style={{ color: "var(--text-muted)" }}>Not shared</span>}</td>
                     <td>{student.currentRole || "—"}</td>
@@ -183,7 +184,7 @@ export default function GuidePanel() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
               {!overview.students?.length && <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--muted)" }}>No students are following your assigned roles yet.</td></tr>}
             </tbody>
@@ -192,10 +193,10 @@ export default function GuidePanel() {
       )}
 
       <div style={{ display: "grid", gap: "2rem" }}>
-        <section id="guide-roles" style={{ scrollMarginTop: "5rem" }}><AdminRoles fixedBranch={user.branch} /></section>
-        <section id="guide-guidance" style={{ scrollMarginTop: "5rem" }}><AdminGuidance fixedBranch={user.branch} /></section>
-        <section id="guide-beyond" style={{ scrollMarginTop: "5rem" }}><AdminBeyond fixedBranch={user.branch} /></section>
-        <GuideResources branch={user.branch} />
+        <section id="guide-roles" style={{ scrollMarginTop: "5rem" }}><AdminRoles fixedBranch={user.branch} currentUserId={user.id} /></section>
+        <section id="guide-guidance" style={{ scrollMarginTop: "5rem" }}><AdminGuidance fixedBranch={user.branch} currentUserId={user.id} /></section>
+        <section id="guide-beyond" style={{ scrollMarginTop: "5rem" }}><AdminBeyond fixedBranch={user.branch} currentUserId={user.id} /></section>
+        <GuideResources branch={user.branch} currentUserId={user.id} />
       </div>
     </div>
   );
