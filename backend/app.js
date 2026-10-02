@@ -43,10 +43,12 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // ── CORS ────────────────────────────────────────────────────────
-const allowedOrigins = new Set([
-  "https://preyeahh.vercel.app",
-  ...(process.env.CLIENT_URL || "http://localhost:5173").split(",").map((o) => o.trim()),
-]);
+const allowedOrigins = new Set(
+  (process.env.CLIENT_URL || "http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+);
 
 app.use(
   cors({
