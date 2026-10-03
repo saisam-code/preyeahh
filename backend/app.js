@@ -25,6 +25,7 @@ import aiRoadmapRoutes from "./routes/aiRoadmapRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import performanceRoutes from "./routes/performanceRoutes.js";
+import googleAuthRoutes from "./routes/googleAuthRoutes.js";
 
 const app = express();
 
@@ -91,6 +92,7 @@ app.use("/api/guides", guideRoutes);
 app.use("/api/guidance", guidanceRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/role-requests", roleRequestRoutes);
+app.use("/api/auth", googleAuthRoutes);
 
 // ── AI learning modules (student-facing) ──
 app.use("/api/chat", chatRoutes);

@@ -45,3 +45,10 @@ export const preferencesRules = [
   body("weeklyHoursAvailable").optional().isFloat({ min: 0, max: 168 }).toFloat(),
   body("preferredLanguage").optional().isString().trim().isLength({ max: 40 }),
 ];
+
+// ── Google onboarding (new Google students completing their branch) ───────────
+
+export const googleOnboardingRules = [
+  body("branch").trim().notEmpty().withMessage("Branch is required").isLength({ max: 20 }),
+  body("name").optional().trim().isLength({ min: 1, max: 100 }).withMessage("Name must be 1-100 characters"),
+];

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import Student from "../models/Student.js";
 import Role from "../models/Role.js";
+import Branch from "../models/Branch.js";
 import RoleInterest from "../models/RoleInterest.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
@@ -42,7 +43,14 @@ export const loginStudent = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const student = await Student.findOne({ email: email.toLowerCase() }).select("+password");
-  if (!student || !(await student.comparePassword(password))) {
+  if (!student) throw ApiError.unauthorized("Invalid email or password");
+
+  // Google-only accounts have no password — give a clear but safe message
+  if (!student.password) {
+    throw ApiError.unauthorized("This account uses Google sign-in. Please use 'Continue with Google' to log in.");
+  }
+
+  if (!(await student.comparePassword(password))) {
     throw ApiError.unauthorized("Invalid email or password");
   }
 
@@ -110,17 +118,27 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const student = await Student.findOne({ email: email.toLowerCase() });
 
   if (student) {
-    const rawToken = student.createPasswordResetToken();
-    await student.save({ validateBeforeSave: false });
-    const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=student`;
-    if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      logger.dev(`[DEV] Student password reset link for ${student.email}: ${resetUrl}`);
+    // Google-only accounts have no password — tell them without revealing account existence
+    if (!student.password) {
+      await sendEmail({
+        to: student.email,
+        subject: "Preyeahh account — sign in with Google",
+        html: `<p>Hi ${student.name},</p><p>Your Preyeahh account uses Google sign-in and does not have a password. Please use "Continue with Google" to access your account.</p>`,
+      }).catch(() => {});
+      // Fall through — same generic response so we don't leak account existence
+    } else {
+      const rawToken = student.createPasswordResetToken();
+      await student.save({ validateBeforeSave: false });
+      const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=student`;
+      if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
+        logger.dev(`[DEV] Student password reset link for ${student.email}: ${resetUrl}`);
+      }
+      await sendEmail({
+        to: student.email,
+        subject: "Reset your Preyeahh password",
+        html: `<p>Hi ${student.name},</p><p>Click below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">Reset Password</a></p><p>If you didn't request this, ignore this email.</p>`,
+      });
     }
-    await sendEmail({
-      to: student.email,
-      subject: "Reset your Preyeahh password",
-      html: `<p>Hi ${student.name},</p><p>Click below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">Reset Password</a></p><p>If you didn't request this, ignore this email.</p>`,
-    });
   }
 
   res.status(200).json(new ApiResponse(200, null, "If that email is registered, a reset link has been sent."));
@@ -204,4 +222,52 @@ export const updatePreferences = asyncHandler(async (req, res) => {
 export const skipOnboarding = asyncHandler(async (req, res) => {
   const preferences = await profileService.skipOnboarding(req.user.id);
   res.status(200).json(new ApiResponse(200, preferences, "Onboarding skipped"));
+});
+
+// ── Google OAuth onboarding ──────────────────────────────────────────────────
+
+/**
+ * POST /api/students/google-onboarding
+ * Called by the frontend after a new Google student supplies their branch.
+ * The student is authenticated via a short-lived onboarding-only token
+ * (protectGoogleOnboarding), NOT a normal application JWT.
+ * After successful onboarding, normal application tokens are issued.
+ */
+export const completeGoogleOnboarding = asyncHandler(async (req, res) => {
+  const student = req.user.doc;
+
+  if (!student.googleId) {
+    throw ApiError.forbidden("This endpoint is only for Google-authenticated accounts");
+  }
+
+  if (!student.googlePendingOnboarding) {
+    // Already completed — issue normal tokens and return current profile
+    const accessToken = issueTokens(res, student, "student");
+    return res.status(200).json(new ApiResponse(200, { accessToken, user: student.toSafeJSON() }, "Onboarding already completed"));
+  }
+
+  const { branch, name } = req.body;
+
+  if (!branch || !branch.trim()) {
+    throw ApiError.badRequest("Branch is required");
+  }
+
+  const normalizedBranch = branch.trim().toUpperCase();
+
+  // Validate that the submitted branch actually exists in the database
+  const existingBranch = await Branch.findOne({ name: normalizedBranch });
+  if (!existingBranch) {
+    throw ApiError.badRequest("Invalid branch. Please select a valid engineering branch.");
+  }
+
+  student.branch = normalizedBranch;
+  if (name && name.trim()) student.name = name.trim();
+  student.googlePendingOnboarding = false;
+
+  await student.save({ validateBeforeSave: false });
+
+  // Onboarding complete — now issue the normal application access/refresh tokens
+  const accessToken = issueTokens(res, student, "student");
+
+  res.status(200).json(new ApiResponse(200, { accessToken, user: student.toSafeJSON() }, "Onboarding completed"));
 });

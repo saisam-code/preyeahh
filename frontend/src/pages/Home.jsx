@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import {
   FaCompass, FaChartLine, FaArrowRight, FaLaptopCode, FaSatelliteDish,
@@ -56,7 +57,35 @@ export default function Home() {
   const { user } = useAuth();
   const { setBranch } = useBranch();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [adminUser, setAdminUser] = useState(readStoredAdmin);
+
+  // Consume google_error from the URL and show a user-facing message
+  useEffect(() => {
+    const googleError = searchParams.get("google_error");
+    if (!googleError) return;
+
+    const messages = {
+      access_denied: "Google sign-in was cancelled or denied.",
+      state_mismatch: "Security check failed. Please try signing in with Google again.",
+      no_code: "Authentication failed. Please try again.",
+      token_exchange: "Could not complete Google sign-in. Please try again.",
+      token_invalid: "Google authentication failed. Please try again.",
+      email_not_verified: "Your Google email is not verified. Please verify it with Google first.",
+      domain_not_allowed: "Only @gmail.com and @nbkrist.org emails are supported.",
+      config: "Google sign-in is not configured. Please contact support.",
+      server_error: "Something went wrong with Google sign-in. Please try again.",
+      session_error: "Could not start your session. Please try again.",
+      no_token: "Authentication failed. Please try signing in with Google again.",
+      unknown: "Google sign-in failed. Please try again.",
+    };
+
+    toast.error(messages[googleError] || messages.unknown);
+
+    const next = new URLSearchParams(searchParams);
+    next.delete("google_error");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const [branches, setBranches] = useState([]);
   const [counts, setCounts] = useState({});

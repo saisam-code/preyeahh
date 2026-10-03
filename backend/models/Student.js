@@ -52,8 +52,16 @@ const studentSchema = new mongoose.Schema(
         message: "Students must register with a Gmail (@gmail.com) or college (@nbkrist.org) email",
       },
     },
-    password: { type: String, required: [true, "Password is required"], minlength: 6, select: false },
-    branch: { type: String, required: [true, "Branch is required"], uppercase: true, trim: true, index: true },
+    // Optional for Google-only accounts. Email/password registration still requires it
+    // (enforced in the controller, not the schema, so we can keep sparse Google accounts).
+    password: { type: String, minlength: 6, select: false },
+    branch: { type: String, uppercase: true, trim: true, index: true },
+
+    // Google OAuth identity — stable sub claim from Google's ID token
+    googleId: { type: String, unique: true, sparse: true, index: true },
+    // Marks a Google-created account that hasn't completed branch onboarding yet
+    googlePendingOnboarding: { type: Boolean, default: false },
+
     preferences: { type: preferencesSchema, default: () => ({}) },
     refreshTokenVersion: { type: Number, default: 0, select: false },
     isVerified: { type: Boolean, default: false },
@@ -67,11 +75,16 @@ const studentSchema = new mongoose.Schema(
 
 studentSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
+  if (!this.password) return next(); // Google-only accounts have no password
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
 studentSchema.methods.comparePassword = function (candidate) {
+  if (!this.password) {
+    // Google-only account — prevent timing-safe leak by returning false
+    return Promise.resolve(false);
+  }
   return bcrypt.compare(candidate, this.password);
 };
 
@@ -98,6 +111,7 @@ studentSchema.methods.toSafeJSON = function () {
     preferences: this.preferences,
     role: "student",
     isVerified: this.isVerified,
+    googlePendingOnboarding: this.googlePendingOnboarding || false,
     createdAt: this.createdAt,
   };
 };

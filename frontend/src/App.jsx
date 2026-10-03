@@ -11,6 +11,8 @@ import Admin from "./pages/Admin.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
+import GoogleCallback from "./pages/GoogleCallback.jsx";
+import GoogleOnboarding from "./pages/GoogleOnboarding.jsx";
 
 // Role-specific learning pages
 import Chat from "./pages/Chat.jsx";
@@ -36,6 +38,10 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
+
+        {/* Google OAuth callback pages — no Navbar auth required, tokens arrive via fragment */}
+        <Route path="/google-callback" element={<GoogleCallback />} />
+        <Route path="/google-onboarding" element={<GoogleOnboarding />} />
 
         <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/?login=1" />}>
           <Route path="/chat" element={<Chat />} />

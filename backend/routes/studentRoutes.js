@@ -15,6 +15,7 @@ import {
   extractProfile,
   updatePreferences,
   skipOnboarding,
+  completeGoogleOnboarding,
 } from "../controllers/studentController.js";
 import {
   listRoleMentors,
@@ -24,7 +25,7 @@ import {
   sendMessage,
 } from "../controllers/mentorshipController.js";
 
-import { protect, authorize } from "../middleware/auth.js";
+import { protect, authorize, protectGoogleOnboarding } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import { aiLimiter } from "../middleware/rateLimiters.js";
 import {
@@ -34,6 +35,7 @@ import {
   roleIdParamRule,
   extractProfileRules,
   preferencesRules,
+  googleOnboardingRules,
 } from "../validators/studentValidator.js";
 import {
   forgotPasswordRules,
@@ -86,5 +88,8 @@ router.post("/mentorship/:id/messages", protect, authorize("student"), sendMento
 router.post("/profile/extract", protect, authorize("student"), aiLimiter, extractProfileRules, validate, extractProfile);
 router.put("/profile/preferences", protect, authorize("student"), preferencesRules, validate, updatePreferences);
 router.post("/profile/skip-onboarding", protect, authorize("student"), skipOnboarding);
+
+// Google OAuth onboarding — accepts ONLY the short-lived onboarding token
+router.post("/google-onboarding", protectGoogleOnboarding, googleOnboardingRules, validate, completeGoogleOnboarding);
 
 export default router;

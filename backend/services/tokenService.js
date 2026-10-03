@@ -6,6 +6,17 @@ function signAccessToken(id, role) {
   });
 }
 
+/**
+ * Short-lived token for Google onboarding only.
+ * Cannot be used as a normal access token — protect() rejects tokens
+ * that carry a `purpose` claim.
+ */
+function signOnboardingToken(id, role) {
+  return jwt.sign({ id, role, purpose: "google_onboarding" }, process.env.JWT_SECRET, {
+    expiresIn: "10m",
+  });
+}
+
 function signRefreshToken(id, role, version = 0) {
   return jwt.sign({ id, role, version }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_REFRESH_EXPIRE || "7d",
@@ -42,6 +53,7 @@ function clearRefreshCookie(res, role) {
 
 export {
   signAccessToken,
+  signOnboardingToken,
   signRefreshToken,
   verifyRefreshToken,
   refreshCookieOptions,

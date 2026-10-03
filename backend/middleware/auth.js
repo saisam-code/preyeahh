@@ -26,6 +26,11 @@ const protect = asyncHandler(async (req, res, next) => {
     throw ApiError.unauthorized("Invalid or expired token");
   }
 
+  // Reject onboarding-only tokens — they must never be used for normal access
+  if (decoded.purpose === "google_onboarding") {
+    throw ApiError.unauthorized("Onboarding token cannot be used for this action");
+  }
+
   const Model = MODEL_BY_ROLE[decoded.role];
   if (!Model) throw ApiError.unauthorized("Invalid token role");
 
@@ -68,6 +73,7 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.purpose === "google_onboarding") return next(); // skip — onboarding token can't access optional routes
     const Model = MODEL_BY_ROLE[decoded.role];
     const user = Model && (await Model.findById(decoded.id));
     if (user) {
@@ -79,4 +85,43 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
   next();
 });
 
-export { protect, authorize, optionalAuth };
+/**
+ * Accepts ONLY Google onboarding tokens (short-lived, purpose-scoped).
+ * Used by the POST /api/students/google-onboarding endpoint.
+ * Normal access tokens are rejected — a pending Google student
+ * must not be able to use a regular JWT here (or anywhere else).
+ */
+const protectGoogleOnboarding = asyncHandler(async (req, res, next) => {
+  const header = req.headers.authorization;
+  const token = header && header.startsWith("Bearer ") ? header.split(" ")[1] : null;
+
+  if (!token) throw ApiError.unauthorized("Not authenticated — no onboarding token provided");
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    throw ApiError.unauthorized("Invalid or expired onboarding token");
+  }
+
+  if (decoded.purpose !== "google_onboarding") {
+    throw ApiError.unauthorized("Invalid token for onboarding");
+  }
+
+  if (decoded.role !== "student") {
+    throw ApiError.unauthorized("Invalid token for onboarding");
+  }
+
+  const student = await Student.findById(decoded.id);
+  if (!student) throw ApiError.unauthorized("User belonging to this token no longer exists");
+
+  req.user = {
+    id: student._id.toString(),
+    role: "student",
+    branch: student.branch || null,
+    doc: student,
+  };
+  next();
+});
+
+export { protect, authorize, optionalAuth, protectGoogleOnboarding };
