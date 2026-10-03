@@ -1,46 +1,96 @@
-# Preyeahh
+# PREYEAHH
 
-Branch → Role → Guidance → Beyond career platform (Student / Guide / Admin) with an AI learning layer (Groq): chat, roadmaps, quizzes, resources, progress.
+Career guidance and mentorship platform for engineering students. Pick a branch, explore career roles, get an AI-built roadmap, study from curated resources, test yourself with quizzes, and talk to mentors.
 
-Everything is ESM (`"type": "module"`) in both `backend/` and `frontend/`.
+Live: https://preyeahh.vercel.app
 
-## Run
+## What it does
+
+- **Explore** engineering branches and career roles with guidance for each.
+- **Roadmaps**: AI generates a step-by-step learning plan for a chosen role. Old roadmaps stay saved.
+- **AI chat**: ask career or study questions. Chats auto-delete after 7 days of inactivity.
+- **Quizzes**: AI-generated quizzes per topic. Auto-delete 7 days after last activity.
+- **Resources**: curated, searchable learning links.
+- **Mentors**: students message guides (mentors) directly.
+- **Interests and requests**: save roles you like, or request a role that is missing.
+
+## Who uses it
+
+| Account | Sign up | Can do |
+|---|---|---|
+| Student | Email + password, or Google | Everything above |
+| Guide | Email + password, must use an `@nbkrist.org` email | Mentor students, reply to conversations |
+
+
+New Google students fill in a short onboarding form (branch, etc.) before they get in. Google never creates Guide accounts.
+
+## How it works
+
+1. Student logs in. Backend issues a short-lived access token (15 min) and a refresh cookie (7 days).
+2. Student picks a branch and role, then reads guidance or generates a roadmap.
+3. Roadmaps, chat replies and quizzes come from the Groq AI API through the backend.
+4. Student can message a guide. Both sides see the conversation.
+
+Stack: React + Vite (frontend), Node + Express (backend), MongoDB, Groq (AI). Hosted on Vercel (frontend), Render (backend).
+
+## Run locally
+
+Needs Node.js, a MongoDB URI, and Google OAuth credentials (only for Google login).
+
 ```bash
-npm run install:all
-cp backend/.env.example backend/.env      # fill MONGO_URI, JWT_*, GROQ_API_KEY
-npm run create-admin                      # needs ADMIN_EMAIL / ADMIN_PASSWORD env vars
-npm run seed:resources                    # curated resource library (replaces existing)
-npm run seed:demo                         # non-production demo student + guide (never overwrites existing accounts)
-npm run dev                               # API :5000, web :5173 (Vite proxies /api)
+git clone <repository-url>
+cd preyeah-unified
+
+# backend
+cd backend
+npm install
+# create backend/.env (below)
+npm run dev        # http://localhost:5000
+
+# frontend (new terminal)
+cd frontend
+npm install
+npm run dev        # http://localhost:5173
 ```
 
-### Demo sign-in accounts
+`backend/.env`:
 
-Run `npm run seed:demo` after configuring `MONGO_URI` for a non-production database in `backend/.env`. The seeder refuses to run when `NODE_ENV=production` and never overwrites existing accounts.
+## Deploy
 
-| Role | Email | Password |
-|---|---|---|
-| Student | `demo.student@gmail.com` | `DemoStudent123!` |
-| Guide | `demo.guide@nbkrist.org` | `DemoGuide123!` |
+**Frontend (Vercel):** build `npm run build`, output `dist`, set `VITE_API_URL=https://preyeahh.onrender.com`.
 
-The guide account is pre-verified and approved so the guide experience can be tested immediately. Existing accounts with these addresses are left unchanged.
+**Backend (Render):** start `npm start`. Set the same variables as above with:
 
-## Backend layout (naming: `<name>Controller|Service|Routes|Validator.js`, models PascalCase)
-| Area | Mount | Files |
-|---|---|---|
-| Auth + profile (student) | `/api/students` | studentController, studentRoutes, profileService |
-| Guide auth + admin mgmt | `/api/guides` | guideController, guideRoutes |
-| Admin auth + stats | `/api/admin` | adminController, adminRoutes |
-| Roles / Branches / Beyond / Guidance / Role requests | `/api/roles` `/branches` `/beyond` `/guidance` `/role-requests` | *Controller, *Routes |
-| AI chat | `/api/chat` | chatController, chatService |
-| AI roadmaps | `/api/ai-roadmaps` | aiRoadmapController, aiRoadmapService |
-| AI quizzes | `/api/quiz` | quizController, quizService |
-| Resource library | `/api/resources` | resourceController, resourceService |
-| Progress / performance | `/api/progress` `/api/performance` | progressService, performanceService |
+```env
+NODE_ENV=production
+CLIENT_URL=https://preyeahh.vercel.app
+GOOGLE_CALLBACK_URL=https://preyeahh.onrender.com/api/auth/google/callback
+```
 
-Shared: `config/{db,groq}.js`, `services/{tokenService,groqService,roleContextService}.js`, `utils/{ApiError,ApiResponse,asyncHandler,sendEmail,aiPrompts}.js`, `middleware/{auth,validate,errorHandler,notFound,rateLimiters}.js`.
+## Testing
 
-All JSON responses use `{ success, statusCode, message, data, meta? }`.
+```bash
+cd backend && node --test
+cd frontend && npm run build && npm run lint
+```
 
-## Frontend
-Services in `src/services/*Service.js` mirror the backend modules. Student-only pages (`/chat /roadmaps /quiz /progress /profile`) sit behind `ProtectedRoute`.
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| Can't connect to MongoDB | Check `MONGO_URI`, DB user permissions, and Atlas IP allowlist |
+| `redirect_uri_mismatch` | Callback URL in Google Cloud must match `GOOGLE_CALLBACK_URL` exactly |
+| `invalid_client` | Wrong `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET`. If the secret leaked, rotate it |
+| Frontend can't reach backend | Check `VITE_API_URL` and that the Render service is awake |
+| Google login works locally, not in prod | Check `CLIENT_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CALLBACK_URL` in Render |
+
+## Notes for contributors
+
+- Role checks happen on the backend. Never trust a role sent by the frontend.
+- Production has `autoIndex` off. Add or change indexes through a deliberate migration, not on startup.
+- Chats embed messages in one document, so very long chats can hit MongoDB's 16 MB limit.
+
+
+## Maintainers
+
+PREYEAHH Development Team
