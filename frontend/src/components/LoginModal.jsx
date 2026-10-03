@@ -7,11 +7,10 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { fetchBranches } from "../services/branchService.js";
 import { fetchRoles } from "../services/rolesService.js";
 
-const STUDENT_EMAIL_RE = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
 const GUIDE_EMAIL_RE = /^[^\s@]+@nbkrist\.org$/i;
 
 export default function LoginModal({ open, onClose, startTab = "login" }) {
-  const { login, registerStudent, registerGuide, resendVerification } = useAuth();
+  const { login, registerGuide, resendVerification } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState(startTab);
   const [regType, setRegType] = useState("student");
@@ -87,34 +86,27 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   };
 
   const onRegisterSubmit = async (data) => {
+    if (regType === "student") return; // Students register via Google, not this form
+
     const email = data.email.trim().toLowerCase();
 
-    if (regType === "student" && !STUDENT_EMAIL_RE.test(email)) {
-      registerForm.setError("email", { message: "Students must use a Gmail (@gmail.com) or college (@nbkrist.org) email." });
-      return;
-    }
-    if (regType === "guide" && !GUIDE_EMAIL_RE.test(email)) {
+    if (!GUIDE_EMAIL_RE.test(email)) {
       registerForm.setError("email", { message: "Guides must register with a @nbkrist.org email address." });
       return;
     }
 
     try {
-      if (regType === "student") {
-        const res = await registerStudent({ name: data.name.trim(), email, password: data.password, branch: data.branch });
-        setRegSuccess(res.message || "Check your email to verify your account before logging in.");
-      } else {
-        const roleName = data.roleName === "__new__" ? data.newRoleName.trim() : data.roleName;
-        if (!roleName) {
-          registerForm.setError("roleName", { message: data.roleName === "__new__" ? "Enter the new role's name." : "Select a role to guide." });
-          return;
-        }
-        const bio = data.newRoleDesc
-          ? `[New role: ${data.newRoleDesc.trim()}]${data.bio ? " — " + data.bio.trim() : ""}`
-          : data.bio.trim();
-
-        const res = await registerGuide({ name: data.name.trim(), email, password: data.password, branch: data.branch, roleNames: [roleName], bio });
-        setRegSuccess(res.message || "Check your email to verify your account, then wait for admin approval.");
+      const roleName = data.roleName === "__new__" ? data.newRoleName.trim() : data.roleName;
+      if (!roleName) {
+        registerForm.setError("roleName", { message: data.roleName === "__new__" ? "Enter the new role's name." : "Select a role to guide." });
+        return;
       }
+      const bio = data.newRoleDesc
+        ? `[New role: ${data.newRoleDesc.trim()}]${data.bio ? " — " + data.bio.trim() : ""}`
+        : data.bio.trim();
+
+      const res = await registerGuide({ name: data.name.trim(), email, password: data.password, branch: data.branch, roleNames: [roleName], bio });
+      setRegSuccess(res.message || "Check your email to verify your account, then wait for admin approval.");
     } catch (err) {
       const msg = err.response?.data?.message || "Something went wrong. Please try again.";
       registerForm.setError("root", { message: msg });
@@ -208,7 +200,32 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
               </button>
             </div>
 
-            {!regSuccess && (
+            {!regSuccess && regType === "student" && (
+              <div style={{ textAlign: "center", padding: "1rem 0" }}>
+                <p style={{ color: "var(--text-dim, #888)", fontSize: "0.9rem", marginBottom: "1.25rem" }}>
+                  Students register with Google. Click below to get started — no password needed.
+                </p>
+                <a
+                  href={`${import.meta.env.VITE_API_URL || "/api"}/auth/google`}
+                  className="btn btn-outline"
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", textDecoration: "none" }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                  </svg>
+                  Continue with Google
+                </a>
+                <small style={{ fontSize: "0.75rem", color: "var(--muted, #888)", marginTop: "0.75rem", display: "block" }}>
+                  Only @gmail.com and @nbkrist.org emails are supported.
+                </small>
+              </div>
+            )}
+
+            {!regSuccess && regType === "guide" && (
               <>
                 <div className="form-group">
                   <label>Full Name</label>
@@ -219,11 +236,11 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
                   <label>Email</label>
                   <input
                     type="email"
-                    placeholder={regType === "guide" ? "you@nbkrist.org" : "you@gmail.com or you@nbkrist.org"}
+                    placeholder="you@nbkrist.org"
                     {...registerForm.register("email", { required: true })}
                   />
                   <small style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.3rem", display: "block" }}>
-                    {regType === "guide" ? "Guides must use a @nbkrist.org email." : "Use your Gmail or @nbkrist.org email."}
+                    Guides must use a @nbkrist.org email.
                   </small>
                   {registerForm.formState.errors.email && (
                     <small style={{ color: "var(--error, #ef4444)", display: "block", marginTop: "0.25rem" }}>
@@ -247,65 +264,61 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
                 </div>
 
                 <div className="form-group">
-                  <label>{regType === "guide" ? "Branch you want to guide" : "Your Branch"}</label>
+                  <label>Branch you want to guide</label>
                   <select {...registerForm.register("branch", { required: true })}>
                     {branches.map((b) => <option key={b} value={b}>{b}</option>)}
                   </select>
                 </div>
 
-                {regType === "guide" && (
+                <div className="form-group">
+                  <label>Role you want to guide</label>
+                  <select {...registerForm.register("roleName")}>
+                    {rolesForBranch.length === 0 ? (
+                      <option value="">No roles for this branch yet</option>
+                    ) : (
+                      rolesForBranch.map((r) => <option key={r._id} value={r.title}>{r.title}</option>)
+                    )}
+                    <option value="__new__">+ Propose a new role…</option>
+                  </select>
+                  {registerForm.formState.errors.roleName && (
+                    <small style={{ color: "var(--error, #ef4444)" }}>{registerForm.formState.errors.roleName.message}</small>
+                  )}
+                </div>
+
+                {watchedRole === "__new__" && (
                   <>
                     <div className="form-group">
-                      <label>Role you want to guide</label>
-                      <select {...registerForm.register("roleName")}>
-                        {rolesForBranch.length === 0 ? (
-                          <option value="">No roles for this branch yet</option>
-                        ) : (
-                          rolesForBranch.map((r) => <option key={r._id} value={r.title}>{r.title}</option>)
-                        )}
-                        <option value="__new__">+ Propose a new role…</option>
-                      </select>
-                      {registerForm.formState.errors.roleName && (
-                        <small style={{ color: "var(--error, #ef4444)" }}>{registerForm.formState.errors.roleName.message}</small>
-                      )}
+                      <label>New Role Name</label>
+                      <input type="text" placeholder="e.g. Cybersecurity Analyst" {...registerForm.register("newRoleName")} />
                     </div>
-
-                    {watchedRole === "__new__" && (
-                      <>
-                        <div className="form-group">
-                          <label>New Role Name</label>
-                          <input type="text" placeholder="e.g. Cybersecurity Analyst" {...registerForm.register("newRoleName")} />
-                        </div>
-                        <div className="form-group">
-                          <label>Brief Description</label>
-                          <textarea placeholder="What does this role involve?" style={{ minHeight: 60 }} {...registerForm.register("newRoleDesc")} />
-                        </div>
-                      </>
-                    )}
-
                     <div className="form-group">
-                      <label>Short Bio <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
-                      <textarea placeholder="Tell students a bit about yourself..." style={{ minHeight: 65 }} {...registerForm.register("bio")} />
+                      <label>Brief Description</label>
+                      <textarea placeholder="What does this role involve?" style={{ minHeight: 60 }} {...registerForm.register("newRoleDesc")} />
                     </div>
-
-                    <p className="ulm-note">Guide registrations are reviewed by the admin before activation.</p>
                   </>
                 )}
+
+                <div className="form-group">
+                  <label>Short Bio <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span></label>
+                  <textarea placeholder="Tell students a bit about yourself..." style={{ minHeight: 65 }} {...registerForm.register("bio")} />
+                </div>
+
+                <p className="ulm-note">Guide registrations are reviewed by the admin before activation.</p>
               </>
             )}
 
             {registerForm.formState.errors.root && <p className="ulm-err" style={{ display: "block" }}>{registerForm.formState.errors.root.message}</p>}
             {regSuccess && <p className="ulm-ok">{regSuccess}</p>}
 
-            {!regSuccess ? (
+            {!regSuccess && regType === "guide" ? (
               <button className="btn btn-primary" style={{ width: "100%" }} type="submit" disabled={registerForm.formState.isSubmitting}>
-                {registerForm.formState.isSubmitting ? "Submitting..." : regType === "guide" ? "Submit Registration" : "Create Account"}
+                {registerForm.formState.isSubmitting ? "Submitting..." : "Submit Registration"}
               </button>
-            ) : (
+            ) : regSuccess ? (
               <button className="btn btn-outline" style={{ width: "100%" }} type="button" onClick={onClose}>
                 Close
               </button>
-            )}
+            ) : null}
           </form>
         )}
       </div>

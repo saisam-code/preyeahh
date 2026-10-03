@@ -2,7 +2,8 @@ import { body, param } from "express-validator";
 
 export const registerRules = [
   body("name").trim().notEmpty().withMessage("Name is required").isLength({ max: 100 }),
-  body("email").trim().notEmpty().withMessage("Email is required").isEmail().withMessage("Enter a valid email address"),
+  body("email").trim().notEmpty().withMessage("Email is required").isEmail().withMessage("Enter a valid email address")
+    .matches(/@nbkrist\.org$/i).withMessage("Guides must register with a @nbkrist.org email"),
   body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
   body("branch").trim().notEmpty().withMessage("Branch is required").isLength({ max: 20 }),
   body("roleNames").isArray({ min: 1 }).withMessage("Select at least one role to guide"),

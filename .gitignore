@@ -1,108 +1,59 @@
-# ==========================================
-# Dependencies
-# ==========================================
-node_modules/
-**/node_modules/
+# PREYEAHH - APP ONLY
 
-
-# ==========================================
-# Environment variables / secrets
-# ==========================================
+# Environment / secrets
 .env
 .env.*
 !.env.example
 
-# Backend / frontend environment files
-backend/.env
-frontend/.env
-frontend/.env.local
-frontend/.env.*.local
+# Dependencies
+node_modules/
 
-
-# ==========================================
 # Build output
-# ==========================================
 dist/
 build/
 .vite/
-**/dist/
-**/build/
 
-
-# ==========================================
-# Logs
-# ==========================================
-*.log
-logs/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-
-
-# ==========================================
-# Test / coverage
-# ==========================================
-coverage/
-.nyc_output/
-*.lcov
-
-
-# ==========================================
-# Runtime / temporary files
-# ==========================================
+# Temporary / generated files
 tmp/
 temp/
 *.tmp
 *.temp
-*.cache
+*.pid
+*.pid.lock
 
+# Test / coverage output
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
 
-# ==========================================
-# VS Code
-# ==========================================
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
-!.vscode/tasks.json
-!.vscode/launch.json
-
-
-# ==========================================
-# Other IDEs
-# ==========================================
-.idea/
-*.iml
-*.swp
-*.swo
-
-
-# ==========================================
-# OS files
-# ==========================================
-.DS_Store
-Thumbs.db
-Desktop.ini
-
-
-# ==========================================
-# Vercel
-# ==========================================
-.vercel/
-
-
-# ==========================================
-# Local database / generated database files
-# ==========================================
+# Local databases / backups
 *.sqlite
 *.sqlite3
 *.db
-
-
-# ==========================================
-# Generated / temporary files
-# ==========================================
+*.dump
 *.bak
-*.backup
-*.orig
+
+# Logs
+*.log
+
+# Generated project digests
+digest*.txt
+digest*.md
+
+# Deployment
+.vercel/
+.render/
+
+# Editor / OS files
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json

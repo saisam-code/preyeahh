@@ -16,6 +16,7 @@ Directory structure:
     │   │   ├── beyondController.js
     │   │   ├── branchController.js
     │   │   ├── chatController.js
+    │   │   ├── googleAuthController.js
     │   │   ├── guidanceController.js
     │   │   ├── guideController.js
     │   │   ├── mentorshipController.js
@@ -55,6 +56,7 @@ Directory structure:
     │   │   ├── beyondRoutes.js
     │   │   ├── branchRoutes.js
     │   │   ├── chatRoutes.js
+    │   │   ├── googleAuthRoutes.js
     │   │   ├── guidanceRoutes.js
     │   │   ├── guideRoutes.js
     │   │   ├── performanceRoutes.js
@@ -127,11 +129,12 @@ Directory structure:
             │   ├── MentorshipInbox.jsx
             │   ├── Navbar.jsx
             │   ├── ProtectedRoute.jsx
+            │   ├── RoadmapGraph.css
+            │   ├── RoadmapGraph.jsx
             │   ├── ThemeToggle.jsx
             │   └── admin/
             │       ├── AdminBeyond.jsx
             │       ├── AdminBranches.jsx
-            │       ├── AdminDashboard.jsx
             │       ├── AdminGuidance.jsx
             │       ├── AdminGuides.jsx
             │       ├── AdminInterest.jsx
@@ -149,14 +152,16 @@ Directory structure:
             │   ├── Chat.jsx
             │   ├── Dashboard.jsx
             │   ├── ForgotPassword.jsx
+            │   ├── GoogleCallback.jsx
+            │   ├── GoogleOnboarding.jsx
             │   ├── GuidePanel.jsx
             │   ├── Home.jsx
             │   ├── MyRoadmaps.jsx
             │   ├── Profile.jsx
-            │   ├── Progress.jsx
             │   ├── Quiz.jsx
             │   ├── ResetPassword.jsx
             │   ├── Resources.jsx
+            │   ├── RoadmapView.jsx
             │   ├── Roles.jsx
             │   └── VerifyEmail.jsx
             └── services/
@@ -284,6 +289,7 @@ import aiRoadmapRoutes from "./routes/aiRoadmapRoutes.js";
 import quizRoutes from "./routes/quizRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import performanceRoutes from "./routes/performanceRoutes.js";
+import googleAuthRoutes from "./routes/googleAuthRoutes.js";
 
 const app = express();
 
@@ -302,15 +308,20 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // â”€â”€ CORS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
-  .split(",")
-  .map((o) => o.trim());
+const allowedOrigins = new Set([
+  "https://preyeahh.vercel.app",
+  ...(process.env.CLIENT_URL || "http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim().replace(/^['"]|['"]$/g, "").replace(/\/+$/, ""))
+    .filter(Boolean),
+]);
+console.log("[cors] allowed origins:", [...allowedOrigins]);
 
 app.use(
   cors({
     origin(origin, callback) {
       // allow non-browser tools (curl/Postman) with no origin header
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.has(origin)) {
         return callback(null, true);
       }
       return callback(new Error(`CORS blocked for origin: ${origin}`));
@@ -345,6 +356,7 @@ app.use("/api/guides", guideRoutes);
 app.use("/api/guidance", guidanceRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/role-requests", roleRequestRoutes);
+app.use("/api/auth", googleAuthRoutes);
 
 // â”€â”€ AI learning modules (student-facing) â”€â”€
 app.use("/api/chat", chatRoutes);
@@ -371,7 +383,9 @@ FILE: backend/package.json
   "private": true,
   "type": "module",
   "main": "server.js",
-  "engines": { "node": ">=18" },
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
@@ -389,6 +403,7 @@ FILE: backend/package.json
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^7.5.0",
     "express-validator": "^7.2.1",
+    "google-auth-library": "^11.1.0",
     "groq-sdk": "^1.6.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
@@ -411,6 +426,7 @@ import "dotenv/config";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import logger from "./utils/logger.js";
+import { verifyEmailTransport } from "./utils/sendEmail.js";
 import "./models/index.js"; // registers every schema before the app starts handling requests
 
 const PORT = process.env.PORT || 5000;
@@ -421,6 +437,7 @@ async function start() {
   const server = app.listen(PORT, () => {
     logger.info(`[server] Preyeahh API running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);
   });
+  void verifyEmailTransport();
 
   // Fail loudly on unhandled promise rejections instead of a silent hang
   process.on("unhandledRejection", (err) => {
@@ -451,6 +468,13 @@ JWT_REFRESH_EXPIRE=7d
 # CORS â€” frontend origin(s), comma-separated. Also used to build email links.
 CLIENT_URL=http://localhost:5173
 
+# Google OAuth 2.0 (Authorization Code flow â€” students only)
+# Create a Web application credential in Google Cloud Console.
+# Add http://localhost:5000/api/auth/google/callback as an authorised redirect URI.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+
 # AI (Groq) â€” required for chat, roadmaps, quizzes, profile extraction
 GROQ_API_KEY=your_groq_api_key
 GROQ_MODEL=openai/gpt-oss-120b
@@ -460,7 +484,8 @@ SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
 SMTP_PASS=
-SMTP_FROM="Pre-Yeah" <no-reply@preyeah.dev>
+# Use a sender address verified with your SMTP provider (required in production).
+SMTP_FROM=
 
 # scripts/createAdmin.js
 # ADMIN_NAME=Admin
@@ -559,7 +584,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { getClientUrl } from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 
 export const loginAdmin = asyncHandler(async (req, res) => {
@@ -608,7 +633,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   if (admin) {
     const rawToken = admin.createPasswordResetToken();
     await admin.save({ validateBeforeSave: false });
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=admin`;
+    const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=admin`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Admin password reset link for ${admin.email}: ${resetUrl}`);
     }
@@ -919,6 +944,220 @@ export const archiveChat = asyncHandler(async (req, res) => {
 
 
 ================================================
+FILE: backend/controllers/googleAuthController.js
+================================================
+/**
+ * Google OAuth 2.0 Authorization Code flow controller.
+ *
+ * Routes:
+ *   GET /api/auth/google          â€” initiates OAuth redirect to Google
+ *   GET /api/auth/google/callback â€” receives code, verifies, finds/creates student
+ *
+ * Security:
+ *   - CSRF state: cryptographically random, stored in a short-lived httpOnly cookie
+ *   - ID token verified (signature + iss + aud + exp + email_verified)
+ *   - google sub used as stable external identity key (never email)
+ *   - Client secret never leaves the server
+ *   - Only students can use Google OAuth (guide/admin auth is unchanged)
+ */
+
+import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
+import Student from "../models/Student.js";
+import logger from "../utils/logger.js";
+import { issueTokens, signOnboardingToken } from "../services/tokenService.js";
+
+// â”€â”€ helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function getOAuthClient() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const redirectUri = process.env.GOOGLE_CALLBACK_URL || "http://localhost:5000/api/auth/google/callback";
+
+  if (!clientId || !clientSecret) {
+    throw new Error("GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must be set in environment variables");
+  }
+  return new OAuth2Client(clientId, clientSecret, redirectUri);
+}
+
+function getClientUrl() {
+  return (process.env.CLIENT_URL || "http://localhost:5173")
+    .split(",")[0]
+    .trim()
+    .replace(/\/+$/, "");
+}
+
+const STATE_COOKIE = "pp_oauth_state";
+const STATE_MAX_AGE = 10 * 60 * 1000; // 10 minutes
+
+function stateCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/api/auth/google",
+    maxAge: STATE_MAX_AGE,
+  };
+}
+
+const EMAIL_REGEX = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
+
+// â”€â”€ GET /api/auth/google â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+export async function initiateGoogleAuth(req, res) {
+  try {
+    const client = getOAuthClient();
+
+    // Generate a cryptographically random state value to prevent CSRF
+    const state = crypto.randomBytes(32).toString("hex");
+
+    // Store state in a short-lived httpOnly cookie
+    res.cookie(STATE_COOKIE, state, stateCookieOptions());
+
+    const authUrl = client.generateAuthUrl({
+      access_type: "offline",
+      scope: ["openid", "email", "profile"],
+      state,
+      prompt: "select_account",
+    });
+
+    res.redirect(authUrl);
+  } catch (err) {
+    logger.error("[google-auth] Failed to initiate OAuth:", err.message);
+    res.redirect(`${getClientUrl()}/?google_error=config`);
+  }
+}
+
+// â”€â”€ GET /api/auth/google/callback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+export async function handleGoogleCallback(req, res) {
+  const clientUrl = getClientUrl();
+
+  try {
+    const { code, state: returnedState, error: oauthError } = req.query;
+
+    // â”€â”€ 1. User denied access or Google returned an error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    if (oauthError) {
+      logger.warn("[google-auth] OAuth error from Google:", oauthError);
+      return res.redirect(`${clientUrl}/?google_error=access_denied`);
+    }
+
+    // â”€â”€ 2. Validate CSRF state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    const storedState = req.cookies?.[STATE_COOKIE];
+    res.clearCookie(STATE_COOKIE, { ...stateCookieOptions(), maxAge: undefined });
+
+    if (!storedState || !returnedState || storedState !== returnedState) {
+      logger.warn("[google-auth] State mismatch â€” possible CSRF");
+      return res.redirect(`${clientUrl}/?google_error=state_mismatch`);
+    }
+
+    if (!code) {
+      return res.redirect(`${clientUrl}/?google_error=no_code`);
+    }
+
+    // â”€â”€ 3. Exchange authorization code for tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    const client = getOAuthClient();
+    let tokens;
+    try {
+      const response = await client.getToken(code);
+      tokens = response.tokens;
+    } catch (err) {
+      logger.error("[google-auth] Token exchange failed:", err.message);
+      return res.redirect(`${clientUrl}/?google_error=token_exchange`);
+    }
+
+    // â”€â”€ 4. Verify and decode the Google ID token â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    let payload;
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+      payload = ticket.getPayload();
+    } catch (err) {
+      logger.error("[google-auth] ID token verification failed:", err.message);
+      return res.redirect(`${clientUrl}/?google_error=token_invalid`);
+    }
+
+    // â”€â”€ 5. Validate the Google identity we received â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    const { sub: googleId, email, email_verified, name, given_name } = payload;
+
+    if (!email_verified) {
+      logger.warn("[google-auth] Google email not verified for:", email);
+      return res.redirect(`${clientUrl}/?google_error=email_not_verified`);
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      logger.warn("[google-auth] Disallowed email domain:", email);
+      return res.redirect(`${clientUrl}/?google_error=domain_not_allowed`);
+    }
+
+    // â”€â”€ 6. Find or link or create the local Student â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    // CASE 1: Student already has this googleId linked
+    let student = await Student.findOne({ googleId });
+
+    if (!student) {
+      // CASE 2: No googleId match, but a Student exists with the same email
+      student = await Student.findOne({ email: email.toLowerCase() });
+
+      if (student) {
+        // Link the Google identity to the existing account
+        student.googleId = googleId;
+        if (!student.isVerified) student.isVerified = true; // Google verified the email
+        await student.save({ validateBeforeSave: false });
+        logger.info("[google-auth] Linked Google identity to existing student:", email);
+      }
+    }
+
+    if (!student) {
+      // CASE 3: Brand-new user â€” create a stub account, pending branch onboarding
+      const displayName = name || given_name || email.split("@")[0];
+
+      try {
+        student = await Student.create({
+          name: displayName,
+          email: email.toLowerCase(),
+          googleId,
+          // password intentionally omitted â€” Google-only account
+          // branch intentionally omitted â€” collected in onboarding
+          isVerified: true,              // Google verified the email
+          googlePendingOnboarding: true, // branch still needed
+        });
+        logger.info("[google-auth] Created new Google student:", email);
+      } catch (err) {
+        // Race condition: another callback created this student first
+        if (err.code === 11000 && err.keyPattern?.googleId) {
+          student = await Student.findOne({ googleId });
+          if (!student) throw err; // truly unexpected
+          logger.info("[google-auth] Race condition resolved â€” found existing googleId:", email);
+        } else {
+          throw err;
+        }
+      }
+    }
+
+    // â”€â”€ 7. Issue authentication and redirect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Pending students receive a SHORT-LIVED onboarding-only token that
+    // can ONLY be used for POST /api/students/google-onboarding.
+    // Existing students receive the normal application access token.
+    if (student.googlePendingOnboarding) {
+      const onboardingToken = signOnboardingToken(student._id, "student");
+      const displayName = encodeURIComponent(student.name || "");
+      return res.redirect(`${clientUrl}/google-onboarding#token=${onboardingToken}&role=student&name=${displayName}`);
+    }
+
+    const accessToken = issueTokens(res, student, "student");
+    return res.redirect(`${clientUrl}/google-callback#token=${accessToken}&role=student`);
+  } catch (err) {
+    logger.error("[google-auth] Unexpected error in callback:", err.message);
+    return res.redirect(`${getClientUrl()}/?google_error=server_error`);
+  }
+}
+
+
+
+================================================
 FILE: backend/controllers/guidanceController.js
 ================================================
 import Guidance from "../models/Guidance.js";
@@ -1043,7 +1282,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { assertEmailConfigured, getClientUrl } from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 
 export const registerGuide = asyncHandler(async (req, res) => {
@@ -1051,13 +1290,14 @@ export const registerGuide = asyncHandler(async (req, res) => {
 
   const existing = await Guide.findOne({ email: email.toLowerCase() });
   if (existing) throw ApiError.conflict("An account with this email already exists");
+  assertEmailConfigured();
 
   const guide = await Guide.create({ name, email, password, branch, roleNames, bio });
 
   const rawToken = guide.createEmailVerificationToken();
   await guide.save({ validateBeforeSave: false });
 
-  const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=guide`;
+  const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=guide`;
   if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
     logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
   }
@@ -1247,7 +1487,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   if (guide) {
     const rawToken = guide.createPasswordResetToken();
     await guide.save({ validateBeforeSave: false });
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=guide`;
+    const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=guide`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Guide password reset link for ${guide.email}: ${resetUrl}`);
     }
@@ -1307,7 +1547,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
   if (guide && !guide.isVerified) {
     const rawToken = guide.createEmailVerificationToken();
     await guide.save({ validateBeforeSave: false });
-    const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=guide`;
+    const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=guide`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
     }
@@ -1726,12 +1966,13 @@ FILE: backend/controllers/studentController.js
 import crypto from "crypto";
 import Student from "../models/Student.js";
 import Role from "../models/Role.js";
+import Branch from "../models/Branch.js";
 import RoleInterest from "../models/RoleInterest.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import logger from "../utils/logger.js";
-import sendEmail from "../utils/sendEmail.js";
+import sendEmail, { assertEmailConfigured, getClientUrl } from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 import * as profileService from "../services/profileService.js";
 
@@ -1740,13 +1981,14 @@ export const registerStudent = asyncHandler(async (req, res) => {
 
   const existing = await Student.findOne({ email: email.toLowerCase() });
   if (existing) throw ApiError.conflict("An account with this email already exists. Try logging in instead.");
+  assertEmailConfigured();
 
   const student = await Student.create({ name, email, password, branch });
 
   const rawToken = student.createEmailVerificationToken();
   await student.save({ validateBeforeSave: false });
 
-  const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=student`;
+  const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=student`;
   if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
     logger.dev(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
   }
@@ -1766,7 +2008,14 @@ export const loginStudent = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   const student = await Student.findOne({ email: email.toLowerCase() }).select("+password");
-  if (!student || !(await student.comparePassword(password))) {
+  if (!student) throw ApiError.unauthorized("Invalid email or password");
+
+  // Google-only accounts have no password â€” give a clear but safe message
+  if (!student.password) {
+    throw ApiError.unauthorized("This account uses Google sign-in. Please use 'Continue with Google' to log in.");
+  }
+
+  if (!(await student.comparePassword(password))) {
     throw ApiError.unauthorized("Invalid email or password");
   }
 
@@ -1834,17 +2083,27 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const student = await Student.findOne({ email: email.toLowerCase() });
 
   if (student) {
-    const rawToken = student.createPasswordResetToken();
-    await student.save({ validateBeforeSave: false });
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${rawToken}&role=student`;
-    if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      logger.dev(`[DEV] Student password reset link for ${student.email}: ${resetUrl}`);
+    // Google-only accounts have no password â€” tell them without revealing account existence
+    if (!student.password) {
+      await sendEmail({
+        to: student.email,
+        subject: "Preyeahh account â€” sign in with Google",
+        html: `<p>Hi ${student.name},</p><p>Your Preyeahh account uses Google sign-in and does not have a password. Please use "Continue with Google" to access your account.</p>`,
+      }).catch(() => {});
+      // Fall through â€” same generic response so we don't leak account existence
+    } else {
+      const rawToken = student.createPasswordResetToken();
+      await student.save({ validateBeforeSave: false });
+      const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=student`;
+      if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
+        logger.dev(`[DEV] Student password reset link for ${student.email}: ${resetUrl}`);
+      }
+      await sendEmail({
+        to: student.email,
+        subject: "Reset your Preyeahh password",
+        html: `<p>Hi ${student.name},</p><p>Click below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">Reset Password</a></p><p>If you didn't request this, ignore this email.</p>`,
+      });
     }
-    await sendEmail({
-      to: student.email,
-      subject: "Reset your Preyeahh password",
-      html: `<p>Hi ${student.name},</p><p>Click below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">Reset Password</a></p><p>If you didn't request this, ignore this email.</p>`,
-    });
   }
 
   res.status(200).json(new ApiResponse(200, null, "If that email is registered, a reset link has been sent."));
@@ -1896,7 +2155,7 @@ export const resendVerification = asyncHandler(async (req, res) => {
   if (student && !student.isVerified) {
     const rawToken = student.createEmailVerificationToken();
     await student.save({ validateBeforeSave: false });
-    const verifyUrl = `${process.env.CLIENT_URL}/verify-email/${rawToken}?role=student`;
+    const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=student`;
     if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
       logger.dev(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
     }
@@ -1930,6 +2189,54 @@ export const skipOnboarding = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, preferences, "Onboarding skipped"));
 });
 
+// â”€â”€ Google OAuth onboarding â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+/**
+ * POST /api/students/google-onboarding
+ * Called by the frontend after a new Google student supplies their branch.
+ * The student is authenticated via a short-lived onboarding-only token
+ * (protectGoogleOnboarding), NOT a normal application JWT.
+ * After successful onboarding, normal application tokens are issued.
+ */
+export const completeGoogleOnboarding = asyncHandler(async (req, res) => {
+  const student = req.user.doc;
+
+  if (!student.googleId) {
+    throw ApiError.forbidden("This endpoint is only for Google-authenticated accounts");
+  }
+
+  if (!student.googlePendingOnboarding) {
+    // Already completed â€” issue normal tokens and return current profile
+    const accessToken = issueTokens(res, student, "student");
+    return res.status(200).json(new ApiResponse(200, { accessToken, user: student.toSafeJSON() }, "Onboarding already completed"));
+  }
+
+  const { branch, name } = req.body;
+
+  if (!branch || !branch.trim()) {
+    throw ApiError.badRequest("Branch is required");
+  }
+
+  const normalizedBranch = branch.trim().toUpperCase();
+
+  // Validate that the submitted branch actually exists in the database
+  const existingBranch = await Branch.findOne({ name: normalizedBranch });
+  if (!existingBranch) {
+    throw ApiError.badRequest("Invalid branch. Please select a valid engineering branch.");
+  }
+
+  student.branch = normalizedBranch;
+  if (name && name.trim()) student.name = name.trim();
+  student.googlePendingOnboarding = false;
+
+  await student.save({ validateBeforeSave: false });
+
+  // Onboarding complete â€” now issue the normal application access/refresh tokens
+  const accessToken = issueTokens(res, student, "student");
+
+  res.status(200).json(new ApiResponse(200, { accessToken, user: student.toSafeJSON() }, "Onboarding completed"));
+});
+
 
 
 ================================================
@@ -1961,6 +2268,11 @@ const protect = asyncHandler(async (req, res, next) => {
     decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch {
     throw ApiError.unauthorized("Invalid or expired token");
+  }
+
+  // Reject onboarding-only tokens â€” they must never be used for normal access
+  if (decoded.purpose === "google_onboarding") {
+    throw ApiError.unauthorized("Onboarding token cannot be used for this action");
   }
 
   const Model = MODEL_BY_ROLE[decoded.role];
@@ -2005,6 +2317,7 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.purpose === "google_onboarding") return next(); // skip â€” onboarding token can't access optional routes
     const Model = MODEL_BY_ROLE[decoded.role];
     const user = Model && (await Model.findById(decoded.id));
     if (user) {
@@ -2016,7 +2329,46 @@ const optionalAuth = asyncHandler(async (req, res, next) => {
   next();
 });
 
-export { protect, authorize, optionalAuth };
+/**
+ * Accepts ONLY Google onboarding tokens (short-lived, purpose-scoped).
+ * Used by the POST /api/students/google-onboarding endpoint.
+ * Normal access tokens are rejected â€” a pending Google student
+ * must not be able to use a regular JWT here (or anywhere else).
+ */
+const protectGoogleOnboarding = asyncHandler(async (req, res, next) => {
+  const header = req.headers.authorization;
+  const token = header && header.startsWith("Bearer ") ? header.split(" ")[1] : null;
+
+  if (!token) throw ApiError.unauthorized("Not authenticated â€” no onboarding token provided");
+
+  let decoded;
+  try {
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch {
+    throw ApiError.unauthorized("Invalid or expired onboarding token");
+  }
+
+  if (decoded.purpose !== "google_onboarding") {
+    throw ApiError.unauthorized("Invalid token for onboarding");
+  }
+
+  if (decoded.role !== "student") {
+    throw ApiError.unauthorized("Invalid token for onboarding");
+  }
+
+  const student = await Student.findById(decoded.id);
+  if (!student) throw ApiError.unauthorized("User belonging to this token no longer exists");
+
+  req.user = {
+    id: student._id.toString(),
+    role: "student",
+    branch: student.branch || null,
+    doc: student,
+  };
+  next();
+});
+
+export { protect, authorize, optionalAuth, protectGoogleOnboarding };
 
 
 
@@ -2404,7 +2756,7 @@ const chatSchema = new mongoose.Schema(
     branch: { type: String, default: "", uppercase: true, trim: true },
     messages: { type: [messageSchema], default: [] },
     isArchived: { type: Boolean, default: false }, // soft delete
-    expiresAt: { type: Date, default: null, index: true },
+    expiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -2641,6 +2993,7 @@ const mentorshipConversationSchema = new mongoose.Schema(
     branch: { type: String, required: true, uppercase: true, trim: true, index: true },
     messages: { type: [mentorshipMessageSchema], default: [] },
     lastMessageAt: { type: Date, default: Date.now },
+    guideReadAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -2679,7 +3032,7 @@ const quizSchema = new mongoose.Schema(
     isCompleted: { type: Boolean, default: false },
     score: { type: Number, default: 0 },
     userAnswers: [{ type: String }],
-    expiresAt: { type: Date, default: null, index: true },
+    expiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -2987,8 +3340,16 @@ const studentSchema = new mongoose.Schema(
         message: "Students must register with a Gmail (@gmail.com) or college (@nbkrist.org) email",
       },
     },
-    password: { type: String, required: [true, "Password is required"], minlength: 6, select: false },
-    branch: { type: String, required: [true, "Branch is required"], uppercase: true, trim: true, index: true },
+    // Optional for Google-only accounts. Email/password registration still requires it
+    // (enforced in the controller, not the schema, so we can keep sparse Google accounts).
+    password: { type: String, minlength: 6, select: false },
+    branch: { type: String, uppercase: true, trim: true, index: true },
+
+    // Google OAuth identity â€” stable sub claim from Google's ID token
+    googleId: { type: String, unique: true, sparse: true, index: true },
+    // Marks a Google-created account that hasn't completed branch onboarding yet
+    googlePendingOnboarding: { type: Boolean, default: false },
+
     preferences: { type: preferencesSchema, default: () => ({}) },
     refreshTokenVersion: { type: Number, default: 0, select: false },
     isVerified: { type: Boolean, default: false },
@@ -3002,11 +3363,16 @@ const studentSchema = new mongoose.Schema(
 
 studentSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
+  if (!this.password) return next(); // Google-only accounts have no password
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
 studentSchema.methods.comparePassword = function (candidate) {
+  if (!this.password) {
+    // Google-only account â€” prevent timing-safe leak by returning false
+    return Promise.resolve(false);
+  }
   return bcrypt.compare(candidate, this.password);
 };
 
@@ -3033,6 +3399,7 @@ studentSchema.methods.toSafeJSON = function () {
     preferences: this.preferences,
     role: "student",
     isVerified: this.isVerified,
+    googlePendingOnboarding: this.googlePendingOnboarding || false,
     createdAt: this.createdAt,
   };
 };
@@ -3209,6 +3576,38 @@ router.post("/:chatId/message", aiLimiter, sendMessageRules, validate, sendMessa
 router.patch("/:chatId", updateChatRules, validate, updateChat);
 router.delete("/:chatId/history", chatIdParamRule, validate, clearChatHistory);
 router.delete("/:chatId", chatIdParamRule, validate, archiveChat);
+
+export default router;
+
+
+
+================================================
+FILE: backend/routes/googleAuthRoutes.js
+================================================
+/**
+ * Google OAuth routes.
+ *
+ *   GET /api/auth/google          â€” redirect to Google
+ *   GET /api/auth/google/callback â€” receive code, issue tokens, redirect to frontend
+ */
+
+import express from "express";
+import rateLimit from "express-rate-limit";
+import { initiateGoogleAuth, handleGoogleCallback } from "../controllers/googleAuthController.js";
+
+const router = express.Router();
+
+// Limit to 20 initiation attempts per 15 minutes per IP
+const googleInitLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, statusCode: 429, message: "Too many Google login attempts." },
+});
+
+router.get("/google", googleInitLimiter, initiateGoogleAuth);
+router.get("/google/callback", handleGoogleCallback);
 
 export default router;
 
@@ -3508,6 +3907,7 @@ import {
   extractProfile,
   updatePreferences,
   skipOnboarding,
+  completeGoogleOnboarding,
 } from "../controllers/studentController.js";
 import {
   listRoleMentors,
@@ -3517,7 +3917,7 @@ import {
   sendMessage,
 } from "../controllers/mentorshipController.js";
 
-import { protect, authorize } from "../middleware/auth.js";
+import { protect, authorize, protectGoogleOnboarding } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import { aiLimiter } from "../middleware/rateLimiters.js";
 import {
@@ -3527,6 +3927,7 @@ import {
   roleIdParamRule,
   extractProfileRules,
   preferencesRules,
+  googleOnboardingRules,
 } from "../validators/studentValidator.js";
 import {
   forgotPasswordRules,
@@ -3579,6 +3980,9 @@ router.post("/mentorship/:id/messages", protect, authorize("student"), sendMento
 router.post("/profile/extract", protect, authorize("student"), aiLimiter, extractProfileRules, validate, extractProfile);
 router.put("/profile/preferences", protect, authorize("student"), preferencesRules, validate, updatePreferences);
 router.post("/profile/skip-onboarding", protect, authorize("student"), skipOnboarding);
+
+// Google OAuth onboarding â€” accepts ONLY the short-lived onboarding token
+router.post("/google-onboarding", protectGoogleOnboarding, googleOnboardingRules, validate, completeGoogleOnboarding);
 
 export default router;
 
@@ -4250,6 +4654,7 @@ function idOf(value) {
 }
 
 function conversationDto(conversation) {
+  const latestMessage = conversation.messages.at(-1);
   return {
     id: idOf(conversation._id),
     branch: conversation.branch,
@@ -4269,6 +4674,10 @@ function conversationDto(conversation) {
       content: message.content,
       createdAt: message.createdAt,
     })),
+    hasUnreadForGuide: Boolean(
+      latestMessage?.senderRole === "student" &&
+      (!conversation.guideReadAt || latestMessage.createdAt > conversation.guideReadAt)
+    ),
     lastMessageAt: conversation.lastMessageAt,
     createdAt: conversation.createdAt,
   };
@@ -4351,7 +4760,12 @@ export async function listConversations(user) {
 }
 
 export async function getConversation(conversationId, user) {
-  return conversationDto(await findConversationForUser(conversationId, user));
+  const conversation = await findConversationForUser(conversationId, user);
+  if (user.role === "guide") {
+    conversation.guideReadAt = new Date();
+    await conversation.save();
+  }
+  return conversationDto(conversation);
 }
 
 export async function sendConversationMessage(conversationId, user, content) {
@@ -4906,6 +5320,17 @@ function signAccessToken(id, role) {
   });
 }
 
+/**
+ * Short-lived token for Google onboarding only.
+ * Cannot be used as a normal access token â€” protect() rejects tokens
+ * that carry a `purpose` claim.
+ */
+function signOnboardingToken(id, role) {
+  return jwt.sign({ id, role, purpose: "google_onboarding" }, process.env.JWT_SECRET, {
+    expiresIn: "10m",
+  });
+}
+
 function signRefreshToken(id, role, version = 0) {
   return jwt.sign({ id, role, version }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_REFRESH_EXPIRE || "7d",
@@ -4942,6 +5367,7 @@ function clearRefreshCookie(res, role) {
 
 export {
   signAccessToken,
+  signOnboardingToken,
   signRefreshToken,
   verifyRefreshToken,
   refreshCookieOptions,
@@ -5076,10 +5502,12 @@ Student context:
 - Known Skills: ${known}${roleBlock}
 
 Guidelines:
-1. Keep answers concise, clear and actionable; include code snippets when they help.
-2. Adapt depth and tone to the student's experience level.
-3. Relate advice to their branch (${branch || "engineering"}) and target role when relevant.
-4. Be encouraging and accurate. If unsure, say so instead of guessing.`;
+1. Lead with the useful answer. Keep it concise, specific and actionable; use examples or code when they help.
+2. Match the explanation depth to the student's experience level without talking down to them.
+3. Connect to their branch (${branch || "engineering"}) and target role only when it adds useful context.
+4. Use a natural, calm, professional tone. Be friendly without sounding gushy, salesy, sarcastic or overconfident.
+5. Avoid canned praise, motivational slogans, repeated summaries and filler such as "Great question" or "Absolutely".
+6. State uncertainty plainly and do not invent facts, personal experience or guaranteed outcomes.`;
 }
 
 /** [system, ...last N history messages] in the shape the Groq SDK expects. */
@@ -5301,6 +5729,9 @@ class ApiError extends Error {
   static forbidden(message = "Forbidden") {
     return new ApiError(403, message);
   }
+  static serviceUnavailable(message = "Service temporarily unavailable") {
+    return new ApiError(503, message);
+  }
   static notFound(message = "Resource not found") {
     return new ApiError(404, message);
   }
@@ -5425,29 +5856,82 @@ export function getProfileCompleteness(profile = {}) {
 FILE: backend/utils/sendEmail.js
 ================================================
 import nodemailer from "nodemailer";
+import ApiError from "./ApiError.js";
 import logger from "./logger.js";
 
 let transporter;
 
 function getTransporter() {
   if (transporter) return transporter;
+  
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  const port = Number(process.env.SMTP_PORT || process.env.EMAIL_PORT) || 587;
+  const secure = port === 465;
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+
   transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: Number(process.env.SMTP_PORT) === 465,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+    host,
+    port,
+    secure,
+    auth: { user, pass },
   });
   return transporter;
 }
 
-async function sendEmail({ to, subject, html }) {
-  if (!process.env.SMTP_HOST) {
-    logger.warn(`[sendEmail] SMTP not configured â€” skipping email to ${to}: ${subject}`);
+export function isEmailConfigured() {
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || user;
+  const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL;
+
+  return Boolean(host && user && pass && from && clientUrl);
+}
+
+export function assertEmailConfigured() {
+  if (process.env.NODE_ENV === "production" && !isEmailConfigured()) {
+    throw ApiError.serviceUnavailable("Email delivery is not configured. Please contact support.");
+  }
+}
+
+export function getClientUrl() {
+  const clientUrl = process.env.CLIENT_URL || process.env.FRONTEND_URL || "http://localhost:5173";
+  return clientUrl
+    .split(",")[0]
+    .trim()
+    .replace(/^['"]|['"]$/g, "")
+    .replace(/\/+$/, "");
+}
+
+export async function verifyEmailTransport() {
+  if (!isEmailConfigured()) {
+    logger.warn("[email] SMTP is not fully configured; verification and reset emails cannot be delivered.");
     return;
   }
+
+  try {
+    await getTransporter().verify();
+    logger.info("[email] SMTP transport verified.");
+  } catch (error) {
+    logger.error(`[email] SMTP connection check failed (${error.code || error.name}): ${error.message}`);
+  }
+}
+
+async function sendEmail({ to, subject, html }) {
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  if (!host) {
+    if (process.env.NODE_ENV === "production") assertEmailConfigured();
+    logger.warn("[sendEmail] SMTP not configured; skipping email in development.");
+    return;
+  }
+  assertEmailConfigured();
   const t = getTransporter();
+  
+  const from = process.env.SMTP_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER || process.env.EMAIL_USER || `"Preyeahh" <no-reply@preyeah.dev>`;
+  
   await t.sendMail({
-    from: process.env.SMTP_FROM || `"Preyeahh" <no-reply@preyeah.dev>`,
+    from,
     to,
     subject,
     html,
@@ -5455,6 +5939,7 @@ async function sendEmail({ to, subject, html }) {
 }
 
 export default sendEmail;
+
 
 
 
@@ -5883,6 +6368,13 @@ export const preferencesRules = [
   body("preferredLanguage").optional().isString().trim().isLength({ max: 40 }),
 ];
 
+// â”€â”€ Google onboarding (new Google students completing their branch) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+export const googleOnboardingRules = [
+  body("branch").trim().notEmpty().withMessage("Branch is required").isLength({ max: 20 }),
+  body("name").optional().trim().isLength({ min: 1, max: 100 }).withMessage("Name must be 1-100 characters"),
+];
+
 
 
 ================================================
@@ -5963,7 +6455,9 @@ FILE: frontend/package.json
     "react-hook-form": "^7.54.2",
     "react-hot-toast": "^2.4.1",
     "react-icons": "^5.4.0",
-    "react-router-dom": "^7.1.1"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.1.1",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
@@ -6034,13 +6528,15 @@ import Admin from "./pages/Admin.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import VerifyEmail from "./pages/VerifyEmail.jsx";
+import GoogleCallback from "./pages/GoogleCallback.jsx";
+import GoogleOnboarding from "./pages/GoogleOnboarding.jsx";
 
-// Student-only AI pages
+// Role-specific learning pages
 import Chat from "./pages/Chat.jsx";
 import MyRoadmaps from "./pages/MyRoadmaps.jsx";
+import RoadmapView from "./pages/RoadmapView.jsx";
 import Quiz from "./pages/Quiz.jsx";
 import Profile from "./pages/Profile.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
 
 export default function App() {
   return (
@@ -6054,19 +6550,25 @@ export default function App() {
         <Route path="/resources" element={<Resources />} />
         <Route path="/admin" element={<Admin />} />
 
-        <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/?login=1" />}>
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Route>
+        <Route path="/dashboard" element={<Navigate to="/" replace />} />
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
-        <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/?login=1" />}>
+        {/* Google OAuth callback pages â€” no Navbar auth required, tokens arrive via fragment */}
+        <Route path="/google-callback" element={<GoogleCallback />} />
+        <Route path="/google-onboarding" element={<GoogleOnboarding />} />
+
+        <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/?login=1" />}>
           <Route path="/chat" element={<Chat />} />
+        </Route>
+
+        <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/?login=1" />}>
           <Route path="/roadmaps" element={<MyRoadmaps />} />
+          <Route path="/roadmap/:id" element={<RoadmapView />} />
           <Route path="/quiz" element={<Quiz />} />
-          <Route path="/progress" element={<Navigate to="/dashboard#student-progress" replace />} />
+          <Route path="/progress" element={<Navigate to="/#student-progress" replace />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
 
@@ -6207,7 +6709,7 @@ const STUDENT_EMAIL_RE = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
 const GUIDE_EMAIL_RE = /^[^\s@]+@nbkrist\.org$/i;
 
 export default function LoginModal({ open, onClose, startTab = "login" }) {
-  const { login, registerStudent, registerGuide } = useAuth();
+  const { login, registerStudent, registerGuide, resendVerification } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState(startTab);
   const [regType, setRegType] = useState("student");
@@ -6215,6 +6717,8 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   const [rolesForBranch, setRolesForBranch] = useState([]);
   const [showPass, setShowPass] = useState({ login: false, register: false });
   const [regSuccess, setRegSuccess] = useState("");
+  const [verificationRole, setVerificationRole] = useState(null);
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -6228,23 +6732,6 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   const registerForm = useForm({
     defaultValues: { name: "", email: "", password: "", branch: "", roleName: "", newRoleName: "", newRoleDesc: "", bio: "" },
   });
-  const demoAccounts = [
-    {
-      key: "student",
-      label: "Demo student",
-      email: "demo.student@gmail.com",
-      password: "DemoStudent123!",
-      accent: "student",
-    },
-    {
-      key: "guide",
-      label: "Demo guide",
-      email: "demo.guide@nbkrist.org",
-      password: "DemoGuide123!",
-      accent: "guide",
-    },
-  ];
-
   const watchedBranch = registerForm.watch("branch");
   const watchedRole = registerForm.watch("roleName");
 
@@ -6265,6 +6752,7 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   if (!open) return null;
 
   const onLoginSubmit = async (data) => {
+    setVerificationRole(null);
     try {
       await login(data.email.trim(), data.password);
       navigate("/", { replace: true });
@@ -6274,21 +6762,25 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
       const msg = err.response?.data?.message || "Invalid email or password.";
       if (msg.toLowerCase().includes("verify")) {
         loginForm.setError("root", { message: msg });
+        setVerificationRole(err.authRole || null);
       } else {
         toast.error(msg);
       }
     }
   };
 
-  const handleDemoLogin = async (account) => {
+  const handleResendVerification = async () => {
+    const email = loginForm.getValues("email").trim();
+    if (!email || !verificationRole || resendingVerification) return;
+
+    setResendingVerification(true);
     try {
-      await login(account.email, account.password);
-      navigate("/", { replace: true });
-      toast.success(`${account.label} signed in.`);
-      onClose();
+      const result = await resendVerification(email, verificationRole);
+      toast.success(result.message || "If the account needs verification, a link has been sent.");
     } catch (err) {
-      const msg = err.response?.data?.message || "Unable to sign in with the demo account.";
-      toast.error(msg);
+      toast.error(err.response?.data?.message || "Could not resend the verification email.");
+    } finally {
+      setResendingVerification(false);
     }
   };
 
@@ -6363,27 +6855,42 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
             {loginForm.formState.errors.root && (
               <p className="ulm-err" style={{ display: "block" }}>{loginForm.formState.errors.root.message}</p>
             )}
-            {import.meta.env.DEV && (
-              <div className="demo-login-box" aria-label="Demo access shortcuts">
-                <span className="demo-login-label">Quick demo access</span>
-                <div className="demo-login-actions">
-                  {demoAccounts.map((account) => (
-                    <button
-                      key={account.key}
-                      type="button"
-                      className={`demo-login-btn demo-login-btn--${account.accent}`}
-                      onClick={() => handleDemoLogin(account)}
-                    >
-                      {account.label}
-                    </button>
-                  ))}
-                </div>
-                <small>Local-only test accounts for student and guide flows.</small>
-              </div>
+            {verificationRole && (
+              <button
+                className="btn btn-outline"
+                style={{ width: "100%", marginBottom: "0.75rem" }}
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendingVerification}
+              >
+                {resendingVerification ? "Sending verification email..." : "Resend verification email"}
+              </button>
             )}
             <button className="btn btn-primary" style={{ width: "100%" }} type="submit" disabled={loginForm.formState.isSubmitting}>
               {loginForm.formState.isSubmitting ? "Signing in..." : "Login"}
             </button>
+
+            {/* Google OAuth â€” redirects to backend which handles everything */}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", margin: "1rem 0" }}>
+              <div style={{ flex: 1, height: 1, background: "var(--border, #e5e5e5)" }} />
+              <span style={{ fontSize: "0.75rem", color: "var(--muted, #888)", whiteSpace: "nowrap" }}>or</span>
+              <div style={{ flex: 1, height: 1, background: "var(--border, #e5e5e5)" }} />
+            </div>
+            <a
+              href={`${import.meta.env.VITE_API_URL || "/api"}/auth/google`}
+              className="btn btn-outline"
+              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", textDecoration: "none" }}
+            >
+              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                <path fill="none" d="M0 0h48v48H0z"/>
+              </svg>
+              Continue with Google
+            </a>
+
             <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.9rem", textAlign: "center" }}>
               <a href="/forgot-password?role=student" style={{ color: "var(--primary)" }}>Forgot password?</a>
             </p>
@@ -6534,6 +7041,7 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
       const items = await listMentorshipConversations(mode);
       setConversations(items);
       setSelected((current) => current ? items.find((item) => item.id === current.id) || current : null);
+      if (mode === "guide") window.dispatchEvent(new Event("guide-mentorship-updated"));
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not load guide messages");
     } finally {
@@ -6570,6 +7078,7 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
   const openConversation = async (conversation) => {
     try {
       setSelected(await fetchMentorshipConversation(mode, conversation.id));
+      await loadConversations();
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not open conversation");
     }
@@ -6699,7 +7208,7 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
 FILE: frontend/src/components/Navbar.jsx
 ================================================
 import { useEffect, useState } from "react";
-import { NavLink, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { NavLink, useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FaBars, FaXmark, FaHouse, FaBriefcase, FaCompass, FaCircleInfo,
@@ -6711,14 +7220,15 @@ import LoginModal from "./LoginModal.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useBranch } from "../context/BranchContext.jsx";
 import { setAccessToken } from "../services/api.js";
+import { listMentorshipConversations } from "../services/mentorshipService.js";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home", icon: FaHouse, exact: true },
-  { to: "/dashboard", label: "Dashboard", icon: FaGauge, requiresRole: ["student", "guide"] },
+  { to: "/admin", label: "Admin Panel", icon: FaGauge, requiresRole: ["admin"] },
   { to: "/roles", label: "Roles", icon: FaBriefcase, branchGated: true },
   { to: "/beyond", label: "Beyond", icon: FaCompass, branchGated: true },
   { to: "/resources", label: "Resources", icon: FaBookmark, mobile: false },
-  { to: "/chat", label: "Chat", icon: FaCommentDots, studentOnly: true },
+  { to: "/chat", label: "Chat", icon: FaCommentDots, requiresRole: ["student", "guide"] },
   { to: "/roadmaps", label: "Roadmaps", icon: FaMap, studentOnly: true },
   { to: "/quiz", label: "Quiz", icon: FaGraduationCap, studentOnly: true, mobile: false },
   { to: "/about", label: "About", icon: FaCircleInfo, mobile: false },
@@ -6740,7 +7250,6 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const { branch } = useBranch();
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // "/?login=1" (used by post-verify / post-reset redirects) opens the login modal
@@ -6762,6 +7271,47 @@ export default function Navbar() {
   }, []);
 
   const effectiveUser = user || adminUser;
+  const [unreadGuideChats, setUnreadGuideChats] = useState(0);
+
+  useEffect(() => {
+    if (effectiveUser?.role !== "guide") {
+      setUnreadGuideChats(0);
+      return undefined;
+    }
+
+    let active = true;
+    const refreshUnread = async () => {
+      try {
+        const conversations = await listMentorshipConversations("guide");
+        if (active) setUnreadGuideChats(conversations.filter((item) => item.hasUnreadForGuide).length);
+      } catch {
+        // Keep the last known badge count when the inbox is temporarily unavailable.
+      }
+    };
+
+    refreshUnread();
+    const interval = window.setInterval(refreshUnread, 15000);
+    window.addEventListener("guide-mentorship-updated", refreshUnread);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      window.removeEventListener("guide-mentorship-updated", refreshUnread);
+    };
+  }, [effectiveUser?.role]);
+
+  const renderItemLabel = (item) => {
+    const unreadCount = item.to === "/chat" && effectiveUser?.role === "guide" ? unreadGuideChats : 0;
+    return (
+      <span className="nav-item-label">
+        {item.label}
+        {unreadCount > 0 && (
+          <span className="nav-unread-badge" aria-label={`${unreadCount} unread conversations`}>
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+      </span>
+    );
+  };
 
   const isStudent = user?.role === "student";
   const visibleItems = NAV_ITEMS.filter((item) => {
@@ -6787,13 +7337,6 @@ export default function Navbar() {
     navigate("/");
   };
 
-  const rawDashboardHref =
-    effectiveUser?.role === "admin"
-      ? "/admin"
-      : effectiveUser?.role === "student" || effectiveUser?.role === "guide"
-        ? "/dashboard"
-        : null;
-  const dashboardHref = rawDashboardHref && location.pathname !== rawDashboardHref ? rawDashboardHref : null;
   return (
     <>
       <nav>
@@ -6808,7 +7351,7 @@ export default function Navbar() {
               onClick={() => setDrawerOpen(false)}
               className={({ isActive }) => (isActive ? "active" : "")}
             >
-              {item.label}
+              {renderItemLabel(item)}
             </NavLink>
           ))}
         </div>
@@ -6827,14 +7370,6 @@ export default function Navbar() {
                 <FaChevronDown className="chip-caret" />
               </button>
               <div className={`user-dropdown-menu ${menuOpen ? "open" : ""}`}>
-                {dashboardHref && (
-                  <>
-                    <NavLink to={dashboardHref} className="udm-item" onClick={() => setMenuOpen(false)}>
-                      <FaGauge /> Dashboard
-                    </NavLink>
-                    <hr className="udm-divider" />
-                  </>
-                )}
                 {isStudent && (
                   <NavLink to="/profile" className="udm-item" onClick={() => setMenuOpen(false)}>
                     <FaUser /> My Profile
@@ -6865,7 +7400,7 @@ export default function Navbar() {
               onClick={() => setDrawerOpen(false)}
               className={({ isActive }) => (isActive ? "active" : "")}
             >
-              <item.icon /> {item.label}
+              <item.icon /> {renderItemLabel(item)}
             </NavLink>
           ))}
         </div>
@@ -6881,7 +7416,7 @@ export default function Navbar() {
               onClick={() => setDrawerOpen(false)}
               className={({ isActive }) => `bottom-nav-item ${isActive ? "active" : ""}`}
             >
-              <item.icon />{item.label}
+              <item.icon />{renderItemLabel(item)}
             </NavLink>
           ))}
         </div>
@@ -6935,6 +7470,649 @@ export default function ProtectedRoute({ allowedRoles, redirectTo = "/" }) {
   }
 
   return <Outlet />;
+}
+
+
+
+================================================
+FILE: frontend/src/components/RoadmapGraph.css
+================================================
+.roadmap-canvas-container {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 68px); /* minus navbar */
+  overflow: hidden;
+  background-color: var(--bg);
+  cursor: grab;
+  touch-action: none;
+}
+.roadmap-canvas-container:active {
+  cursor: grabbing;
+}
+
+.roadmap-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 0 0;
+}
+
+.roadmap-svg-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.roadmap-nodes-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.roadmap-section-node {
+  position: absolute;
+  background-color: #ffff00;
+  border: 2px solid #000;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: #000;
+  text-align: center;
+  box-shadow: 4px 4px 0px rgba(0,0,0,1);
+  transform: translate(-50%, -50%);
+  min-width: 160px;
+  z-index: 10;
+}
+
+.roadmap-topic-node {
+  position: absolute;
+  background-color: #ffe599;
+  border: 2px solid #000;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  color: #000;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px rgba(0,0,0,1);
+  transform: translate(-50%, -50%);
+  min-width: 120px;
+  max-width: 200px;
+  text-align: center;
+  z-index: 10;
+  transition: transform 0.1s;
+}
+
+.roadmap-topic-node:hover {
+  transform: translate(-50%, -50%) scale(1.05);
+}
+
+.roadmap-topic-node.status-done {
+  background-color: #d9ead3; /* Light green */
+}
+.roadmap-topic-node.status-done::after {
+  content: "âœ“";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #27ae60;
+  color: white;
+  border: 2px solid #000;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Spine line styling in SVG */
+.spine-line {
+  stroke: #2980b9;
+  stroke-width: 6;
+  fill: none;
+}
+
+.topic-line {
+  stroke: #2980b9;
+  stroke-width: 3;
+  stroke-dasharray: 4 4;
+  fill: none;
+}
+
+/* Overlays */
+.roadmap-overlay-ui {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.roadmap-info-card {
+  position: absolute;
+  background: white;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0px rgba(0,0,0,1);
+  padding: 1rem;
+  border-radius: 8px;
+  pointer-events: auto;
+  color: #000;
+}
+
+.roadmap-info-card.top-right {
+  top: 20px;
+  right: 20px;
+  max-width: 300px;
+}
+
+.roadmap-info-card.top-left {
+  top: 20px;
+  left: 20px;
+  max-width: 250px;
+}
+
+.roadmap-progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #eee;
+  border: 1px solid #000;
+  border-radius: 4px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.roadmap-progress-bar {
+  height: 100%;
+  background: #27ae60;
+  transition: width 0.3s ease;
+}
+
+/* Topic popover (Learning / Done) */
+.topic-popover {
+  position: absolute;
+  background: white;
+  border: 2px solid #000;
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 2px 2px 0px rgba(0,0,0,1);
+  z-index: 50;
+  transform: translate(-50%, 10px);
+  pointer-events: auto;
+}
+
+.topic-popover button {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  color: #000;
+  border-radius: 4px;
+}
+.topic-popover button:hover {
+  background: #f0f0f0;
+}
+
+/* Topic drawer */
+.topic-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  pointer-events: auto;
+}
+.topic-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  max-width: 100%;
+  height: 100%;
+  background: white;
+  border-left: 2px solid #000;
+  box-shadow: -4px 0 0px rgba(0,0,0,1);
+  padding: 2rem;
+  z-index: 201;
+  overflow-y: auto;
+  pointer-events: auto;
+  color: #000;
+  animation: slideInRight 0.2s ease;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.drawer-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #000;
+}
+
+.drawer-resource-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.drawer-resource-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 2px solid #000;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #000;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.1s;
+}
+
+.drawer-resource-item:hover {
+  background: #ffe599;
+  transform: translateY(-1px);
+  box-shadow: 2px 2px 0px rgba(0,0,0,1);
+}
+
+@media (max-width: 768px) {
+  .roadmap-info-card.top-right {
+    top: auto;
+    bottom: 20px;
+    right: 20px;
+    left: 20px;
+    max-width: none;
+  }
+  .roadmap-info-card.top-left {
+    display: none; /* Hide on mobile to save space */
+  }
+}
+
+
+
+================================================
+FILE: frontend/src/components/RoadmapGraph.jsx
+================================================
+import React, { useState, useRef, useEffect, useMemo } from "react";
+import "./RoadmapGraph.css";
+
+// Layout constants
+const SECTION_SPACING_Y = 250;
+const TOPIC_SPACING_Y = 80;
+const TOPIC_OFFSET_X = 200;
+
+export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicStatusChange }) {
+  const containerRef = useRef(null);
+  const [transform, setTransform] = useState({ x: 0, y: 50, scale: 1 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [activePopover, setActivePopover] = useState(null); // topicId
+  const [activeDrawer, setActiveDrawer] = useState(null);   // topic object
+
+  // --- Layout Calculation ---
+  const { nodes, edges } = useMemo(() => {
+    if (!roadmap || !roadmap.sections) return { nodes: [], edges: [] };
+
+    const nodesList = [];
+    const edgesList = [];
+
+    let currentY = 100;
+    const spineX = 0;
+
+    roadmap.sections.forEach((section, sIdx) => {
+      const sectionNode = {
+        id: `s-${sIdx}`,
+        type: "section",
+        title: section.title,
+        sectionData: section,
+        x: spineX,
+        y: currentY,
+      };
+      nodesList.push(sectionNode);
+
+      let topicY = currentY + TOPIC_SPACING_Y;
+
+      section.topics?.forEach((topic, tIdx) => {
+        const isLeft = tIdx % 2 === 0;
+        const topicX = isLeft ? spineX - TOPIC_OFFSET_X : spineX + TOPIC_OFFSET_X;
+
+        nodesList.push({
+          id: topic._id || `t-${sIdx}-${tIdx}`,
+          type: "topic",
+          data: topic,
+          x: topicX,
+          y: topicY,
+        });
+
+        edgesList.push({
+          id: `e-t-${sIdx}-${tIdx}`,
+          type: "topic",
+          x1: spineX,
+          y1: topicY,
+          x2: topicX,
+          y2: topicY,
+        });
+
+        topicY += TOPIC_SPACING_Y;
+      });
+
+      currentY = Math.max(currentY + SECTION_SPACING_Y, topicY + 50);
+    });
+
+    return { nodes: nodesList, edges: edgesList };
+  }, [roadmap]);
+
+  const spineEdges = useMemo(() => {
+    const sEdges = [];
+    const sections = nodes.filter((n) => n.type === "section");
+    for (let i = 1; i < sections.length; i++) {
+      sEdges.push({
+        id: `spine-${i}`,
+        x1: sections[i - 1].x,
+        y1: sections[i - 1].y,
+        x2: sections[i].x,
+        y2: sections[i].y,
+      });
+    }
+    return sEdges;
+  }, [nodes]);
+
+  const topicEdges = edges.filter((e) => e.type === "topic");
+
+  // --- Pan and Zoom ---
+  const handleWheel = (e) => {
+    e.preventDefault();
+    if (e.ctrlKey) {
+      const scaleFactor = e.deltaY > 0 ? 0.9 : 1.1;
+      setTransform((t) => ({
+        ...t,
+        scale: Math.min(Math.max(t.scale * scaleFactor, 0.2), 3),
+      }));
+    } else {
+      setTransform((t) => ({ ...t, x: t.x - e.deltaX, y: t.y - e.deltaY }));
+    }
+  };
+
+  const handlePointerDown = (e) => {
+    if (
+      e.target.closest(".roadmap-topic-node") ||
+      e.target.closest(".topic-popover")
+    )
+      return;
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+    e.target.setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStart.x;
+    const dy = e.clientY - dragStart.y;
+    setTransform((t) => ({ ...t, x: t.x + dx, y: t.y + dy }));
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+
+  const handlePointerUp = (e) => {
+    setIsDragging(false);
+    e.target.releasePointerCapture(e.pointerId);
+  };
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => el.removeEventListener("wheel", handleWheel);
+  }, []);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      const width = containerRef.current.clientWidth;
+      setTransform((t) => ({ ...t, x: width / 2, y: 50 }));
+    }
+  }, []);
+
+  const totalTopics =
+    roadmap?.sections?.reduce((sum, s) => sum + (s.topics?.length || 0), 0) || 0;
+  const completedTopics =
+    roadmap?.sections?.reduce(
+      (sum, s) => sum + (s.topics?.filter((t) => t.isCompleted).length || 0),
+      0
+    ) || 0;
+  const progressPct =
+    totalTopics === 0 ? 0 : Math.round((completedTopics / totalTopics) * 100);
+
+  return (
+    <div
+      className="roadmap-canvas-container"
+      ref={containerRef}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+    >
+      {/* Visual Canvas Layer */}
+      <div
+        className="roadmap-canvas"
+        style={{
+          transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+        }}
+      >
+        <svg className="roadmap-svg-layer" style={{ overflow: "visible" }}>
+          {spineEdges.map((edge) => (
+            <line
+              key={edge.id}
+              x1={edge.x1}
+              y1={edge.y1}
+              x2={edge.x2}
+              y2={edge.y2}
+              className="spine-line"
+            />
+          ))}
+          {topicEdges.map((edge) => {
+            const controlOffset = (edge.x2 - edge.x1) * 0.5;
+            const pathData = `M ${edge.x1} ${edge.y1} C ${edge.x1 + controlOffset} ${edge.y1}, ${edge.x2 - controlOffset} ${edge.y2}, ${edge.x2} ${edge.y2}`;
+            return <path key={edge.id} d={pathData} className="topic-line" />;
+          })}
+        </svg>
+
+        <div className="roadmap-nodes-layer">
+          {nodes.map((node) => {
+            if (node.type === "section") {
+              return (
+                <div key={node.id} className="roadmap-section-node" style={{ left: node.x, top: node.y }}>
+                  {node.title}
+                </div>
+              );
+            } else if (node.type === "topic") {
+              const isDone = node.data.isCompleted;
+              return (
+                <div key={node.id}>
+                  <div
+                    className={`roadmap-topic-node ${isDone ? "status-done" : ""}`}
+                    style={{ left: node.x, top: node.y }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActivePopover(activePopover === node.id ? null : node.id);
+                    }}
+                  >
+                    {node.data.title}
+                  </div>
+                  {activePopover === node.id && (
+                    <div
+                      className="topic-popover"
+                      style={{ left: node.x, top: node.y + 20 }}
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActivePopover(null);
+                          setActiveDrawer(node.data);
+                        }}
+                      >
+                        ðŸ“– View Resources
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTopicStatusChange(node.id, false);
+                          setActivePopover(null);
+                        }}
+                      >
+                        ðŸ“˜ Set as Learning
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onTopicStatusChange(node.id, true);
+                          setActivePopover(null);
+                        }}
+                      >
+                        âœ… Mark as Done
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return null;
+          })}
+        </div>
+      </div>
+
+      {/* Fixed UI Overlays */}
+      <div className="roadmap-overlay-ui">
+        <div className="roadmap-info-card top-left">
+          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "8px" }}>
+            Other Roadmaps
+          </h3>
+          <ul style={{ paddingLeft: "1rem", fontSize: "0.85rem" }}>
+            {relatedRoadmaps
+              .filter((r) => r._id !== roadmap._id)
+              .slice(0, 3)
+              .map((r) => (
+                <li key={r._id}>
+                  <a href={`/roadmap/${r._id}`} style={{ color: "#2980b9" }}>
+                    {r.title}
+                  </a>
+                </li>
+              ))}
+            {relatedRoadmaps.length <= 1 && <li>No other roadmaps.</li>}
+          </ul>
+        </div>
+
+        <div className="roadmap-info-card top-right">
+          <h2 style={{ fontSize: "1.2rem", fontWeight: 900, marginBottom: "4px" }}>
+            {roadmap.title}
+          </h2>
+          <p style={{ fontSize: "0.85rem", color: "#555", marginBottom: "8px" }}>
+            {roadmap.branch} â€¢ {roadmap.level} â€¢ {roadmap.estimatedWeeks}wks
+          </p>
+          <div style={{ fontSize: "0.85rem", fontWeight: 700 }}>
+            Progress: {completedTopics} / {totalTopics} ({progressPct}%)
+          </div>
+          <div className="roadmap-progress-bar-container">
+            <div
+              className="roadmap-progress-bar"
+              style={{ width: `${progressPct}%` }}
+            ></div>
+          </div>
+          <p style={{ fontSize: "0.7rem", color: "#888", marginTop: "8px" }}>
+            Tip: Drag to pan â€¢ Ctrl+scroll to zoom
+          </p>
+        </div>
+      </div>
+
+      {/* Drawer */}
+      {activeDrawer && (
+        <>
+          <div
+            className="topic-drawer-backdrop"
+            onClick={() => setActiveDrawer(null)}
+          ></div>
+          <div className="topic-drawer">
+            <button className="drawer-close" onClick={() => setActiveDrawer(null)}>
+              Ã—
+            </button>
+            <h2 style={{ fontSize: "1.5rem", fontWeight: 900, marginBottom: "1rem" }}>
+              {activeDrawer.title}
+            </h2>
+            <p style={{ fontSize: "0.95rem", lineHeight: 1.5, marginBottom: "1.5rem" }}>
+              {activeDrawer.description}
+            </p>
+
+            <h3 style={{ fontSize: "1.1rem", fontWeight: 800 }}>Resources</h3>
+            <div className="drawer-resource-list">
+              {activeDrawer.resources && activeDrawer.resources.length > 0 ? (
+                activeDrawer.resources.map((r, i) =>
+                  r.url ? (
+                    <a
+                      key={i}
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="drawer-resource-item"
+                    >
+                      <span>{r.type === "video" ? "ðŸŽ¥" : "ðŸ“„"}</span>
+                      {r.title}
+                    </a>
+                  ) : (
+                    <div
+                      key={i}
+                      className="drawer-resource-item"
+                      style={{ pointerEvents: "none" }}
+                    >
+                      <span>{r.type === "video" ? "ðŸŽ¥" : "ðŸ“„"}</span>
+                      {r.title}
+                    </div>
+                  )
+                )
+              ) : (
+                <p style={{ fontSize: "0.9rem", color: "#666" }}>No resources linked.</p>
+              )}
+            </div>
+
+            <button
+              className="btn btn-primary"
+              style={{ width: "100%", marginTop: "2rem" }}
+              onClick={() => {
+                onTopicStatusChange(activeDrawer._id, !activeDrawer.isCompleted);
+                setActiveDrawer({ ...activeDrawer, isCompleted: !activeDrawer.isCompleted });
+              }}
+            >
+              {activeDrawer.isCompleted ? "Mark as Learning" : "Mark as Done"}
+            </button>
+          </div>
+        </>
+      )}
+
+    </div>
+  );
 }
 
 
@@ -7265,65 +8443,6 @@ export default function AdminBranches() {
           </tbody>
         </table>
       )}
-    </div>
-  );
-}
-
-
-
-================================================
-FILE: frontend/src/components/admin/AdminDashboard.jsx
-================================================
-import { useEffect, useState } from "react";
-import { fetchDashboardStats } from "../../services/adminService.js";
-
-export default function AdminDashboard({ onNavigate }) {
-  const [stats, setStats] = useState(null);
-
-  useEffect(() => {
-    fetchDashboardStats().then((r) => setStats(r.data)).catch(() => setStats(null));
-  }, []);
-
-  if (!stats) {
-    return (
-      <div className="empty">
-        <div className="icon"><i className="fa fa-spinner fa-spin" /></div>
-        <p>Loading dashboard...</p>
-      </div>
-    );
-  }
-
-  const cards = [
-    { num: stats.branches, label: "Branches", section: "branches" },
-    { num: stats.totalRoles, label: "Total Roles", section: "roles" },
-    { num: stats.coreRoles, label: "Core Roles", section: "roles" },
-    { num: stats.nonCoreRoles, label: "Non-Core Roles", section: "roles" },
-    { num: stats.beyondEntries, label: "Beyond Entries", section: "beyond" },
-    { num: stats.guidanceEntries, label: "Guidance Entries", section: "guidance" },
-    { num: stats.pendingGuideRequests, label: "Pending Guide Requests", section: "guides" },
-    { num: stats.pendingRoleRequests, label: "Pending Role Requests", section: "requests" },
-  ];
-
-  return (
-    <div>
-      <h2>Dashboard</h2>
-      <div className="stats">
-        {cards.map((c) => (
-          <div
-            className="stat-card"
-            key={c.label}
-            style={{ cursor: "pointer" }}
-            role="button"
-            tabIndex={0}
-            onClick={() => onNavigate?.(c.section)}
-            onKeyDown={(e) => e.key === "Enter" && onNavigate?.(c.section)}
-          >
-            <div className="num">{c.num}</div>
-            <div className="label">{c.label}</div>
-          </div>
-        ))}
-      </div>
-      <p style={{ color: "var(--muted)", fontSize: "0.9rem" }}>Click any card to jump to that section.</p>
     </div>
   );
 }
@@ -8393,15 +9512,23 @@ export function AuthProvider({ children }) {
         storeUser(data.data.user);
         return data.data.user;
       } catch (studentErr) {
-        if (studentErr.response?.status !== 401) throw studentErr;
+        if (studentErr.response?.status !== 401) {
+          studentErr.authRole = "student";
+          throw studentErr;
+        }
       }
 
-      const { data } = await api.post("/guides/login", { email, password });
-      setAccessToken(data.data.accessToken);
-      setActiveRole("guide");
-      setUser(data.data.user);
-      storeUser(data.data.user);
-      return data.data.user;
+      try {
+        const { data } = await api.post("/guides/login", { email, password });
+        setAccessToken(data.data.accessToken);
+        setActiveRole("guide");
+        setUser(data.data.user);
+        storeUser(data.data.user);
+        return data.data.user;
+      } catch (guideErr) {
+        guideErr.authRole = "guide";
+        throw guideErr;
+      }
     } finally {
       setLoading(false);
     }
@@ -8831,6 +9958,7 @@ export default function About() {
 FILE: frontend/src/pages/Admin.jsx
 ================================================
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FaChartBar, FaCrosshairs, FaSchool, FaMedal, FaMap, FaEnvelope,
@@ -8838,7 +9966,6 @@ import {
 } from "react-icons/fa6";
 
 import AdminLogin from "../components/admin/AdminLogin.jsx";
-import AdminDashboard from "../components/admin/AdminDashboard.jsx";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
 import AdminBranches from "../components/admin/AdminBranches.jsx";
 import AdminBeyond from "../components/admin/AdminBeyond.jsx";
@@ -8851,7 +9978,6 @@ import { fetchAdminMe, refreshAdmin, logoutAdmin } from "../services/adminServic
 import { setAccessToken, getAccessToken, setActiveRole } from "../services/api.js";
 
 const SECTIONS = [
-  { key: "dashboard", label: "Dashboard", icon: FaChartBar, Component: AdminDashboard },
   { key: "roles", label: "Manage Roles", icon: FaCrosshairs, Component: AdminRoles },
   { key: "branches", label: "Manage Branches", icon: FaSchool, Component: AdminBranches },
   { key: "beyond", label: "Beyond", icon: FaMedal, Component: AdminBeyond },
@@ -8862,9 +9988,13 @@ const SECTIONS = [
 ];
 
 export default function Admin() {
+  const location = useLocation();
   const [admin, setAdmin] = useState(null);
   const [checking, setChecking] = useState(true);
-  const [section, setSection] = useState("dashboard");
+  const [section, setSection] = useState(() => {
+    const requestedSection = location.state?.section;
+    return SECTIONS.some((item) => item.key === requestedSection) ? requestedSection : "roles";
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
@@ -8893,7 +10023,7 @@ export default function Admin() {
 
   const handleLoginSuccess = (user) => {
     setAdmin(user);
-    setSection("dashboard");
+    setSection("roles");
     setActiveRole("admin");
     window.dispatchEvent(new Event("admin-auth-changed"));
   };
@@ -8919,7 +10049,7 @@ export default function Admin() {
 
   if (!admin) return <AdminLogin onSuccess={handleLoginSuccess} />;
 
-  const ActiveComponent = SECTIONS.find((s) => s.key === section)?.Component || AdminDashboard;
+  const ActiveComponent = SECTIONS.find((s) => s.key === section)?.Component || AdminRoles;
 
   return (
     <div>
@@ -9137,7 +10267,10 @@ FILE: frontend/src/pages/Chat.jsx
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useAuth } from "../context/AuthContext.jsx";
 import { FaComments, FaDownload, FaPaperPlane, FaPlus, FaTrash } from "react-icons/fa6";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   fetchChats, createChat, fetchChat, exportChat, sendChatMessage, clearChatHistory, deleteChat,
 } from "../services/chatService.js";
@@ -9149,6 +10282,8 @@ const errMsg = (err, fallback) =>
   err.response?.status === 429 ? "AI is busy â€” wait a moment and try again." : err.response?.data?.message || fallback;
 
 export default function Chat() {
+  const { user } = useAuth();
+  const isGuide = user?.role === "guide";
   const { branch } = useBranch();
   const location = useLocation();
   const roleIntent = location.state?.mentorRole || null;
@@ -9182,13 +10317,15 @@ export default function Chat() {
     }
   }, []);
 
-  useEffect(() => { loadChats(); }, [loadChats]);
+  useEffect(() => {
+    if (!isGuide) loadChats();
+  }, [isGuide, loadChats]);
 
   // Role picker is scoped to the selected branch so the AI gets branch-relevant context
   useEffect(() => {
-    if (!branch) { setRoles([]); return; }
+    if (!branch || isGuide) { setRoles([]); return; }
     fetchRoles({ branch, limit: 100 }).then((res) => setRoles(res.data || [])).catch(() => setRoles([]));
-  }, [branch]);
+  }, [branch, isGuide]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, sending]);
 
@@ -9277,15 +10414,21 @@ export default function Chat() {
   return (
     <div className="chat-workspace">
       <aside className="chat-mode-rail" aria-label="Chat types">
-        <button type="button" className={`chat-mode-button ${chatMode === "ai" ? "active" : ""}`} aria-pressed={chatMode === "ai"} title="AI Chat" onClick={() => setChatMode("ai")}>
-          <FaPaperPlane /><span>AI</span>
-        </button>
-        <button type="button" className={`chat-mode-button ${chatMode === "mentor" ? "active" : ""}`} aria-pressed={chatMode === "mentor"} title="Guide Messages" onClick={() => setChatMode("mentor")}>
-          <FaComments /><span>Guides</span>
+        {!isGuide && (
+          <button type="button" className={`chat-mode-button ${chatMode === "ai" ? "active" : ""}`} aria-pressed={chatMode === "ai"} title="AI Chat" onClick={() => setChatMode("ai")}>
+            <FaPaperPlane /><span>AI</span>
+          </button>
+        )}
+        <button type="button" className={`chat-mode-button ${isGuide || chatMode === "mentor" ? "active" : ""}`} aria-pressed={isGuide || chatMode === "mentor"} title={isGuide ? "Student Messages" : "Guide Messages"} onClick={() => setChatMode("mentor")}>
+          <FaComments /><span>{isGuide ? "Students" : "Guides"}</span>
         </button>
       </aside>
 
-      {chatMode === "mentor" ? (
+      {isGuide ? (
+        <div className="chat-mentor-area">
+          <MentorshipInbox mode="guide" />
+        </div>
+      ) : chatMode === "mentor" ? (
         <div className="chat-mentor-area">
           <MentorshipInbox mode="student" roleIntent={roleIntent} />
         </div>
@@ -9380,9 +10523,19 @@ export default function Chat() {
                     border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
                     padding: "0.75rem 1rem",
                     borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                    fontSize: "0.9rem", lineHeight: 1.6, whiteSpace: "pre-wrap",
+                    fontSize: "0.9rem", lineHeight: 1.6,
+                    overflowWrap: "break-word",
                   }}
-                >{msg.content}</div>
+                  className={msg.role === "assistant" ? "markdown-body" : ""}
+                >
+                  {msg.role === "assistant" ? (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <div style={{ whiteSpace: "pre-wrap" }}>{msg.content}</div>
+                  )}
+                </div>
               ))}
               {sending && <div style={{ alignSelf: "flex-start", color: "var(--text-muted)", fontSize: "0.85rem" }}>AI is typing...</div>}
               <div ref={bottomRef} />
@@ -9761,20 +10914,302 @@ export default function ForgotPassword() {
 
 
 ================================================
+FILE: frontend/src/pages/GoogleCallback.jsx
+================================================
+/**
+ * GoogleCallback.jsx
+ *
+ * The backend redirects here after a successful Google OAuth callback:
+ *   /google-callback#token=<accessToken>&role=student
+ *
+ * This page reads the token from the URL fragment (never hits the server),
+ * stores it in the app's auth system, fetches the current user profile, then
+ * redirects to the home page.
+ */
+
+import { useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import { setAccessToken, setActiveRole } from "../services/api.js";
+import api from "../services/api.js";
+
+export default function GoogleCallback() {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  const processed = useRef(false); // prevent double-run in StrictMode
+
+  useEffect(() => {
+    if (processed.current) return;
+    processed.current = true;
+
+    async function handleCallback() {
+      try {
+        // Read fragment â€” note: location.hash starts with "#"
+        const fragment = window.location.hash.slice(1);
+        const params = new URLSearchParams(fragment);
+        const token = params.get("token");
+        const role = params.get("role") || "student";
+
+        if (!token) {
+          // Clean up any stale token from a previous attempt
+          setAccessToken(null);
+          setActiveRole(null);
+          const searchParams = new URLSearchParams(window.location.search);
+          const googleError = searchParams.get("google_error");
+          navigate(`/?google_error=${googleError || "unknown"}`, { replace: true });
+          return;
+        }
+
+        // Store the application's access token (same path as email/password login)
+        setAccessToken(token);
+        setActiveRole(role);
+
+        // Clear the fragment from the URL immediately so the token is not visible
+        window.history.replaceState(null, "", window.location.pathname);
+
+        // Fetch the current user profile
+        const mePath = role === "guide" ? "/guides/me" : "/students/me";
+        const { data } = await api.get(mePath);
+        const user = data.data;
+
+        // Persist user in AuthContext and localStorage (same as email/password flow)
+        updateUser(user);
+        localStorage.setItem("pp_user", JSON.stringify(user));
+
+        navigate("/", { replace: true });
+      } catch (err) {
+        console.error("[GoogleCallback] Error:", err);
+        setAccessToken(null);
+        setActiveRole(null);
+        navigate("/?google_error=session_error", { replace: true });
+      }
+    }
+
+    handleCallback();
+  }, [navigate, updateUser]);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+      <p style={{ color: "var(--text-dim, #888)" }}>Signing you in with Googleâ€¦</p>
+    </div>
+  );
+}
+
+
+
+================================================
+FILE: frontend/src/pages/GoogleOnboarding.jsx
+================================================
+/**
+ * GoogleOnboarding.jsx
+ *
+ * Shown to new Google-authenticated students who haven't supplied a branch yet.
+ * The backend issues a SHORT-LIVED onboarding-only token and redirects here:
+ *   /google-onboarding#token=<onboardingToken>&role=student&name=<displayName>
+ *
+ * Flow:
+ *   1. Read and store the onboarding token from the URL fragment.
+ *   2. Read the display name from the fragment (pre-filled from Google).
+ *   3. Fetch available branches (public endpoint, no auth needed).
+ *   4. Student selects their branch (and optionally confirms their display name).
+ *   5. POST /api/students/google-onboarding with { branch, name }.
+ *      The onboarding token is sent as the Bearer token â€” the endpoint accepts
+ *      ONLY onboarding tokens, not normal application JWTs.
+ *   6. Response contains { accessToken, user } â€” the NORMAL application tokens.
+ *   7. Store normal access token + user, redirect to home.
+ */
+
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
+import { setAccessToken, setActiveRole } from "../services/api.js";
+import api from "../services/api.js";
+import { fetchBranches } from "../services/branchService.js";
+
+export default function GoogleOnboarding() {
+  const navigate = useNavigate();
+  const { updateUser } = useAuth();
+  const tokenStored = useRef(false);
+
+  const [branches, setBranches] = useState([]);
+  const [selectedBranch, setSelectedBranch] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [ready, setReady] = useState(false);
+
+  // Step 1 â€” store onboarding token and read name on mount (runs once)
+  useEffect(() => {
+    if (tokenStored.current) return;
+    tokenStored.current = true;
+
+    const fragment = window.location.hash.slice(1);
+    const params = new URLSearchParams(fragment);
+    const token = params.get("token");
+    const role = params.get("role") || "student";
+    const displayName = params.get("name") || "";
+
+    if (!token) {
+      // Clean up any stale token from a previous attempt
+      setAccessToken(null);
+      setActiveRole(null);
+      navigate("/?google_error=no_token", { replace: true });
+      return;
+    }
+
+    // Store the onboarding token â€” it will be used as Bearer for the
+    // POST /students/google-onboarding request. This is NOT a normal
+    // application access token and will be rejected by all other endpoints.
+    setAccessToken(token);
+    setActiveRole(role);
+
+    // Clear fragment from URL
+    window.history.replaceState(null, "", window.location.pathname);
+
+    // Pre-fill name from the fragment (sent by the backend)
+    if (displayName) {
+      setName(decodeURIComponent(displayName));
+    }
+
+    // Load branches (public endpoint â€” no auth required)
+    fetchBranches()
+      .then((list) => {
+        setBranches(list);
+        if (list.length > 0) setSelectedBranch(list[0]);
+        setReady(true);
+      })
+      .catch(() => {
+        setError("Could not load branches. Please refresh.");
+        setReady(true);
+      });
+  }, [navigate]);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+
+    if (!selectedBranch) {
+      setError("Please select your branch.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data } = await api.post("/students/google-onboarding", {
+        branch: selectedBranch,
+        name: name.trim() || undefined,
+      });
+
+      // The response contains the NORMAL application access token + user profile
+      const { accessToken, user } = data.data;
+
+      // Replace the onboarding token with the normal application token
+      setAccessToken(accessToken);
+      updateUser(user);
+      localStorage.setItem("pp_user", JSON.stringify(user));
+
+      navigate("/", { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not complete setup. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (!ready) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
+        <p style={{ color: "var(--text-dim, #888)" }}>Setting up your accountâ€¦</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="login-wrap" style={{ paddingTop: "3rem", paddingBottom: "3rem" }}>
+      <div className="login-card" style={{ maxWidth: 420 }}>
+        <h2 style={{ marginBottom: "0.5rem" }}>One last step</h2>
+        <p style={{ color: "var(--text-dim, #888)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+          Your Google account is verified. Just tell us your engineering branch so we can personalise
+          your experience.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          {/* Name â€” pre-filled from Google but editable */}
+          <div className="form-group">
+            <label>Display Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+              maxLength={100}
+            />
+          </div>
+
+          {/* Branch selection */}
+          <div className="form-group">
+            <label>Your Engineering Branch</label>
+            {branches.length > 0 ? (
+              <select
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                required
+              >
+                {branches.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value.toUpperCase())}
+                placeholder="e.g. CSE"
+                required
+                maxLength={20}
+              />
+            )}
+            <small style={{ fontSize: "0.75rem", color: "var(--muted, #888)", marginTop: "0.25rem", display: "block" }}>
+              Only @gmail.com and @nbkrist.org accounts are supported.
+            </small>
+          </div>
+
+          {error && (
+            <p style={{ color: "#ef4444", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{error}</p>
+          )}
+
+          <button
+            className="btn btn-primary"
+            style={{ width: "100%" }}
+            type="submit"
+            disabled={loading}
+          >
+            {loading ? "Savingâ€¦" : "Complete Setup"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================
 FILE: frontend/src/pages/GuidePanel.jsx
 ================================================
 import { useEffect, useState } from "react";
-import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
+import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser, FaComments } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchGuideBranchOverview } from "../services/guideService.js";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
 import AdminBeyond from "../components/admin/AdminBeyond.jsx";
 import AdminGuidance from "../components/admin/AdminGuidance.jsx";
 import GuideResources from "../components/admin/GuideResources.jsx";
-import MentorshipInbox from "../components/MentorshipInbox.jsx";
 
 export default function GuidePanel() {
   const { user, initialized } = useAuth();
+  const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
   const [activeSection, setActiveSection] = useState("students");
 
@@ -9827,7 +11262,10 @@ export default function GuidePanel() {
         <section id="guide-students" style={{ marginBottom: "2rem", scrollMarginTop: "5rem" }}>
           <div className="admin-header">
             <h2>Students following your roles</h2>
-            <span style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>{overview.students?.length || 0} tracked</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <span style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>{overview.students?.length || 0} tracked</span>
+              <button type="button" className="btn btn-outline btn-sm" onClick={() => navigate("/chat")}><FaComments /> Open chat</button>
+            </div>
           </div>
           <table className="admin-table">
             <thead>
@@ -9868,9 +11306,6 @@ export default function GuidePanel() {
             </tbody>
           </table>
         </section>
-        <div id="guide-messages" style={{ scrollMarginTop: "5rem" }}>
-          <MentorshipInbox mode="guide" />
-        </div>
         </>
       )}
 
@@ -9908,18 +11343,20 @@ export default function GuidePanel() {
 FILE: frontend/src/pages/Home.jsx
 ================================================
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import {
   FaCompass, FaChartLine, FaArrowRight, FaLaptopCode, FaSatelliteDish,
-  FaBolt, FaGears, FaBuilding, FaGraduationCap, FaUser,
-  FaCommentDots, FaMap, FaBookmark,
+  FaBolt, FaGears, FaBuilding, FaGraduationCap, FaUser, FaCrosshairs,
+  FaMedal, FaMap, FaEnvelope,
 } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { useBranch } from "../context/BranchContext.jsx";
 import { fetchBranches } from "../services/branchService.js";
 import { fetchRoles } from "../services/rolesService.js";
 import { fetchBeyond } from "../services/beyondService.js";
+import Dashboard from "./Dashboard.jsx";
 
 const BRANCH_META = {
   CSE: { icon: FaLaptopCode, color: "#1a56db", desc: "Computer Science & Engineering" },
@@ -9941,10 +11378,58 @@ const cardVariants = {
   show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 260, damping: 24 } },
 };
 
+const ADMIN_ACTIONS = [
+  { title: "Manage roles", description: "Create and update career paths across branches.", section: "roles", icon: FaCrosshairs },
+  { title: "Manage branches", description: "Review the branches available across the platform.", section: "branches", icon: FaBuilding },
+  { title: "Beyond opportunities", description: "Maintain non-placement paths and opportunities.", section: "beyond", icon: FaMedal },
+  { title: "Guidance", description: "Manage role guidance and learning recommendations.", section: "guidance", icon: FaMap },
+  { title: "Role requests", description: "Review requested roles from the community.", section: "requests", icon: FaEnvelope },
+  { title: "Guide requests", description: "Review guide applications and approvals.", section: "guides", icon: FaGraduationCap },
+  { title: "Role interest", description: "Review student interest across roles.", section: "interest", icon: FaChartLine },
+];
+
+function readStoredAdmin() {
+  try {
+    const raw = localStorage.getItem("pp_admin_user");
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Home() {
   const { user } = useAuth();
   const { setBranch } = useBranch();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [adminUser, setAdminUser] = useState(readStoredAdmin);
+
+  // Consume google_error from the URL and show a user-facing message
+  useEffect(() => {
+    const googleError = searchParams.get("google_error");
+    if (!googleError) return;
+
+    const messages = {
+      access_denied: "Google sign-in was cancelled or denied.",
+      state_mismatch: "Security check failed. Please try signing in with Google again.",
+      no_code: "Authentication failed. Please try again.",
+      token_exchange: "Could not complete Google sign-in. Please try again.",
+      token_invalid: "Google authentication failed. Please try again.",
+      email_not_verified: "Your Google email is not verified. Please verify it with Google first.",
+      domain_not_allowed: "Only @gmail.com and @nbkrist.org emails are supported.",
+      config: "Google sign-in is not configured. Please contact support.",
+      server_error: "Something went wrong with Google sign-in. Please try again.",
+      session_error: "Could not start your session. Please try again.",
+      no_token: "Authentication failed. Please try signing in with Google again.",
+      unknown: "Google sign-in failed. Please try again.",
+    };
+
+    toast.error(messages[googleError] || messages.unknown);
+
+    const next = new URLSearchParams(searchParams);
+    next.delete("google_error");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const [branches, setBranches] = useState([]);
   const [counts, setCounts] = useState({});
@@ -9952,6 +11437,16 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const sync = () => setAdminUser(readStoredAdmin());
+    window.addEventListener("admin-auth-changed", sync);
+    return () => window.removeEventListener("admin-auth-changed", sync);
+  }, []);
+
+  useEffect(() => {
+    if (user || adminUser) {
+      setLoading(false);
+      return undefined;
+    }
     let cancelled = false;
     (async () => {
       try {
@@ -9983,121 +11478,41 @@ export default function Home() {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [user, adminUser]);
 
   const handleSelectBranch = (b) => {
     setBranch(b);
     navigate(`/roles?branch=${b}`);
   };
 
-  const isStudent = user?.role === "student";
+  if (user?.role === "student" || user?.role === "guide") return <Dashboard />;
 
-  if (user?.role === "student" || user?.role === "guide") {
-    const branchQuery = user.branch ? `?branch=${encodeURIComponent(user.branch)}` : "";
-    const dashboardActions = user.role === "student"
-      ? [
-          {
-            title: "Explore core roles",
-            description: `Start with the core career paths for ${user.branch || "your branch"}. Compare roles and open one to see its guidance.`,
-            icon: FaCompass,
-            to: `/roles${branchQuery}`,
-            primary: true,
-          },
-          {
-            title: "Build a role roadmap",
-            description: "Open a role and generate a learning plan based on its skills, resources, and guidance.",
-            icon: FaMap,
-            to: `/roles${branchQuery}`,
-          },
-          {
-            title: "Ask career chat",
-            description: "Get branch-aware help comparing paths, skills, and your next steps.",
-            icon: FaCommentDots,
-            to: "/chat",
-          },
-          {
-            title: "Practice a topic",
-            description: "Create an AI quiz for a topic or select a role to focus your practice.",
-            icon: FaGraduationCap,
-            to: "/quiz",
-          },
-          {
-            title: "Track your progress",
-            description: "Review completed roadmap topics and your recent quiz performance.",
-            icon: FaChartLine,
-            to: "/dashboard#student-progress",
-          },
-          {
-            title: "Learning resources",
-            description: "Browse curated resources relevant to your learning and career goals.",
-            icon: FaBookmark,
-            to: "/resources",
-          },
-        ]
-      : [
-          {
-            title: "Your branch roles",
-            description: `Review core and non-core career paths for ${user.branch || "your branch"} and open role guidance.`,
-            icon: FaCompass,
-            to: `/roles${branchQuery}`,
-            primary: true,
-          },
-          {
-            title: "Branch opportunities",
-            description: "Review beyond-placement opportunities and guidance for students in your branch.",
-            icon: FaChartLine,
-            to: `/beyond${branchQuery}`,
-          },
-          {
-            title: "Learning resources",
-            description: "Browse the resources students can use to build skills and prepare for their goals.",
-            icon: FaBookmark,
-            to: "/resources",
-          },
-        ];
-
+  if (adminUser) {
     return (
       <main className="dashboard-shell home-dashboard">
         <section className="home-dashboard-welcome">
           <div>
-            <div className="dashboard-role-badge">
-              {user.role === "student" ? "Student Workspace" : "Guide Workspace"}
-            </div>
-            <h1>Welcome back, <span>{user.name?.split(" ")[0] || "there"}</span></h1>
-            <p>
-              {user.role === "student"
-                ? "Youâ€™re signed in. Start with your branchâ€™s core roles, then use guidance and AI tools when you need them."
-                : "Youâ€™re signed in. Your branch guidance and student resources are ready to review."}
-            </p>
-          </div>
-          <div className="home-dashboard-branch">
-            <span>Your branch</span>
-            <strong>{user.branch || "Not set"}</strong>
+            <div className="dashboard-role-badge">Admin Workspace</div>
+            <h1>Welcome back, <span>{adminUser.name?.split(" ")[0] || "Admin"}</span></h1>
+            <p>Choose a management area to continue maintaining Preyeahh.</p>
           </div>
         </section>
-
-        <section className="home-dashboard-section" aria-labelledby="home-actions-title">
+        <section className="home-dashboard-section" aria-labelledby="admin-actions-title">
           <div className="home-dashboard-section-heading">
-            <div>
-              <h2 id="home-actions-title">{user.role === "student" ? "Pick up where you want to go" : "Your guide workspace"}</h2>
-              <p>{user.role === "student" ? "Career paths first. Learning tools are here when they fit your next step." : "Branch-first links to the areas students use most."}</p>
-            </div>
+            <div><h2 id="admin-actions-title">Platform management</h2></div>
           </div>
           <div className="dashboard-grid">
-            {dashboardActions.map((action) => {
+            {ADMIN_ACTIONS.map((action) => {
               const Icon = action.icon;
               return (
                 <button
-                  key={action.title}
+                  key={action.section}
                   type="button"
-                  className={`dashboard-card ${action.primary ? "dashboard-card--highlight" : ""}`}
-                  onClick={() => navigate(action.to)}
+                  className="dashboard-card"
+                  onClick={() => navigate("/admin", { state: { section: action.section } })}
                 >
                   <div className="dashboard-card-icon"><Icon /></div>
-                  <div>
-                    <h3>{action.title}</h3>
-                    <p>{action.description}</p>
-                  </div>
+                  <div><h3>{action.title}</h3><p>{action.description}</p></div>
                   <div className="dashboard-card-footer">Open <FaArrowRight /></div>
                 </button>
               );
@@ -10107,6 +11522,8 @@ export default function Home() {
       </main>
     );
   }
+
+  const isStudent = user?.role === "student";
 
   return (
     <>
@@ -10234,7 +11651,312 @@ export default function Home() {
 ================================================
 FILE: frontend/src/pages/MyRoadmaps.jsx
 ================================================
-Error reading file with 'cp1252': 'charmap' codec can't decode byte 0x9d in position 4547: character maps to <undefined>
+import { useCallback, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { FaPlus, FaTrash, FaChevronDown, FaChevronUp, FaCircleCheck, FaMap } from "react-icons/fa6";
+import {
+  generateRoadmap, fetchRoadmaps, fetchRoadmap, setTopicCompleted, deleteRoadmap,
+} from "../services/aiRoadmapService.js";
+import { useBranch } from "../context/BranchContext.jsx";
+
+const idOf = (x) => x?._id || x?.id;
+
+const percentDone = (rm) => {
+  let total = 0, done = 0;
+  rm.sections?.forEach((s) => s.topics?.forEach((t) => { total += 1; if (t.isCompleted) done += 1; }));
+  return total ? Math.round((done / total) * 100) : 0;
+};
+
+export default function MyRoadmaps() {
+  const { branch } = useBranch();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [roadmaps, setRoadmaps] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [expanded, setExpanded] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
+  const [topic, setTopic] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetchRoadmaps({ limit: 50 });
+      setRoadmaps(res.data || []);
+    } catch {
+      toast.error("Failed to load roadmaps");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    const roadmapId = location.state?.roadmapId;
+    if (!roadmapId) return;
+    fetchRoadmap(roadmapId)
+      .then((rm) => { setSelected(rm); setExpanded({ 0: true }); })
+      .catch(() => {});
+  }, [location.state?.roadmapId]);
+
+  const selectCard = async (rm) => {
+    const id = idOf(rm);
+    if (idOf(selected) === id) { setSelected(null); setExpanded({}); return; }
+    try {
+      const full = await fetchRoadmap(id);
+      setSelected(full);
+      setExpanded({ 0: true });
+    } catch {
+      toast.error("Failed to load roadmap");
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!topic.trim()) return toast.error("Enter a role or topic first");
+    setGenerating(true);
+    try {
+      const rm = await generateRoadmap({ topic: topic.trim() });
+      setRoadmaps((prev) => [rm, ...prev]);
+      setSelected(rm);
+      setExpanded({ 0: true });
+      setTopic("");
+      toast.success("Roadmap generated!");
+    } catch (err) {
+      toast.error(err.response?.status === 429 ? "AI is busy â€” try again in a moment" : err.response?.data?.message || "Failed to generate roadmap");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const handleToggleTopic = async (topicId, current) => {
+    if (!selected) return;
+    try {
+      const rm = await setTopicCompleted(idOf(selected), topicId, !current);
+      setSelected(rm);
+      setRoadmaps((prev) => prev.map((r) => (idOf(r) === idOf(rm) ? rm : r)));
+    } catch {
+      toast.error("Failed to update progress");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this roadmap?")) return;
+    try {
+      await deleteRoadmap(id);
+      setRoadmaps((prev) => prev.filter((r) => idOf(r) !== id));
+      if (idOf(selected) === id) { setSelected(null); setExpanded({}); }
+      toast.success("Deleted");
+    } catch {
+      toast.error("Failed to delete");
+    }
+  };
+
+  return (
+    <div>
+      <div className="page-hero">
+        <h1>My <span>Roadmaps</span></h1>
+        <p>AI-generated learning paths personalised to your branch and profile</p>
+      </div>
+
+      <div className="section">
+        {/* Generate box */}
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem" }}>
+          <div style={{ fontWeight: 700, marginBottom: "0.75rem", color: "var(--text)" }}>Generate a new roadmap</div>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <input
+              className="search-input"
+              style={{ flex: 1, minWidth: 220 }}
+              placeholder={`e.g. Software Engineer, Data Scientist${branch ? ` (${branch})` : ""}`}
+              value={topic}
+              maxLength={120}
+              onChange={(e) => setTopic(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
+            />
+            <button className="btn btn-primary" onClick={handleGenerate} disabled={generating}>
+              <FaPlus /> {generating ? "Generating..." : "Generate"}
+            </button>
+          </div>
+          <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
+            Tip: open any role on the Roles page and use "Generate AI Roadmap" to base it on that role's curated guidance.
+          </p>
+        </div>
+
+        {/* Two-column layout */}
+        <div style={{ display: "grid", gridTemplateColumns: selected ? "320px 1fr" : "1fr", gap: "1.5rem", alignItems: "start" }}>
+
+          {/* LEFT: roadmap cards grid */}
+          <div style={{ display: "grid", gridTemplateColumns: selected ? "1fr" : "repeat(auto-fill, minmax(220px, 1fr))", gap: "0.85rem" }}>
+            {loading ? (
+              <div className="empty" style={{ gridColumn: "1 / -1" }}><p>Loading...</p></div>
+            ) : roadmaps.length === 0 ? (
+              <div className="empty" style={{ gridColumn: "1 / -1" }}><p>No roadmaps yet â€” generate one above</p></div>
+            ) : (
+              roadmaps.map((rm) => {
+                const id = idOf(rm);
+                const pct = percentDone(rm);
+                const active = idOf(selected) === id;
+                return (
+                  <div
+                    key={id}
+                    onClick={() => selectCard(rm)}
+                    style={{
+                      background: active ? "var(--primary-bg)" : "var(--surface)",
+                      border: `1.5px solid ${active ? "var(--primary)" : "var(--border)"}`,
+                      borderRadius: "12px",
+                      padding: "1rem",
+                      cursor: "pointer",
+                      transition: "all 0.15s",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "0.6rem",
+                      position: "relative",
+                    }}
+                  >
+                    {/* Delete button */}
+                    <button
+                      className="btn btn-sm"
+                      style={{ position: "absolute", top: "8px", right: "8px", background: "transparent", color: "var(--text-muted)", padding: "2px 6px" }}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(id); }}
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
+
+                    {/* Level badge */}
+                    <span className="type-badge badge-core" style={{ alignSelf: "flex-start", fontSize: "0.65rem" }}>{rm.level}</span>
+
+                    {/* Title */}
+                    <div style={{ fontWeight: 800, fontSize: "0.9rem", color: "var(--text)", lineHeight: 1.3, paddingRight: "1.5rem" }}>{rm.title}</div>
+
+                    {/* Meta */}
+                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{rm.branch || "General"} Â· {rm.estimatedWeeks} weeks</div>
+
+                    {/* Progress */}
+                    <div style={{ marginTop: "auto" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                        <span>Progress</span><span>{pct}%</span>
+                      </div>
+                      <div style={{ height: 5, background: "var(--border)", borderRadius: 999, overflow: "hidden" }}>
+                        <div style={{ width: `${pct}%`, height: "100%", background: "var(--primary)", transition: "width 0.3s" }} />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* RIGHT: selected roadmap detail */}
+          {selected && (
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1.5rem" }}>
+              {/* Header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
+                <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, color: "var(--text)", margin: 0 }}>{selected.title}</h2>
+                <button
+                  className="btn btn-primary"
+                  style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0, marginLeft: "1rem" }}
+                  onClick={() => navigate(`/roadmap/${idOf(selected)}`)}
+                >
+                  <FaMap /> Visual Roadmap
+                </button>
+              </div>
+
+              {selected.description && (
+                <p style={{ color: "var(--text-dim)", fontSize: "0.875rem", marginBottom: "0.75rem" }}>{selected.description}</p>
+              )}
+
+              <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "center", marginBottom: "1.25rem" }}>
+                <span className="branch-tag">{selected.branch || "General"}</span>
+                <span className="type-badge badge-core">{selected.level}</span>
+                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{selected.estimatedWeeks} weeks</span>
+              </div>
+
+              {/* Fit snapshot */}
+              {(selected.fitSnapshot?.whyThisFits?.length || selected.fitSnapshot?.whyNotAlternatives?.length) ? (
+                <section style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", padding: "1rem 0", marginBottom: "1.25rem" }}>
+                  <h3 style={{ fontSize: "0.9rem", color: "var(--text)", marginBottom: "0.65rem" }}>Personalised fit snapshot</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
+                    {selected.fitSnapshot.whyThisFits?.length > 0 && (
+                      <div>
+                        <h4 style={{ fontSize: "0.8rem", color: "var(--primary-dim)", marginBottom: "0.3rem" }}>Why this roadmap fits</h4>
+                        <ul style={{ paddingLeft: "1.1rem", color: "var(--text-dim)", fontSize: "0.78rem" }}>
+                          {selected.fitSnapshot.whyThisFits.map((r, i) => <li key={i}>{r}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                    <div>
+                      <h4 style={{ fontSize: "0.8rem", color: "var(--text)", marginBottom: "0.3rem" }}>Why this path over alternatives</h4>
+                      {selected.fitSnapshot.whyNotAlternatives?.length > 0 ? (
+                        <ul style={{ paddingLeft: "1.1rem", color: "var(--text-dim)", fontSize: "0.78rem" }}>
+                          {selected.fitSnapshot.whyNotAlternatives.map((a, i) => (
+                            <li key={i}><strong>{a.path}:</strong> {a.tradeoff}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>No alternative comparison available.</p>
+                      )}
+                    </div>
+                  </div>
+                  {selected.fitSnapshot.basedOn?.length > 0 && (
+                    <p style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: "0.65rem" }}>
+                      Based on: {selected.fitSnapshot.basedOn.join(" Â· ")}
+                    </p>
+                  )}
+                </section>
+              ) : null}
+
+              {/* Timeline sections */}
+              <div className="roadmap-timeline">
+                {selected.sections?.map((section, si) => (
+                  <div key={idOf(section) || si} className="roadmap-node">
+                    <div className="roadmap-node-marker"></div>
+                    <div className="roadmap-node-content" onClick={() => setExpanded((p) => ({ ...p, [si]: !p[si] }))}>
+                      <div className="roadmap-node-header">
+                        <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>{section.title}</div>
+                        {expanded[si] ? <FaChevronUp /> : <FaChevronDown />}
+                      </div>
+                      {expanded[si] && (
+                        <div className="roadmap-node-topics">
+                          {section.topics?.map((tp) => (
+                            <div
+                              key={idOf(tp)}
+                              className={`roadmap-topic-card ${tp.isCompleted ? "completed" : ""}`}
+                              onClick={(e) => { e.stopPropagation(); handleToggleTopic(idOf(tp), tp.isCompleted); }}
+                            >
+                              <FaCircleCheck className="roadmap-topic-icon" />
+                              <div>
+                                <div className="roadmap-topic-title">{tp.title}</div>
+                                <div className="roadmap-topic-desc">{tp.description}</div>
+                                {tp.resources?.length > 0 && (
+                                  <div className="roadmap-resources">
+                                    {tp.resources.map((r, ri) =>
+                                      r.url ? (
+                                        <a key={ri} href={r.url} target="_blank" rel="noopener noreferrer" className="resource-link" onClick={(e) => e.stopPropagation()}>{r.title} â†—</a>
+                                      ) : (
+                                        <span key={ri} className="resource-text">{r.title}</span>
+                                      )
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 
 
 ================================================
@@ -10390,113 +12112,6 @@ export default function Profile() {
           </fieldset>
           <button className="btn btn-primary" onClick={handleSave} disabled={saving}>{saving ? "Saving..." : "Save preferences"}</button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-
-
-================================================
-FILE: frontend/src/pages/Progress.jsx
-================================================
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
-import { fetchLearningProgress, fetchQuizProgress, fetchPerformance } from "../services/progressService.js";
-
-const SEVERITY_COLOR = { high: "var(--error)", medium: "var(--warning)", low: "var(--primary)", info: "var(--text-muted)" };
-const card = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem" };
-const h3 = { fontFamily: "var(--font-display)", fontWeight: 700, marginBottom: "1rem", color: "var(--text)" };
-
-export default function Progress() {
-  const [learning, setLearning] = useState(null);
-  const [quizzes, setQuizzes] = useState(null);
-  const [performance, setPerformance] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    Promise.all([fetchLearningProgress(), fetchQuizProgress(), fetchPerformance()])
-      .then(([l, q, p]) => { setLearning(l); setQuizzes(q); setPerformance(p); })
-      .catch(() => toast.error("Failed to load progress"))
-      .finally(() => setLoading(false));
-  }, []);
-
-  if (loading) {
-    return (
-      <div>
-        <div className="page-hero"><h1>My <span>Progress</span></h1></div>
-        <div className="empty"><div className="icon"><i className="fa fa-spinner fa-spin" /></div><p>Loading...</p></div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="page-hero">
-        <h1>My <span>Progress</span></h1>
-        <p>Track your roadmaps and quiz results</p>
-      </div>
-
-      <div className="section">
-        <div className="stats" style={{ marginBottom: "2rem" }}>
-          <div className="stat-card"><div className="num">{learning?.overallProgress ?? 0}%</div><div className="label">Roadmap Completion</div></div>
-          <div className="stat-card"><div className="num">{learning?.completedTopics ?? 0}</div><div className="label">Topics Completed</div></div>
-          <div className="stat-card"><div className="num">{quizzes?.completedQuizzes ?? 0}</div><div className="label">Quizzes Completed</div></div>
-          <div className="stat-card"><div className="num">{quizzes?.averageScore ?? 0}%</div><div className="label">Avg Quiz Score</div></div>
-        </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "1.5rem" }}>
-          <div style={card}>
-            <h3 style={h3}>Roadmap Breakdown</h3>
-            {!learning?.roadmapProgressList?.length ? (
-              <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No roadmaps yet</p>
-            ) : (
-              learning.roadmapProgressList.map((rm) => (
-                <div key={rm.id} style={{ marginBottom: "1rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
-                    <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--text)" }}>{rm.title}</span>
-                    <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{rm.completionPercentage}%</span>
-                  </div>
-                  <div style={{ height: 6, background: "var(--border)", borderRadius: 999, overflow: "hidden" }}>
-                    <div style={{ width: `${rm.completionPercentage}%`, height: "100%", background: rm.completionPercentage >= 80 ? "var(--primary)" : rm.completionPercentage >= 40 ? "var(--warning)" : "var(--error)" }} />
-                  </div>
-                  <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>{rm.completedTopics}/{rm.totalTopics} topics</div>
-                </div>
-              ))
-            )}
-          </div>
-
-          <div style={card}>
-            <h3 style={h3}>Suggestions</h3>
-            {!performance?.suggestions?.length ? (
-              <p style={{ color: "var(--text-muted)", fontSize: "0.875rem" }}>No suggestions yet</p>
-            ) : (
-              performance.suggestions.map((s) => (
-                <div key={s.id} style={{ marginBottom: "0.875rem", padding: "0.875rem", background: "var(--surface-mid)", borderRadius: 8, borderLeft: `3px solid ${SEVERITY_COLOR[s.severity] || "var(--primary)"}` }}>
-                  <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--text)", marginBottom: "0.3rem" }}>{s.title}</div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-dim)", lineHeight: 1.5 }}>{s.description}</div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {quizzes?.recentQuizzes?.length > 0 && (
-          <div style={{ ...card, marginTop: "1.5rem" }}>
-            <h3 style={h3}>Recent Quizzes</h3>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-              {quizzes.recentQuizzes.map((q) => (
-                <div key={q.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem 1rem", background: "var(--surface-mid)", borderRadius: 8 }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--text)" }}>{q.title}</div>
-                    <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{q.difficulty} Â· {q.topic}</div>
-                  </div>
-                  <div style={{ fontWeight: 700, color: q.score >= 70 ? "var(--primary)" : q.score >= 50 ? "var(--warning)" : "var(--error)" }}>{q.score}%</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -10933,6 +12548,82 @@ export default function Resources() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+
+
+================================================
+FILE: frontend/src/pages/RoadmapView.jsx
+================================================
+import { useState, useEffect, useCallback } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { fetchRoadmap, fetchRoadmaps, setTopicCompleted } from "../services/aiRoadmapService.js";
+import RoadmapGraph from "../components/RoadmapGraph.jsx";
+
+export default function RoadmapView() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [roadmap, setRoadmap] = useState(null);
+  const [related, setRelated] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [rm, all] = await Promise.all([
+        fetchRoadmap(id),
+        fetchRoadmaps({ limit: 10 })
+      ]);
+      setRoadmap(rm);
+      setRelated(all.data || []);
+    } catch (err) {
+      toast.error("Failed to load roadmap");
+      navigate("/roadmaps");
+    } finally {
+      setLoading(false);
+    }
+  }, [id, navigate]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleTopicStatusChange = async (topicId, isCompleted) => {
+    // Optimistic UI update
+    setRoadmap(prev => {
+      if (!prev) return prev;
+      const newSections = prev.sections.map(section => ({
+        ...section,
+        topics: section.topics.map(t => t._id === topicId ? { ...t, isCompleted } : t)
+      }));
+      return { ...prev, sections: newSections };
+    });
+
+    try {
+      await setTopicCompleted(id, topicId, isCompleted);
+    } catch (err) {
+      toast.error("Failed to update status");
+      // Revert optimism on error? For simplicity, we just leave it or reload.
+      loadData();
+    }
+  };
+
+  if (loading) {
+    return <div style={{ padding: "4rem", textAlign: "center", color: "var(--text)" }}>Loading Roadmap...</div>;
+  }
+
+  if (!roadmap) return null;
+
+  return (
+    <div>
+      <RoadmapGraph 
+        roadmap={roadmap} 
+        relatedRoadmaps={related} 
+        onTopicStatusChange={handleTopicStatusChange} 
+      />
     </div>
   );
 }
@@ -11452,7 +13143,12 @@ FILE: frontend/src/services/api.js
 ================================================
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const configuredApiBase = import.meta.env.VITE_API_URL;
+const API_BASE = import.meta.env.PROD
+  ? configuredApiBase && configuredApiBase !== "/api"
+    ? configuredApiBase
+    : "https://preyeahh.onrender.com/api"
+  : configuredApiBase || "/api";
 
 const api = axios.create({
   baseURL: API_BASE,
