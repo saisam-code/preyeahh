@@ -56,9 +56,6 @@ const roleSchema = new mongoose.Schema(
 // double-adds from the admin/guide "Add Role" modals).
 roleSchema.index({ title: 1, branch: 1 }, { unique: true });
 
-// Text search support for roles.html's search box (title + description).
-roleSchema.index({ title: "text", description: "text" });
-
 // Cascade delete: mirrors deleteRole() in supabase.js
 // ("await _sb.from('guidance').delete().eq('role_id', id)").
 roleSchema.pre("findOneAndDelete", async function (next) {

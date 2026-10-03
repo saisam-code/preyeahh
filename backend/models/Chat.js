@@ -11,7 +11,9 @@ const messageSchema = new mongoose.Schema(
 // A named conversation thread owned by one student.
 const chatSchema = new mongoose.Schema(
   {
-    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true, index: true },
+    // Compound index { studentId: 1, isArchived: 1, updatedAt: -1 } covers
+    // studentId as a prefix, so a standalone studentId index would be redundant.
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
     title: { type: String, default: "New Chat", maxlength: 200 },
     topic: { type: String, default: "" },
     // Optional Role being explored; gives the AI the role's curated overview + skills as context

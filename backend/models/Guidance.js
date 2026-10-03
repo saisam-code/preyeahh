@@ -22,7 +22,6 @@ const guidanceSchema = new mongoose.Schema(
       required: [true, "Branch is required"],
       trim: true,
       uppercase: true,
-      index: true,
       // "All" (not uppercased away) is a valid sentinel meaning global —
       // matches beyond/guidance semantics in the original schema/app.js.
       set: (v) => (v?.toUpperCase() === "ALL" ? "All" : v?.toUpperCase()),
@@ -47,6 +46,8 @@ const guidanceSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Compound index covers branch-only queries (prefix) and branch+role queries.
+// A standalone branch index would be redundant with this prefix.
 guidanceSchema.index({ branch: 1, role: 1 });
 
 export default mongoose.model("Guidance", guidanceSchema);

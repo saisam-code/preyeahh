@@ -11,10 +11,13 @@ const mentorshipMessageSchema = new mongoose.Schema(
 
 const mentorshipConversationSchema = new mongoose.Schema(
   {
-    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true, index: true },
-    guideId: { type: mongoose.Schema.Types.ObjectId, ref: "Guide", required: true, index: true },
+    // Standalone studentId/guideId/branch indexes removed — the compound
+    // indexes below cover studentId and guideId as prefixes, and no query
+    // filters on branch alone for this collection.
+    studentId: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
+    guideId: { type: mongoose.Schema.Types.ObjectId, ref: "Guide", required: true },
     roleId: { type: mongoose.Schema.Types.ObjectId, ref: "Role", required: true },
-    branch: { type: String, required: true, uppercase: true, trim: true, index: true },
+    branch: { type: String, required: true, uppercase: true, trim: true },
     messages: { type: [mentorshipMessageSchema], default: [] },
     lastMessageAt: { type: Date, default: Date.now },
     guideReadAt: { type: Date, default: null },

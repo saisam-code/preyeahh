@@ -19,7 +19,6 @@ const beyondSchema = new mongoose.Schema(
       required: [true, "Branch is required"],
       trim: true,
       set: (v) => (v?.toUpperCase() === "ALL" ? "All" : v?.toUpperCase()),
-      index: true,
     },
     category: {
       type: String,
@@ -39,7 +38,6 @@ const beyondSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-beyondSchema.index({ title: "text", description: "text" });
 beyondSchema.index({ branch: 1, category: 1 });
 
 export default mongoose.model("Beyond", beyondSchema);
