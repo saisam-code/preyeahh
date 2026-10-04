@@ -476,6 +476,15 @@ body.dark .btn-accent:hover {
   gap: var(--sp-lg);
 }
 
+.hero-logo {
+  height: 90px;
+  width: auto;
+  object-fit: contain;
+  margin-bottom: -1rem; /* Adjust space between logo and eyebrow */
+}
+@media (max-width: 1024px) { .hero-logo { height: 72px; } }
+@media (max-width: 768px) { .hero-logo { height: 60px; margin-bottom: -0.5rem; } }
+
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;

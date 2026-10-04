@@ -23,6 +23,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { setAccessToken, setActiveRole } from "../services/api.js";
 import api from "../services/api.js";
 import { fetchBranches } from "../services/branchService.js";
+import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 export default function GoogleOnboarding() {
   const navigate = useNavigate();
@@ -125,6 +126,7 @@ export default function GoogleOnboarding() {
   return (
     <div className="login-wrap" style={{ paddingTop: "3rem", paddingBottom: "3rem" }}>
       <div className="login-card" style={{ maxWidth: 420 }}>
+        <img src={preyeahhLogo} alt="PREYEAHH Logo" className="modal-logo" style={{ height: "40px", marginBottom: "0.5rem" }} />
         <h2 style={{ marginBottom: "0.5rem" }}>One last step</h2>
         <p style={{ color: "var(--text-dim, #888)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
           Your Google account is verified. Just tell us your engineering branch so we can personalise

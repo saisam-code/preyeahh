@@ -13,7 +13,7 @@ import { fetchBranches } from "../services/branchService.js";
 import { fetchRoles } from "../services/rolesService.js";
 import { fetchBeyond } from "../services/beyondService.js";
 import Dashboard from "./Dashboard.jsx";
-
+import preyeahhLogo from "../assets/preyeahh-logo.png";
 const BRANCH_META = {
   CSE: { icon: FaLaptopCode, color: "#1a56db", desc: "Computer Science & Engineering" },
   ECE: { icon: FaSatelliteDish, color: "#7c3aed", desc: "Electronics & Communication" },
@@ -186,11 +186,20 @@ export default function Home() {
       <section className="landing-hero-wrap">
         <div className="landing-hero">
           <div className="hero-left">
+            <motion.img
+              src={preyeahhLogo}
+              alt="PREYEAHH"
+              className="hero-logo"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            />
+
             <motion.div
               className="hero-eyebrow"
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
+              transition={{ delay: 0.1 }}
             >
               <FaCompass /> Your Career Compass
             </motion.div>
@@ -199,7 +208,7 @@ export default function Home() {
               className="hero-headline"
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.2 }}
             >
               {isStudent ? (
                 <>Welcome back, <span>{user.name.split(" ")[0]}</span></>

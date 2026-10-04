@@ -6,6 +6,7 @@ import { FaEye, FaEyeSlash, FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchBranches } from "../services/branchService.js";
 import { fetchRoles } from "../services/rolesService.js";
+import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 const GUIDE_EMAIL_RE = /^[^\s@]+@nbkrist\.org$/i;
 
@@ -118,6 +119,7 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
       <div className="modal" style={{ maxWidth: 420 }}>
         <div className="modal-header">
           <div>
+            <img src={preyeahhLogo} alt="PREYEAHH Logo" className="modal-logo" style={{ height: "40px", marginBottom: "0.5rem" }} />
             <h2>{tab === "login" ? "Sign In" : "Create Account"}</h2>
             <p className="modal-sub">
               {tab === "login" ? "Welcome back — enter your details below." : "Join Preyeahh to track your career interests."}
