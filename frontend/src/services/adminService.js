@@ -31,3 +31,28 @@ export function fetchDashboardStats() {
 export function fetchRoleInterest(params = {}) {
   return api.get("/admin/interest", { params }).then((r) => r.data);
 }
+
+// ── Student management ──────────────────────────────────────────────────────
+export function fetchOverviewStats() {
+  return api.get("/admin/overview-stats").then((r) => r.data);
+}
+
+export function fetchAllStudents(params = {}) {
+  return api.get("/admin/students", { params }).then((r) => r.data);
+}
+
+export function fetchStudentById(studentId) {
+  return api.get(`/admin/students/${studentId}`).then((r) => r.data);
+}
+
+export function fetchStudentChats(studentId) {
+  return api.get(`/admin/students/${studentId}/chats`).then((r) => r.data);
+}
+
+export function fetchStudentChatDetail(studentId, chatId) {
+  return api.get(`/admin/students/${studentId}/chats/${chatId}`).then((r) => r.data);
+}
+
+export function fetchStudentRoadmaps(studentId) {
+  return api.get(`/admin/students/${studentId}/roadmaps`).then((r) => r.data);
+}

@@ -7,6 +7,9 @@ import Guidance from "../models/Guidance.js";
 import Guide from "../models/Guide.js";
 import RoleRequest from "../models/RoleRequest.js";
 import RoleInterest from "../models/RoleInterest.js";
+import Student from "../models/Student.js";
+import Chat from "../models/Chat.js";
+import AIRoadmap from "../models/AIRoadmap.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -133,4 +136,101 @@ export const getRoleInterest = asyncHandler(async (req, res) => {
 
   const rows = await RoleInterest.find(filter).populate("student", "name email").sort({ recordedAt: -1 });
   res.status(200).json(new ApiResponse(200, rows, "Role interest fetched"));
+});
+
+// ── Admin: Student Management ────────────────────────────────────────────────
+
+export const getAllStudents = asyncHandler(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+  const skip = (page - 1) * limit;
+
+  const filter = {};
+  if (req.query.branch) filter.branch = req.query.branch.toUpperCase();
+  if (req.query.search) {
+    const re = new RegExp(req.query.search.trim(), "i");
+    filter.$or = [{ name: re }, { email: re }];
+  }
+  if (req.query.verified === "true") filter.isVerified = true;
+  if (req.query.verified === "false") filter.isVerified = false;
+
+  const [total, students] = await Promise.all([
+    Student.countDocuments(filter),
+    Student.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .select("-password -emailVerificationTokenHash -emailVerificationExpires -passwordResetTokenHash -passwordResetExpires -refreshTokenVersion"),
+  ]);
+
+  res.status(200).json(
+    new ApiResponse(200, students, "Students fetched", {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    })
+  );
+});
+
+export const getStudentById = asyncHandler(async (req, res) => {
+  const student = await Student.findById(req.params.studentId).select(
+    "-password -emailVerificationTokenHash -emailVerificationExpires -passwordResetTokenHash -passwordResetExpires -refreshTokenVersion"
+  );
+  if (!student) throw ApiError.notFound("Student not found");
+  res.status(200).json(new ApiResponse(200, student, "Student fetched"));
+});
+
+export const getStudentChats = asyncHandler(async (req, res) => {
+  const student = await Student.findById(req.params.studentId).select("name email");
+  if (!student) throw ApiError.notFound("Student not found");
+
+  const chats = await Chat.find({ studentId: req.params.studentId })
+    .sort({ updatedAt: -1 })
+    .select("title topic branch roleId isArchived createdAt updatedAt messages")
+    .populate("roleId", "title branch");
+
+  res.status(200).json(new ApiResponse(200, { student, chats }, "Student chats fetched"));
+});
+
+export const getStudentChatDetail = asyncHandler(async (req, res) => {
+  const chat = await Chat.findOne({
+    _id: req.params.chatId,
+    studentId: req.params.studentId,
+  }).populate("roleId", "title branch");
+
+  if (!chat) throw ApiError.notFound("Chat not found");
+  res.status(200).json(new ApiResponse(200, chat, "Chat fetched"));
+});
+
+export const getStudentRoadmaps = asyncHandler(async (req, res) => {
+  const student = await Student.findById(req.params.studentId).select("name email");
+  if (!student) throw ApiError.notFound("Student not found");
+
+  const roadmaps = await AIRoadmap.find({ studentId: req.params.studentId })
+    .sort({ createdAt: -1 })
+    .populate("roleId", "title branch");
+
+  res.status(200).json(new ApiResponse(200, { student, roadmaps }, "Student roadmaps fetched"));
+});
+
+export const getAdminOverviewStats = asyncHandler(async (req, res) => {
+  const [totalStudents, verifiedStudents, totalChats, totalRoadmaps, totalMessages] = await Promise.all([
+    Student.countDocuments(),
+    Student.countDocuments({ isVerified: true }),
+    Chat.countDocuments(),
+    AIRoadmap.countDocuments(),
+    Chat.aggregate([{ $project: { count: { $size: "$messages" } } }, { $group: { _id: null, total: { $sum: "$count" } } }]),
+  ]);
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      totalStudents,
+      verifiedStudents,
+      unverifiedStudents: totalStudents - verifiedStudents,
+      totalChats,
+      totalRoadmaps,
+      totalMessages: totalMessages[0]?.total || 0,
+    }, "Overview stats fetched")
+  );
 });

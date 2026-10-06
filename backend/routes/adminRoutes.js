@@ -9,6 +9,12 @@ import {
   logoutAdmin,
   forgotPassword,
   resetPassword,
+  getAllStudents,
+  getStudentById,
+  getStudentChats,
+  getStudentChatDetail,
+  getStudentRoadmaps,
+  getAdminOverviewStats,
 } from "../controllers/adminController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -39,5 +45,13 @@ router.post("/reset-password", sensitiveLimiter, resetPasswordRules, validate, r
 router.get("/me", protect, authorize("admin"), getMe);
 router.get("/dashboard", protect, authorize("admin"), getDashboardStats);
 router.get("/interest", protect, authorize("admin"), interestQueryRules, validate, getRoleInterest);
+
+// ── Student management (admin-only) ────────────────────────────────────────
+router.get("/overview-stats", protect, authorize("admin"), getAdminOverviewStats);
+router.get("/students", protect, authorize("admin"), getAllStudents);
+router.get("/students/:studentId", protect, authorize("admin"), getStudentById);
+router.get("/students/:studentId/chats", protect, authorize("admin"), getStudentChats);
+router.get("/students/:studentId/chats/:chatId", protect, authorize("admin"), getStudentChatDetail);
+router.get("/students/:studentId/roadmaps", protect, authorize("admin"), getStudentRoadmaps);
 
 export default router;
