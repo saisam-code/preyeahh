@@ -4,13 +4,6 @@ import api, { setAccessToken, getAccessToken, setActiveRole, getActiveRole } fro
 const AuthContext = createContext(null);
 const USER_STORAGE_KEY = "pp_user";
 
-// Per-role auth endpoints (admin shares the reset flow but has its own session handling in pages/Admin.jsx)
-const AUTH_PATH = {
-  student: { forgot: "/students/forgot-password", reset: "/students/reset-password", verify: "/students/verify-email" },
-  guide: { forgot: "/guides/forgot-password", reset: "/guides/reset-password", verify: "/guides/verify-email" },
-  admin: { forgot: "/admin/forgot-password", reset: "/admin/reset-password" },
-};
-
 function storeUser(user) {
   if (user) localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
   else localStorage.removeItem(USER_STORAGE_KEY);
@@ -67,49 +60,6 @@ export function AuthProvider({ children }) {
     })();
   }, []);
 
-  const login = useCallback(async (email, password) => {
-    setLoading(true);
-    try {
-      try {
-        const { data } = await api.post("/students/login", { email, password });
-        setAccessToken(data.data.accessToken);
-        setActiveRole("student");
-        setUser(data.data.user);
-        storeUser(data.data.user);
-        return data.data.user;
-      } catch (studentErr) {
-        if (studentErr.response?.status !== 401) {
-          studentErr.authRole = "student";
-          throw studentErr;
-        }
-      }
-
-      try {
-        const { data } = await api.post("/guides/login", { email, password });
-        setAccessToken(data.data.accessToken);
-        setActiveRole("guide");
-        setUser(data.data.user);
-        storeUser(data.data.user);
-        return data.data.user;
-      } catch (guideErr) {
-        guideErr.authRole = "guide";
-        throw guideErr;
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const registerStudent = useCallback(async ({ name, email, password, branch }) => {
-    setLoading(true);
-    try {
-      const { data } = await api.post("/students/register", { name, email, password, branch });
-      return data; // { data: { email }, message } — no auto-login, must verify first
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   const registerGuide = useCallback(async ({ name, email, password, branch, roleNames, bio }) => {
     setLoading(true);
     try {
@@ -118,31 +68,6 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, []);
-
-  const forgotPassword = useCallback(async (email, role = "student") => {
-    const path = AUTH_PATH[role]?.forgot || AUTH_PATH.student.forgot;
-    const { data } = await api.post(path, { email });
-    return data;
-  }, []);
-
-  const resetPassword = useCallback(async (token, password, role = "student") => {
-    const path = AUTH_PATH[role]?.reset || AUTH_PATH.student.reset;
-    const { data } = await api.post(path, { token, password });
-    return data;
-  }, []);
-
-  const resendVerification = useCallback(async (email, role = "student") => {
-    const path = role === "guide" ? "/guides/resend-verification" : "/students/resend-verification";
-    const { data } = await api.post(path, { email });
-    return data;
-  }, []);
-
-  const verifyEmail = useCallback(async (token, role = "student") => {
-    const base = AUTH_PATH[role]?.verify;
-    if (!base) throw new Error("Email verification is not available for this role");
-    const { data } = await api.get(`${base}/${encodeURIComponent(token)}`);
-    return data;
   }, []);
 
   // Merge fresh fields (e.g. updated AI preferences) into the cached user
@@ -172,9 +97,9 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       user, role: user?.role || null, isAuthenticated: !!user, initialized, loading,
-      login, registerStudent, registerGuide, forgotPassword, resetPassword, resendVerification, verifyEmail, updateUser, logout,
+      registerGuide, updateUser, logout,
     }),
-    [user, initialized, loading, login, registerStudent, registerGuide, forgotPassword, resetPassword, resendVerification, verifyEmail, updateUser, logout]
+    [user, initialized, loading, registerGuide, updateUser, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

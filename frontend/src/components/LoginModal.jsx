@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import toast from "react-hot-toast";
-import { FaEye, FaEyeSlash, FaTimes } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchBranches } from "../services/branchService.js";
 import { fetchRoles } from "../services/rolesService.js";
@@ -11,16 +9,13 @@ import preyeahhLogo from "../assets/preyeahh-logo.png";
 const GUIDE_EMAIL_RE = /^[^\s@]+@nbkrist\.org$/i;
 
 export default function LoginModal({ open, onClose, startTab = "login" }) {
-  const { login, registerGuide, resendVerification } = useAuth();
-  const navigate = useNavigate();
+  const { registerGuide } = useAuth();
   const [tab, setTab] = useState(startTab);
+  const [loginType, setLoginType] = useState("student");
   const [regType, setRegType] = useState("student");
   const [branches, setBranches] = useState([]);
   const [rolesForBranch, setRolesForBranch] = useState([]);
-  const [showPass, setShowPass] = useState({ login: false, register: false });
   const [regSuccess, setRegSuccess] = useState("");
-  const [verificationRole, setVerificationRole] = useState(null);
-  const [resendingVerification, setResendingVerification] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -30,7 +25,6 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
     }
   }, [open, startTab]);
 
-  const loginForm = useForm({ defaultValues: { email: "", password: "" } });
   const registerForm = useForm({
     defaultValues: { name: "", email: "", password: "", branch: "", roleName: "", newRoleName: "", newRoleDesc: "", bio: "" },
   });
@@ -52,39 +46,6 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   }, [branches]);
 
   if (!open) return null;
-
-  const onLoginSubmit = async (data) => {
-    setVerificationRole(null);
-    try {
-      await login(data.email.trim(), data.password);
-      navigate("/", { replace: true });
-      toast.success("Welcome back!");
-      onClose();
-    } catch (err) {
-      const msg = err.response?.data?.message || "Invalid email or password.";
-      if (msg.toLowerCase().includes("verify")) {
-        loginForm.setError("root", { message: msg });
-        setVerificationRole(err.authRole || null);
-      } else {
-        toast.error(msg);
-      }
-    }
-  };
-
-  const handleResendVerification = async () => {
-    const email = loginForm.getValues("email").trim();
-    if (!email || !verificationRole || resendingVerification) return;
-
-    setResendingVerification(true);
-    try {
-      const result = await resendVerification(email, verificationRole);
-      toast.success(result.message || "If the account needs verification, a link has been sent.");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Could not resend the verification email.");
-    } finally {
-      setResendingVerification(false);
-    }
-  };
 
   const onRegisterSubmit = async (data) => {
     if (regType === "student") return; // Students register via Google, not this form
@@ -134,63 +95,41 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
         </div>
 
         {tab === "login" ? (
-          <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="email" placeholder="you@college.edu" {...loginForm.register("email", { required: true })} />
-            </div>
-            <div className="form-group">
-              <label>Password</label>
-              <div className="pass-wrap">
-                <input type={showPass.login ? "text" : "password"} placeholder="••••••••" {...loginForm.register("password", { required: true })} />
-                <button type="button" className="pass-eye" tabIndex={-1} onClick={() => setShowPass((s) => ({ ...s, login: !s.login }))}>
-                  {showPass.login ? <FaEyeSlash /> : <FaEye />}
-                </button>
-              </div>
-            </div>
-            {loginForm.formState.errors.root && (
-              <p className="ulm-err" style={{ display: "block" }}>{loginForm.formState.errors.root.message}</p>
-            )}
-            {verificationRole && (
-              <button
-                className="btn btn-outline"
-                style={{ width: "100%", marginBottom: "0.75rem" }}
-                type="button"
-                onClick={handleResendVerification}
-                disabled={resendingVerification}
-              >
-                {resendingVerification ? "Sending verification email..." : "Resend verification email"}
+          <div style={{ padding: "1rem 0" }}>
+            <div className="ulm-reg-toggle" style={{ marginBottom: "1.5rem" }}>
+              <button type="button" className={`ulm-rt-btn ${loginType === "student" ? "active" : ""}`} onClick={() => setLoginType("student")}>
+                Student
               </button>
-            )}
-            <button className="btn btn-primary" style={{ width: "100%" }} type="submit" disabled={loginForm.formState.isSubmitting}>
-              {loginForm.formState.isSubmitting ? "Signing in..." : "Login"}
-            </button>
-
-            {/* Google OAuth — redirects to backend which handles everything */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", margin: "1rem 0" }}>
-              <div style={{ flex: 1, height: 1, background: "var(--border, #e5e5e5)" }} />
-              <span style={{ fontSize: "0.75rem", color: "var(--muted, #888)", whiteSpace: "nowrap" }}>or</span>
-              <div style={{ flex: 1, height: 1, background: "var(--border, #e5e5e5)" }} />
+              <button type="button" className={`ulm-rt-btn ${loginType === "guide" ? "active" : ""}`} onClick={() => setLoginType("guide")}>
+                Guide
+              </button>
             </div>
-            <a
-              href={`${import.meta.env.VITE_API_URL || "/api"}/auth/google`}
-              className="btn btn-outline"
-              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", textDecoration: "none" }}
-            >
-              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                <path fill="none" d="M0 0h48v48H0z"/>
-              </svg>
-              Continue with Google
-            </a>
-
-            <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.9rem", textAlign: "center" }}>
-              <a href="/forgot-password?role=student" style={{ color: "var(--primary)" }}>Forgot password?</a>
-            </p>
-          </form>
+            
+            <div style={{ textAlign: "center" }}>
+              <p style={{ color: "var(--text-dim, #888)", fontSize: "0.9rem", marginBottom: "1.25rem" }}>
+                {loginType === "student" 
+                  ? "Students log in with Google. No password needed."
+                  : "Guides log in with Google. No password needed."}
+              </p>
+              <a
+                href={`${import.meta.env.VITE_API_URL || "/api"}/auth/google?role=${loginType}`}
+                className="btn btn-outline"
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", textDecoration: "none" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                  <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                Continue with Google
+              </a>
+              <small style={{ fontSize: "0.75rem", color: "var(--muted, #888)", marginTop: "0.75rem", display: "block" }}>
+                Only @gmail.com and @nbkrist.org emails are supported.
+              </small>
+            </div>
+          </div>
         ) : (
           <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)}>
             <div className="ulm-reg-toggle">
@@ -208,7 +147,7 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
                   Students register with Google. Click below to get started — no password needed.
                 </p>
                 <a
-                  href={`${import.meta.env.VITE_API_URL || "/api"}/auth/google`}
+                  href={`${import.meta.env.VITE_API_URL || "/api"}/auth/google?role=student`}
                   className="btn btn-outline"
                   style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.6rem", textDecoration: "none" }}
                 >

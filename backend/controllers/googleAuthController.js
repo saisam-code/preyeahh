@@ -54,14 +54,17 @@ function stateCookieOptions() {
 
 const EMAIL_REGEX = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
 
+import Guide from "../models/Guide.js";
+
 // ── GET /api/auth/google ──────────────────────────────────────────────────────
 
 export async function initiateGoogleAuth(req, res) {
   try {
     const client = getOAuthClient();
+    const role = req.query.role === "guide" ? "guide" : "student";
 
     // Generate a cryptographically random state value to prevent CSRF
-    const state = crypto.randomBytes(32).toString("hex");
+    const state = crypto.randomBytes(32).toString("hex") + "__" + role;
 
     // Store state in a short-lived httpOnly cookie
     res.cookie(STATE_COOKIE, state, stateCookieOptions());
@@ -102,6 +105,8 @@ export async function handleGoogleCallback(req, res) {
       logger.warn("[google-auth] State mismatch — possible CSRF");
       return res.redirect(`${clientUrl}/?google_error=state_mismatch`);
     }
+    
+    const role = returnedState.split("__")[1] || "student";
 
     if (!code) {
       return res.redirect(`${clientUrl}/?google_error=no_code`);
@@ -143,45 +148,62 @@ export async function handleGoogleCallback(req, res) {
       logger.warn("[google-auth] Disallowed email domain:", email);
       return res.redirect(`${clientUrl}/?google_error=domain_not_allowed`);
     }
+    
+    if (role === "guide" && !email.toLowerCase().endsWith("@nbkrist.org")) {
+      logger.warn("[google-auth] Disallowed email domain for guide:", email);
+      return res.redirect(`${clientUrl}/?google_error=domain_not_allowed`);
+    }
 
-    // ── 6. Find or link or create the local Student ───────────────────────────
+    // ── 6. Handle Guide Role ──────────────────────────────────────────────────
+    if (role === "guide") {
+      let guide = await Guide.findOne({ googleId });
+      
+      if (!guide) {
+        guide = await Guide.findOne({ email: email.toLowerCase() });
+        if (guide) {
+          guide.googleId = googleId;
+          if (!guide.isVerified) guide.isVerified = true;
+          await guide.save({ validateBeforeSave: false });
+          logger.info("[google-auth] Linked Google identity to existing guide:", email);
+        } else {
+          logger.warn("[google-auth] Guide account not found for:", email);
+          return res.redirect(`${clientUrl}/?google_error=not_found`);
+        }
+      }
+      
+      const accessToken = issueTokens(res, guide, "guide");
+      return res.redirect(`${clientUrl}/google-callback#token=${accessToken}&role=guide`);
+    }
 
-    // CASE 1: Student already has this googleId linked
+    // ── 7. Handle Student Role ────────────────────────────────────────────────
     let student = await Student.findOne({ googleId });
 
     if (!student) {
-      // CASE 2: No googleId match, but a Student exists with the same email
       student = await Student.findOne({ email: email.toLowerCase() });
 
       if (student) {
-        // Link the Google identity to the existing account
         student.googleId = googleId;
-        if (!student.isVerified) student.isVerified = true; // Google verified the email
+        if (!student.isVerified) student.isVerified = true;
         await student.save({ validateBeforeSave: false });
         logger.info("[google-auth] Linked Google identity to existing student:", email);
       }
     }
 
     if (!student) {
-      // CASE 3: Brand-new user — create a stub account, pending branch onboarding
       const displayName = name || given_name || email.split("@")[0];
-
       try {
         student = await Student.create({
           name: displayName,
           email: email.toLowerCase(),
           googleId,
-          // password intentionally omitted — Google-only account
-          // branch intentionally omitted — collected in onboarding
-          isVerified: true,              // Google verified the email
-          googlePendingOnboarding: true, // branch still needed
+          isVerified: true,
+          googlePendingOnboarding: true,
         });
         logger.info("[google-auth] Created new Google student:", email);
       } catch (err) {
-        // Race condition: another callback created this student first
         if (err.code === 11000 && err.keyPattern?.googleId) {
           student = await Student.findOne({ googleId });
-          if (!student) throw err; // truly unexpected
+          if (!student) throw err;
           logger.info("[google-auth] Race condition resolved — found existing googleId:", email);
         } else {
           throw err;
@@ -189,10 +211,6 @@ export async function handleGoogleCallback(req, res) {
       }
     }
 
-    // ── 7. Issue authentication and redirect ──────────────────────────────────
-    // Pending students receive a SHORT-LIVED onboarding-only token that
-    // can ONLY be used for POST /api/students/google-onboarding.
-    // Existing students receive the normal application access token.
     if (student.googlePendingOnboarding) {
       const onboardingToken = signOnboardingToken(student._id, "student");
       const displayName = encodeURIComponent(student.name || "");

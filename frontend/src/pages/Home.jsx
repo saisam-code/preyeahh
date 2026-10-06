@@ -77,6 +77,7 @@ export default function Home() {
       server_error: "Something went wrong with Google sign-in. Please try again.",
       session_error: "Could not start your session. Please try again.",
       no_token: "Authentication failed. Please try signing in with Google again.",
+      not_found: "Account not found. Please register first.",
       unknown: "Google sign-in failed. Please try again.",
     };
 

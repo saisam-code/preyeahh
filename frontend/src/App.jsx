@@ -8,9 +8,6 @@ import Roles from "./pages/Roles.jsx";
 import Beyond from "./pages/Beyond.jsx";
 import Resources from "./pages/Resources.jsx";
 import Admin from "./pages/Admin.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
-import ResetPassword from "./pages/ResetPassword.jsx";
-import VerifyEmail from "./pages/VerifyEmail.jsx";
 import GoogleCallback from "./pages/GoogleCallback.jsx";
 import GoogleOnboarding from "./pages/GoogleOnboarding.jsx";
 
@@ -34,10 +31,6 @@ export default function App() {
         <Route path="/admin" element={<Admin />} />
 
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
-
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
 
         {/* Google OAuth callback pages — no Navbar auth required, tokens arrive via fragment */}
         <Route path="/google-callback" element={<GoogleCallback />} />

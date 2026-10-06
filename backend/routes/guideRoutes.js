@@ -2,7 +2,6 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import {
   registerGuide,
-  loginGuide,
   getMe,
   getGuideBranchOverview,
   listGuides,
@@ -11,10 +10,6 @@ import {
   deleteGuide,
   refreshToken,
   logoutGuide,
-  forgotPassword,
-  resetPassword,
-  verifyEmail,
-  resendVerification,
 } from "../controllers/guideController.js";
 import {
   listConversations,
@@ -26,16 +21,10 @@ import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import {
   registerRules,
-  loginRules,
   idParamRule,
   setStatusRules,
   assignRolesRules,
 } from "../validators/guideValidator.js";
-import {
-  forgotPasswordRules,
-  resetPasswordRules,
-  resendVerificationRules,
-} from "../validators/authValidator.js";
 import { conversationIdRule, sendMentorshipMessageRules } from "../validators/mentorshipValidator.js";
 
 const router = express.Router();
@@ -54,14 +43,8 @@ const refreshLimiter = rateLimit({
 });
 
 router.post("/register", authLimiter, registerRules, validate, registerGuide);
-router.post("/login", authLimiter, loginRules, validate, loginGuide);
 router.post("/refresh", refreshLimiter, refreshToken);
 router.post("/logout", logoutGuide);
-
-router.post("/forgot-password", sensitiveLimiter, forgotPasswordRules, validate, forgotPassword);
-router.post("/reset-password", sensitiveLimiter, resetPasswordRules, validate, resetPassword);
-router.get("/verify-email/:token", verifyEmail);
-router.post("/resend-verification", sensitiveLimiter, resendVerificationRules, validate, resendVerification);
 
 router.get("/me", protect, authorize("guide"), getMe);
 router.get("/me/branch-overview", protect, authorize("guide"), getGuideBranchOverview);
