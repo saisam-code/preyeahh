@@ -22,6 +22,7 @@ import {
 import { protect, authorize, protectGoogleOnboarding } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import { aiLimiter } from "../middleware/rateLimiters.js";
+import {
   interestRules,
   roleIdParamRule,
   extractProfileRules,
