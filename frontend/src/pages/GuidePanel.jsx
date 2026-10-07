@@ -6,6 +6,7 @@ import { fetchGuideBranchOverview } from "../services/guideService.js";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
 import AdminBeyond from "../components/admin/AdminBeyond.jsx";
 import AdminGuidance from "../components/admin/AdminGuidance.jsx";
+import AdminRequests from "../components/admin/AdminRequests.jsx";
 import GuideResources from "../components/admin/GuideResources.jsx";
 
 export default function GuidePanel() {
@@ -41,6 +42,9 @@ export default function GuidePanel() {
         </button>
         <button type="button" role="tab" aria-selected={activeSection === "duties"} className={`tab ${activeSection === "duties" ? "active" : ""}`} onClick={() => setActiveSection("duties")}>
           <FaCompass /> Content duties
+        </button>
+        <button type="button" role="tab" aria-selected={activeSection === "requests"} className={`tab ${activeSection === "requests" ? "active" : ""}`} onClick={() => setActiveSection("requests")}>
+          <FaEnvelope /> Role Requests
         </button>
       </div>
 
@@ -133,6 +137,12 @@ export default function GuidePanel() {
             <GuideResources branch={user.branch} currentUserId={user.id} />
           </div>
         </>
+      )}
+
+      {activeSection === "requests" && (
+        <section id="guide-requests" style={{ scrollMarginTop: "5rem" }}>
+          <AdminRequests />
+        </section>
       )}
     </div>
   );

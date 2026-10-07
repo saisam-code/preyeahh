@@ -20,10 +20,10 @@ router.post("/", optionalAuth, createRoleRequestRules, validate, createRoleReque
 router.get("/student-notifications", protect, authorize("student"), getStudentNotifications);
 router.post("/student-notifications/:id/read", protect, authorize("student"), idParamRule, validate, markNotificationRead);
 
-// Admin management
-router.get("/", protect, authorize("admin"), listRoleRequests);
-router.patch("/:id/dismiss", protect, authorize("admin"), idParamRule, validate, dismissRoleRequest);
-router.patch("/:id/accept", protect, authorize("admin"), idParamRule, validate, acceptRoleRequest);
-router.delete("/", protect, authorize("admin"), clearRoleRequests);
+// Admin & Guide management
+router.get("/", protect, authorize("admin", "guide"), listRoleRequests);
+router.patch("/:id/dismiss", protect, authorize("admin", "guide"), idParamRule, validate, dismissRoleRequest);
+router.patch("/:id/accept", protect, authorize("admin", "guide"), idParamRule, validate, acceptRoleRequest);
+router.delete("/", protect, authorize("admin"), clearRoleRequests); // only admin can bulk-delete
 
 export default router;

@@ -29,9 +29,14 @@ export const createRoleRequest = asyncHandler(async (req, res) => {
   res.status(201).json(new ApiResponse(201, request, "Request submitted! Admin will review it."));
 });
 
-// GET /api/role-requests — admin, mirrors renderRoleRequests()
+// GET /api/role-requests — admin sees all, guide sees own-branch only
 export const listRoleRequests = asyncHandler(async (req, res) => {
-  const requests = await RoleRequest.find({ status: "pending" })
+  const filter = { status: "pending" };
+  // Guides can only see requests for their own branch
+  if (req.user.role === "guide" && req.user.branch) {
+    filter.branch = req.user.branch.toUpperCase();
+  }
+  const requests = await RoleRequest.find(filter)
     .populate("student", "name email branch isVerified")
     .sort({ createdAt: -1 });
   res.status(200).json(new ApiResponse(200, requests, "Role requests fetched"));
