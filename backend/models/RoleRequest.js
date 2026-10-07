@@ -38,7 +38,7 @@ const roleRequestSchema = new mongoose.Schema(
     email: { type: String, default: null, trim: true, lowercase: true },
     status: {
       type: String,
-      enum: ["pending", "dismissed", "accepted"],
+      enum: ["pending", "dismissed", "accepted", "pending_creation", "completed"],
       default: "pending",
       index: true,
     },
