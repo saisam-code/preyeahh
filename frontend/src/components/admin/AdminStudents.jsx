@@ -1,25 +1,78 @@
-import { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useRef } from "react";
 import toast from "react-hot-toast";
-import { FaUser, FaMagnifyingGlass, FaEnvelope, FaCodeBranch, FaComments, FaMap, FaEye, FaCheck, FaXmark } from "react-icons/fa6";
-import { fetchAllStudents, fetchOverviewStats } from "../../services/adminService.js";
+import {
+  FaMagnifyingGlass,
+  FaXmark,
+  FaEye,
+  FaComments,
+  FaMap,
+  FaEllipsisVertical,
+  FaFilter,
+  FaArrowDownAZ,
+  FaUser,
+  FaCheck,
+  FaUserClock,
+} from "react-icons/fa6";
+import { fetchAllStudents } from "../../services/adminService.js";
+import AdminStudentDrawer from "./AdminStudentDrawer.jsx";
 
-const BRANCH_OPTIONS = ["all", "CSE", "ECE", "EEE", "MECH", "CIVIL", "IT", "AIDS", "AIML", "CSD", "CSBS"];
+const BRANCH_OPTIONS = [
+  "all",
+  "CSE",
+  "ECE",
+  "EEE",
+  "MECH",
+  "CIVIL",
+  "IT",
+  "AIDS",
+  "AIML",
+  "CSD",
+  "CSBS",
+];
 
-export default function AdminStudents({ onViewChats, onViewRoadmaps }) {
+export default function AdminStudents({
+  initialVerified = "all",
+  targetStudentId = null,
+  onViewChats,
+  onViewRoadmaps,
+}) {
   const [students, setStudents] = useState([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(null);
 
-  // filters
+  // Filters
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [branch, setBranch] = useState("all");
-  const [verified, setVerified] = useState("all");
+  const [verified, setVerified] = useState(initialVerified);
+  const [sortBy, setSortBy] = useState("newest"); // "newest" | "oldest" | "name_asc" | "name_desc"
   const [page, setPage] = useState(1);
 
-  // selected student detail modal
-  const [selected, setSelected] = useState(null);
+  // Drawer selected student
+  const [selectedStudent, setSelectedStudent] = useState(null);
+
+  // Active dropdown row menu
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Update verified filter if initialVerified changes
+  useEffect(() => {
+    if (initialVerified) {
+      setVerified(initialVerified);
+      setPage(1);
+    }
+  }, [initialVerified]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -30,22 +83,35 @@ export default function AdminStudents({ onViewChats, onViewRoadmaps }) {
       if (verified !== "all") params.verified = verified;
 
       const res = await fetchAllStudents(params);
-      setStudents(res.data || []);
+      let list = res.data || [];
+
+      // Sort client-side if needed for name or chronological order
+      if (sortBy === "oldest") {
+        list = [...list].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+      } else if (sortBy === "name_asc") {
+        list = [...list].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      } else if (sortBy === "name_desc") {
+        list = [...list].sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+      }
+
+      setStudents(list);
       if (res.meta) setMeta(res.meta);
+
+      // If targetStudentId was passed, open its drawer automatically
+      if (targetStudentId && !selectedStudent) {
+        const found = list.find((s) => s._id === targetStudentId);
+        if (found) setSelectedStudent(found);
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to load students");
     } finally {
       setLoading(false);
     }
-  }, [page, search, branch, verified]);
+  }, [page, search, branch, verified, sortBy, targetStudentId, selectedStudent]);
 
   useEffect(() => {
-    fetchOverviewStats()
-      .then((r) => setStats(r.data))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => { load(); }, [load]);
+    load();
+  }, [load]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -59,299 +125,338 @@ export default function AdminStudents({ onViewChats, onViewRoadmaps }) {
     setPage(1);
   };
 
-  return (
-    <div>
-      {/* Overview stat cards */}
-      {stats && (
-        <div className="admin-stat-grid">
-          <div className="admin-stat-card">
-            <div className="stat-icon" style={{ background: "linear-gradient(135deg,#6366f1,#8b5cf6)" }}>
-              <FaUser />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">{stats.totalStudents}</span>
-              <span className="stat-label">Total Students</span>
-            </div>
-          </div>
-          <div className="admin-stat-card">
-            <div className="stat-icon" style={{ background: "linear-gradient(135deg,#10b981,#059669)" }}>
-              <FaCheck />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">{stats.verifiedStudents}</span>
-              <span className="stat-label">Verified</span>
-            </div>
-          </div>
-          <div className="admin-stat-card">
-            <div className="stat-icon" style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)" }}>
-              <FaXmark />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">{stats.unverifiedStudents}</span>
-              <span className="stat-label">Unverified</span>
-            </div>
-          </div>
-          <div className="admin-stat-card">
-            <div className="stat-icon" style={{ background: "linear-gradient(135deg,#3b82f6,#2563eb)" }}>
-              <FaComments />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">{stats.totalChats}</span>
-              <span className="stat-label">Total Chats</span>
-            </div>
-          </div>
-          <div className="admin-stat-card">
-            <div className="stat-icon" style={{ background: "linear-gradient(135deg,#ec4899,#db2777)" }}>
-              <FaMap />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">{stats.totalRoadmaps}</span>
-              <span className="stat-label">AI Roadmaps</span>
-            </div>
-          </div>
-          <div className="admin-stat-card">
-            <div className="stat-icon" style={{ background: "linear-gradient(135deg,#14b8a6,#0d9488)" }}>
-              <FaEnvelope />
-            </div>
-            <div className="stat-info">
-              <span className="stat-value">{stats.totalMessages}</span>
-              <span className="stat-label">AI Messages</span>
-            </div>
-          </div>
-        </div>
-      )}
+  const resetAllFilters = () => {
+    setSearchInput("");
+    setSearch("");
+    setBranch("all");
+    setVerified("all");
+    setSortBy("newest");
+    setPage(1);
+  };
 
-      <div className="admin-header" style={{ marginTop: "1.5rem" }}>
-        <h2>All Students</h2>
-        <span className="label-hint">{meta.total} student{meta.total !== 1 ? "s" : ""} total</span>
+  const hasActiveFilters =
+    search.trim() !== "" || branch !== "all" || verified !== "all" || sortBy !== "newest";
+
+  return (
+    <div className="admin-management-page">
+      {/* ── TOP HEADER ── */}
+      <div className="admin-header-row">
+        <div>
+          <div className="admin-header-title-wrap">
+            <h1 className="admin-page-title">Students Management</h1>
+            <span className="admin-total-badge">
+              {meta.total} student{meta.total !== 1 ? "s" : ""}
+            </span>
+            {verified === "true" && (
+              <span className="filter-pill-active">Filtered: Verified only</span>
+            )}
+            {verified === "false" && (
+              <span className="filter-pill-active pill-warning">Filtered: Unverified only</span>
+            )}
+          </div>
+          <p className="admin-page-subtitle">
+            Search, filter, inspect profiles, and monitor student chats & AI roadmaps
+          </p>
+        </div>
+
+        {hasActiveFilters && (
+          <button className="btn btn-outline btn-xs" onClick={resetAllFilters}>
+            <FaXmark /> Reset Filters
+          </button>
+        )}
       </div>
 
-      {/* Filters */}
-      <div className="admin-filters">
-        <form onSubmit={handleSearch} className="search-row">
-          <div className="search-input-wrap">
-            <FaMagnifyingGlass className="search-icon" />
+      {/* ── FILTER & SEARCH TOOLBAR (REQUIREMENT 3) ── */}
+      <div className="admin-toolbar-card">
+        <form onSubmit={handleSearch} className="toolbar-search-form">
+          <div className="toolbar-input-wrap">
+            <FaMagnifyingGlass className="search-prefix-icon" />
             <input
               type="text"
-              placeholder="Search by name or email…"
+              className="toolbar-search-field"
+              placeholder="Search students by name or email…"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
             {searchInput && (
-              <button type="button" className="search-clear" onClick={clearSearch}>
+              <button type="button" className="search-clear-btn" onClick={clearSearch}>
                 <FaXmark />
               </button>
             )}
           </div>
-          <button type="submit" className="btn btn-primary btn-sm">Search</button>
+          <button type="submit" className="btn btn-primary btn-sm">
+            Search
+          </button>
         </form>
 
-        <div className="filter-row">
-          <select className="filter-select" value={branch} onChange={(e) => { setBranch(e.target.value); setPage(1); }}>
-            {BRANCH_OPTIONS.map((b) => (
-              <option key={b} value={b}>{b === "all" ? "All Branches" : b}</option>
-            ))}
-          </select>
-          <select className="filter-select" value={verified} onChange={(e) => { setVerified(e.target.value); setPage(1); }}>
-            <option value="all">All Status</option>
-            <option value="true">Verified</option>
-            <option value="false">Unverified</option>
-          </select>
+        <div className="toolbar-controls-row">
+          {/* Branch filter */}
+          <div className="select-with-label">
+            <span className="select-label">Branch:</span>
+            <select
+              className="toolbar-select"
+              value={branch}
+              onChange={(e) => {
+                setBranch(e.target.value);
+                setPage(1);
+              }}
+            >
+              {BRANCH_OPTIONS.map((b) => (
+                <option key={b} value={b}>
+                  {b === "all" ? "All Branches" : b}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Verification filter */}
+          <div className="select-with-label">
+            <span className="select-label">Status:</span>
+            <select
+              className="toolbar-select"
+              value={verified}
+              onChange={(e) => {
+                setVerified(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="all">All Status</option>
+              <option value="true">Verified Only</option>
+              <option value="false">Unverified Only</option>
+            </select>
+          </div>
+
+          {/* Sort filter */}
+          <div className="select-with-label">
+            <span className="select-label">Sort:</span>
+            <select
+              className="toolbar-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="name_asc">Name (A → Z)</option>
+              <option value="name_desc">Name (Z → A)</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* Table */}
-      {loading ? (
-        <div className="empty"><div className="icon"><i className="fa fa-spinner fa-spin" /></div><p>Loading students…</p></div>
-      ) : (
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Branch</th>
-              <th>Status</th>
-              <th>Joined</th>
-              <th>Profile</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map((s) => (
-              <tr key={s._id}>
-                <td>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <div className="student-avatar">{(s.name || "?")[0].toUpperCase()}</div>
-                    <span>{s.name}</span>
-                  </div>
-                </td>
-                <td style={{ color: "var(--muted)", fontSize: "0.85rem" }}>{s.email}</td>
-                <td>
-                  {s.branch
-                    ? <span className="branch-tag">{s.branch}</span>
-                    : <span style={{ color: "var(--muted)", fontSize: "0.8rem" }}>—</span>}
-                </td>
-                <td>
-                  <span className={`type-badge ${s.isVerified ? "badge-core" : "badge-non-core"}`}>
-                    {s.isVerified ? "✓ Verified" : "Unverified"}
-                  </span>
-                </td>
-                <td style={{ color: "var(--muted)", fontSize: "0.82rem" }}>
-                  {new Date(s.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                </td>
-                <td style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
-                  {s.preferences?.onboardingCompleted ? (
-                    <span style={{ color: "#10b981" }}>Complete</span>
-                  ) : s.preferences?.onboardingSkipped ? (
-                    <span style={{ color: "#f59e0b" }}>Skipped</span>
-                  ) : (
-                    <span>Pending</span>
-                  )}
-                </td>
-                <td>
-                  <div className="table-actions">
-                    <button
-                      className="btn btn-outline btn-sm"
-                      title="View profile"
-                      onClick={() => setSelected(s)}
-                    >
-                      <FaEye /> Profile
-                    </button>
-                    <button
-                      className="btn btn-outline btn-sm"
-                      title="View chats"
-                      onClick={() => onViewChats(s)}
-                    >
-                      <FaComments /> Chats
-                    </button>
-                    <button
-                      className="btn btn-outline btn-sm"
-                      title="View roadmaps"
-                      onClick={() => onViewRoadmaps(s)}
-                    >
-                      <FaMap /> Roadmaps
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {!students.length && (
-              <tr>
-                <td colSpan={7} style={{ textAlign: "center", color: "var(--muted)", padding: "2rem" }}>
-                  No students found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      )}
-
-      {/* Pagination */}
-      {meta.totalPages > 1 && (
-        <div className="pagination-row">
-          <button className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-            ← Prev
-          </button>
-          <span className="pagination-info">Page {meta.page} of {meta.totalPages}</span>
-          <button className="btn btn-outline btn-sm" disabled={page >= meta.totalPages} onClick={() => setPage((p) => p + 1)}>
-            Next →
-          </button>
-        </div>
-      )}
-
-      {/* Profile Detail Modal */}
-      {selected && (
-        <div className="modal-overlay open" onClick={(e) => e.target === e.currentTarget && setSelected(null)}>
-          <div className="modal" style={{ maxWidth: 560 }}>
-            <div className="modal-header">
-              <h2>Student Profile</h2>
-              <button className="modal-close" onClick={() => setSelected(null)}>×</button>
-            </div>
-
-            <div className="student-profile-detail">
-              <div className="spd-avatar">{(selected.name || "?")[0].toUpperCase()}</div>
-              <h3>{selected.name}</h3>
-              <p className="spd-email">{selected.email}</p>
-              <div className="spd-badges">
-                {selected.branch && <span className="branch-tag">{selected.branch}</span>}
-                <span className={`type-badge ${selected.isVerified ? "badge-core" : "badge-non-core"}`}>
-                  {selected.isVerified ? "✓ Verified" : "Unverified"}
-                </span>
-                {selected.googleId && <span className="type-badge" style={{ background: "#4285f4", color: "#fff" }}>Google</span>}
-              </div>
-
-              <div className="spd-section">
-                <div className="spd-section-title">Learning Preferences</div>
-                <div className="spd-grid">
-                  <div className="spd-item"><span>Role</span><strong>{selected.preferences?.currentRole || "—"}</strong></div>
-                  <div className="spd-item"><span>Target Role</span><strong>{selected.preferences?.targetRole || "—"}</strong></div>
-                  <div className="spd-item"><span>Experience</span><strong>{selected.preferences?.experienceLevel || "—"}</strong></div>
-                  <div className="spd-item"><span>Learning Style</span><strong>{selected.preferences?.learningStyle || "—"}</strong></div>
-                  <div className="spd-item"><span>Weekly Hours</span><strong>{selected.preferences?.weeklyHoursAvailable ?? "—"}</strong></div>
-                  <div className="spd-item"><span>Language</span><strong>{selected.preferences?.preferredLanguage || "—"}</strong></div>
-                </div>
-              </div>
-
-              {selected.preferences?.skills?.length > 0 && (
-                <div className="spd-section">
-                  <div className="spd-section-title">Skills</div>
-                  <div className="spd-tags">
-                    {selected.preferences.skills.map((sk, i) => (
-                      <span key={i} className="skill-tag">
-                        {sk.name} <em>({sk.level})</em>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selected.preferences?.goals?.length > 0 && (
-                <div className="spd-section">
-                  <div className="spd-section-title">Goals</div>
-                  <ul className="spd-list">
-                    {selected.preferences.goals.map((g, i) => <li key={i}>{g}</li>)}
-                  </ul>
-                </div>
-              )}
-
-              {selected.preferences?.interests?.length > 0 && (
-                <div className="spd-section">
-                  <div className="spd-section-title">Interests</div>
-                  <div className="spd-tags">
-                    {selected.preferences.interests.map((itm, i) => (
-                      <span key={i} className="skill-tag">{itm}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {selected.preferences?.aiProfileSummary && (
-                <div className="spd-section">
-                  <div className="spd-section-title">AI Profile Summary</div>
-                  <p className="spd-summary">{selected.preferences.aiProfileSummary}</p>
-                </div>
-              )}
-
-              <div className="spd-section">
-                <div className="spd-section-title">Account Info</div>
-                <div className="spd-grid">
-                  <div className="spd-item"><span>Joined</span><strong>{new Date(selected.createdAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}</strong></div>
-                  <div className="spd-item"><span>Onboarding</span><strong>{selected.preferences?.onboardingCompleted ? "Complete" : selected.preferences?.onboardingSkipped ? "Skipped" : "Pending"}</strong></div>
-                </div>
-              </div>
-
-              <div className="modal-actions">
-                <button className="btn btn-outline" onClick={() => setSelected(null)}>Close</button>
-                <button className="btn btn-primary" onClick={() => { onViewChats(selected); setSelected(null); }}>
-                  <FaComments /> View Chats
-                </button>
-                <button className="btn btn-primary" onClick={() => { onViewRoadmaps(selected); setSelected(null); }}>
-                  <FaMap /> View Roadmaps
-                </button>
-              </div>
-            </div>
+      {/* ── COMPACT DATA TABLE (REQUIREMENT 3 & 10) ── */}
+      <div className="admin-table-panel">
+        {loading ? (
+          <div className="admin-table-loading">
+            <div className="admin-spinner" />
+            <p>Loading students list…</p>
           </div>
-        </div>
+        ) : students.length === 0 ? (
+          <div className="admin-table-empty">
+            <FaUser className="empty-state-icon" />
+            <h3>No students found</h3>
+            <p>Try adjusting your search query, branch filter, or verification status.</p>
+            {hasActiveFilters && (
+              <button
+                className="btn btn-outline btn-sm"
+                style={{ marginTop: "0.75rem" }}
+                onClick={resetAllFilters}
+              >
+                Clear all filters
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="table-responsive-container">
+            <table className="admin-data-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Email</th>
+                  <th>Branch</th>
+                  <th>Status</th>
+                  <th>Joined Date</th>
+                  <th>Onboarding</th>
+                  <th style={{ textAlign: "right" }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((student) => {
+                  const isMenuOpen = openMenuId === student._id;
+
+                  return (
+                    <tr
+                      key={student._id}
+                      className="table-row-hover"
+                      onClick={() => setSelectedStudent(student)}
+                    >
+                      {/* Name & Avatar */}
+                      <td>
+                        <div className="student-profile-cell">
+                          <div className="student-avatar-badge">
+                            {(student.name || "?")[0].toUpperCase()}
+                          </div>
+                          <span className="student-cell-name">{student.name}</span>
+                        </div>
+                      </td>
+
+                      {/* Email */}
+                      <td>
+                        <span className="student-cell-email">{student.email}</span>
+                      </td>
+
+                      {/* Branch */}
+                      <td>
+                        {student.branch ? (
+                          <span className="admin-branch-badge">{student.branch}</span>
+                        ) : (
+                          <span className="cell-muted">—</span>
+                        )}
+                      </td>
+
+                      {/* Status */}
+                      <td>
+                        <span
+                          className={`admin-status-badge ${
+                            student.isVerified ? "badge-verified" : "badge-unverified"
+                          }`}
+                        >
+                          {student.isVerified ? "✓ Verified" : "Unverified"}
+                        </span>
+                      </td>
+
+                      {/* Joined Date */}
+                      <td>
+                        <span className="student-cell-date">
+                          {new Date(student.createdAt).toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </td>
+
+                      {/* Onboarding */}
+                      <td>
+                        {student.preferences?.onboardingCompleted ? (
+                          <span className="status-dot-text text-success">
+                            <span className="dot dot-success" /> Completed
+                          </span>
+                        ) : student.preferences?.onboardingSkipped ? (
+                          <span className="status-dot-text text-warning">
+                            <span className="dot dot-warning" /> Skipped
+                          </span>
+                        ) : (
+                          <span className="status-dot-text text-muted">
+                            <span className="dot dot-muted" /> Pending
+                          </span>
+                        )}
+                      </td>
+
+                      {/* Action column: primary button + compact '...' menu (Requirement 3) */}
+                      <td
+                        style={{ textAlign: "right" }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="table-actions-inline">
+                          <button
+                            className="btn btn-outline btn-xs"
+                            onClick={() => setSelectedStudent(student)}
+                            title="Inspect student details"
+                          >
+                            <FaEye /> View
+                          </button>
+
+                          {/* Compact More Actions Menu */}
+                          <div
+                            className="dropdown-actions-wrap"
+                            ref={isMenuOpen ? menuRef : null}
+                          >
+                            <button
+                              className="btn-dots-menu"
+                              onClick={() =>
+                                setOpenMenuId(isMenuOpen ? null : student._id)
+                              }
+                              title="More actions"
+                              aria-label="More actions"
+                            >
+                              <FaEllipsisVertical />
+                            </button>
+
+                            {isMenuOpen && (
+                              <div className="actions-dropdown-menu">
+                                <button
+                                  className="dropdown-menu-item"
+                                  onClick={() => {
+                                    setOpenMenuId(null);
+                                    setSelectedStudent(student);
+                                  }}
+                                >
+                                  <FaUser /> View Full Profile
+                                </button>
+                                <button
+                                  className="dropdown-menu-item"
+                                  onClick={() => {
+                                    setOpenMenuId(null);
+                                    if (onViewChats) onViewChats(student);
+                                  }}
+                                >
+                                  <FaComments /> View Chats
+                                </button>
+                                <button
+                                  className="dropdown-menu-item"
+                                  onClick={() => {
+                                    setOpenMenuId(null);
+                                    if (onViewRoadmaps) onViewRoadmaps(student);
+                                  }}
+                                >
+                                  <FaMap /> View AI Roadmaps
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* ── PAGINATION CONTROLS ── */}
+        {meta.totalPages > 1 && (
+          <div className="admin-pagination-bar">
+            <button
+              className="btn btn-outline btn-xs"
+              disabled={page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              ← Previous
+            </button>
+            <span className="pagination-text">
+              Page <strong>{meta.page}</strong> of <strong>{meta.totalPages}</strong> (
+              {meta.total} total)
+            </span>
+            <button
+              className="btn btn-outline btn-xs"
+              disabled={page >= meta.totalPages}
+              onClick={() => setPage((p) => Math.min(meta.totalPages, p + 1))}
+            >
+              Next →
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ── STUDENT DETAILS DRAWER (REQUIREMENT 3) ── */}
+      {selectedStudent && (
+        <AdminStudentDrawer
+          student={selectedStudent}
+          onClose={() => setSelectedStudent(null)}
+          onOpenFullChats={onViewChats}
+          onOpenFullRoadmaps={onViewRoadmaps}
+        />
       )}
     </div>
   );

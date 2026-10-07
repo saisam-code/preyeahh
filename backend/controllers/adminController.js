@@ -234,3 +234,188 @@ export const getAdminOverviewStats = asyncHandler(async (req, res) => {
     }, "Overview stats fetched")
   );
 });
+
+export const getAllChats = asyncHandler(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+  const skip = (page - 1) * limit;
+
+  const filter = {};
+  if (req.query.branch && req.query.branch !== "all") filter.branch = req.query.branch.toUpperCase();
+  if (req.query.status === "archived") filter.isArchived = true;
+  if (req.query.status === "active") filter.isArchived = false;
+  if (req.query.search) {
+    const re = new RegExp(req.query.search.trim(), "i");
+    filter.$or = [{ title: re }, { topic: re }, { branch: re }];
+  }
+
+  const [total, chats] = await Promise.all([
+    Chat.countDocuments(filter),
+    Chat.find(filter)
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("studentId", "name email branch isVerified")
+      .populate("roleId", "title branch"),
+  ]);
+
+  res.status(200).json(
+    new ApiResponse(200, chats, "All chats fetched", {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    })
+  );
+});
+
+export const getAllRoadmaps = asyncHandler(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+  const skip = (page - 1) * limit;
+
+  const filter = {};
+  if (req.query.branch && req.query.branch !== "all") filter.branch = req.query.branch.toUpperCase();
+  if (req.query.level && req.query.level !== "all") filter.level = req.query.level.toLowerCase();
+  if (req.query.status === "completed") filter.isCompleted = true;
+  if (req.query.status === "in-progress") filter.isCompleted = false;
+  if (req.query.search) {
+    const re = new RegExp(req.query.search.trim(), "i");
+    filter.$or = [{ title: re }, { description: re }, { roleTitle: re }];
+  }
+
+  const [total, roadmaps] = await Promise.all([
+    AIRoadmap.countDocuments(filter),
+    AIRoadmap.find(filter)
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("studentId", "name email branch isVerified")
+      .populate("roleId", "title branch"),
+  ]);
+
+  res.status(200).json(
+    new ApiResponse(200, roadmaps, "All roadmaps fetched", {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    })
+  );
+});
+
+export const getAllMessages = asyncHandler(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 30));
+  const skip = (page - 1) * limit;
+
+  const matchQuery = {};
+  if (req.query.role && (req.query.role === "user" || req.query.role === "assistant")) {
+    matchQuery["messages.role"] = req.query.role;
+  }
+  if (req.query.search) {
+    matchQuery["messages.content"] = { $regex: req.query.search.trim(), $options: "i" };
+  }
+
+  const pipeline = [
+    { $unwind: "$messages" },
+    ...(Object.keys(matchQuery).length ? [{ $match: matchQuery }] : []),
+    { $sort: { "messages.createdAt": -1, updatedAt: -1 } },
+    {
+      $facet: {
+        meta: [{ $count: "total" }],
+        data: [
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $lookup: {
+              from: "students",
+              localField: "studentId",
+              foreignField: "_id",
+              as: "student",
+            },
+          },
+          { $unwind: { path: "$student", preserveNullAndEmptyArrays: true } },
+          {
+            $project: {
+              chatId: "$_id",
+              chatTitle: "$title",
+              branch: "$branch",
+              student: {
+                _id: "$student._id",
+                name: "$student.name",
+                email: "$student.email",
+                branch: "$student.branch",
+              },
+              message: "$messages",
+            },
+          },
+        ],
+      },
+    },
+  ];
+
+  const [result] = await Chat.aggregate(pipeline);
+  const total = result?.meta?.[0]?.total || 0;
+  const items = result?.data || [];
+
+  res.status(200).json(
+    new ApiResponse(200, items, "All messages fetched", {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    })
+  );
+});
+
+export const getDashboardRecent = asyncHandler(async (req, res) => {
+  const [recentStudents, recentChats, recentRoadmaps, pendingGuideRequests, pendingRoleRequests, unverifiedCount] = await Promise.all([
+    Student.find().sort({ createdAt: -1 }).limit(5).select("name email branch isVerified createdAt"),
+    Chat.find().sort({ updatedAt: -1 }).limit(5).populate("studentId", "name email branch isVerified").populate("roleId", "title branch"),
+    AIRoadmap.find().sort({ updatedAt: -1 }).limit(5).populate("studentId", "name email branch isVerified").populate("roleId", "title branch"),
+    Guide.countDocuments({ status: "pending" }),
+    RoleRequest.countDocuments({ status: "pending" }),
+    Student.countDocuments({ isVerified: false }),
+  ]);
+
+  const recentMessagesAgg = await Chat.aggregate([
+    { $unwind: "$messages" },
+    { $sort: { "messages.createdAt": -1 } },
+    { $limit: 6 },
+    {
+      $lookup: {
+        from: "students",
+        localField: "studentId",
+        foreignField: "_id",
+        as: "student",
+      },
+    },
+    { $unwind: { path: "$student", preserveNullAndEmptyArrays: true } },
+    {
+      $project: {
+        chatId: "$_id",
+        chatTitle: "$title",
+        branch: "$branch",
+        studentName: "$student.name",
+        studentEmail: "$student.email",
+        studentId: "$student._id",
+        message: "$messages",
+      },
+    },
+  ]);
+
+  res.status(200).json(
+    new ApiResponse(200, {
+      recentStudents,
+      recentChats,
+      recentRoadmaps,
+      recentMessages: recentMessagesAgg,
+      pending: {
+        pendingGuideRequests,
+        pendingRoleRequests,
+        unverifiedStudents: unverifiedCount,
+      },
+    }, "Recent dashboard activity fetched")
+  );
+});

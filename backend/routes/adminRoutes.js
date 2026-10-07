@@ -15,6 +15,10 @@ import {
   getStudentChatDetail,
   getStudentRoadmaps,
   getAdminOverviewStats,
+  getAllChats,
+  getAllRoadmaps,
+  getAllMessages,
+  getDashboardRecent,
 } from "../controllers/adminController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -48,10 +52,16 @@ router.get("/interest", protect, authorize("admin"), interestQueryRules, validat
 
 // ── Student management (admin-only) ────────────────────────────────────────
 router.get("/overview-stats", protect, authorize("admin"), getAdminOverviewStats);
+router.get("/recent", protect, authorize("admin"), getDashboardRecent);
 router.get("/students", protect, authorize("admin"), getAllStudents);
 router.get("/students/:studentId", protect, authorize("admin"), getStudentById);
 router.get("/students/:studentId/chats", protect, authorize("admin"), getStudentChats);
 router.get("/students/:studentId/chats/:chatId", protect, authorize("admin"), getStudentChatDetail);
 router.get("/students/:studentId/roadmaps", protect, authorize("admin"), getStudentRoadmaps);
+
+// ── Dedicated communication & AI activity (admin-only) ──────────────────────
+router.get("/chats", protect, authorize("admin"), getAllChats);
+router.get("/roadmaps", protect, authorize("admin"), getAllRoadmaps);
+router.get("/messages", protect, authorize("admin"), getAllMessages);
 
 export default router;

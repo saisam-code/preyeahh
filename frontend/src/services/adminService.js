@@ -56,3 +56,20 @@ export function fetchStudentChatDetail(studentId, chatId) {
 export function fetchStudentRoadmaps(studentId) {
   return api.get(`/admin/students/${studentId}/roadmaps`).then((r) => r.data);
 }
+
+// ── Platform activity & global management ───────────────────────────────────
+export function fetchDashboardRecent() {
+  return api.get("/admin/recent").then((r) => r.data);
+}
+
+export function fetchAllChats(params = {}) {
+  return api.get("/admin/chats", { params }).then((r) => r.data);
+}
+
+export function fetchAllRoadmaps(params = {}) {
+  return api.get("/admin/roadmaps", { params }).then((r) => r.data);
+}
+
+export function fetchAllMessages(params = {}) {
+  return api.get("/admin/messages", { params }).then((r) => r.data);
+}
