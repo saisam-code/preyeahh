@@ -166,12 +166,16 @@ export default function Roles() {
     }
     setRequestErr("");
     try {
-      await submitRoleRequest(requestForm);
+      const payload = {
+        ...requestForm,
+        email: user?.email || requestForm.email || undefined,
+      };
+      await submitRoleRequest(payload);
       setRequestOk(true);
       setTimeout(() => {
         setRequestOpen(false);
         setRequestOk(false);
-        setRequestForm({ roleName: "", branch: branch || "", summary: "" });
+        setRequestForm({ roleName: "", branch: branch || "", summary: "", email: "" });
       }, 1500);
     } catch (err) {
       setRequestErr(err.response?.data?.message || "Could not submit request.");
@@ -373,6 +377,17 @@ export default function Roles() {
             <label>Brief Summary</label>
             <textarea style={{ minHeight: 100 }} value={requestForm.summary} onChange={(e) => setRequestForm({ ...requestForm, summary: e.target.value })} placeholder="Describe what this role involves..." />
           </div>
+          {!user && (
+            <div className="form-group">
+              <label>Your Email (optional)</label>
+              <input
+                type="email"
+                value={requestForm.email || ""}
+                onChange={(e) => setRequestForm({ ...requestForm, email: e.target.value })}
+                placeholder="name@example.com"
+              />
+            </div>
+          )}
           {requestErr && <p style={{ color: "var(--danger, #ef4444)", fontSize: "0.83rem", marginBottom: "0.5rem" }}>{requestErr}</p>}
           {requestOk && <p style={{ color: "#16a34a", fontSize: "0.83rem", marginBottom: "0.5rem" }}>Request submitted! Admin will review it.</p>}
           <div className="modal-actions">

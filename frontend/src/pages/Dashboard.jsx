@@ -11,11 +11,14 @@ import {
   FaComments,
   FaCircleCheck,
   FaBolt,
+  FaXmark,
+  FaPartyHorn,
 } from "react-icons/fa6";
 
 import { useAuth } from "../context/AuthContext.jsx";
 import GuidePanel from "./GuidePanel.jsx";
 import { fetchLearningProgress, fetchQuizProgress, fetchPerformance } from "../services/progressService.js";
+import { fetchStudentRoleNotifications, markRoleNotificationRead } from "../services/roleRequestService.js";
 
 const SEVERITY_COLOR = { high: "var(--error)", medium: "var(--warning)", low: "var(--primary)", info: "var(--text-muted)" };
 
@@ -26,6 +29,7 @@ export default function Dashboard() {
   const [learning, setLearning] = useState(null);
   const [quizProgress, setQuizProgress] = useState(null);
   const [performance, setPerformance] = useState(null);
+  const [roleNotifications, setRoleNotifications] = useState([]);
   const [progressLoading, setProgressLoading] = useState(true);
 
   useEffect(() => {
@@ -52,6 +56,21 @@ export default function Dashboard() {
       .finally(() => { if (current) setProgressLoading(false); });
     return () => { current = false; };
   }, [initialized, user?.id, user?.role]);
+
+  // Fetch role-request-accepted notifications for the student
+  useEffect(() => {
+    if (!initialized || user?.role !== "student") return;
+    fetchStudentRoleNotifications()
+      .then((data) => setRoleNotifications(data || []))
+      .catch(() => {});
+  }, [initialized, user?.id, user?.role]);
+
+  const dismissRoleNotification = async (notifId) => {
+    try {
+      await markRoleNotificationRead(notifId);
+    } catch { /* silent */ }
+    setRoleNotifications((prev) => prev.filter((n) => n._id !== notifId));
+  };
 
   useEffect(() => {
     if (location.hash === "#student-progress") {
@@ -170,6 +189,43 @@ export default function Dashboard() {
             : "Your guide dashboard keeps mentoring tools, role guidance, and branch opportunities within easy reach."}
         </p>
       </div>
+
+      {/* ── ROLE ACCEPTED NOTIFICATIONS ── */}
+      {roleNotifications.length > 0 && (
+        <section className="dashboard-role-notifications" aria-label="Role request notifications">
+          {roleNotifications.map((notif) => (
+            <div key={notif._id} className="role-notification-banner">
+              <div className="role-notification-icon">
+                <FaPartyHorn />
+              </div>
+              <div className="role-notification-content">
+                <strong>Great news!</strong> Your requested role <em>"{notif.roleName}"</em>
+                {notif.acceptedRole?.branch && ` (${notif.acceptedRole.branch})`} has been added to Preyeahh!
+              </div>
+              <div className="role-notification-actions">
+                <button
+                  className="btn btn-primary btn-sm"
+                  type="button"
+                  onClick={() => {
+                    dismissRoleNotification(notif._id);
+                    navigate("/roles");
+                  }}
+                >
+                  Explore Role <FaArrowRight />
+                </button>
+                <button
+                  className="role-notification-close"
+                  type="button"
+                  onClick={() => dismissRoleNotification(notif._id)}
+                  aria-label="Dismiss notification"
+                >
+                  <FaXmark />
+                </button>
+              </div>
+            </div>
+          ))}
+        </section>
+      )}
 
       <section className="dashboard-next-step" aria-labelledby="dashboard-next-step-title">
         <div className="dashboard-next-step-icon"><FaBolt /></div>

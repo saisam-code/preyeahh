@@ -4,6 +4,9 @@ import {
   listRoleRequests,
   dismissRoleRequest,
   clearRoleRequests,
+  acceptRoleRequest,
+  getStudentNotifications,
+  markNotificationRead,
 } from "../controllers/roleRequestController.js";
 import { protect, authorize, optionalAuth } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -13,8 +16,14 @@ const router = express.Router();
 
 router.post("/", optionalAuth, createRoleRequestRules, validate, createRoleRequest);
 
+// Student notifications (must precede /:id)
+router.get("/student-notifications", protect, authorize("student"), getStudentNotifications);
+router.post("/student-notifications/:id/read", protect, authorize("student"), idParamRule, validate, markNotificationRead);
+
+// Admin management
 router.get("/", protect, authorize("admin"), listRoleRequests);
 router.patch("/:id/dismiss", protect, authorize("admin"), idParamRule, validate, dismissRoleRequest);
+router.patch("/:id/accept", protect, authorize("admin"), idParamRule, validate, acceptRoleRequest);
 router.delete("/", protect, authorize("admin"), clearRoleRequests);
 
 export default router;

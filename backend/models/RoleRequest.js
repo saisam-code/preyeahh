@@ -38,9 +38,18 @@ const roleRequestSchema = new mongoose.Schema(
     email: { type: String, default: null, trim: true, lowercase: true },
     status: {
       type: String,
-      enum: ["pending", "dismissed"],
+      enum: ["pending", "dismissed", "accepted"],
       default: "pending",
       index: true,
+    },
+    acceptedRole: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+      default: null,
+    },
+    notifiedStudent: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

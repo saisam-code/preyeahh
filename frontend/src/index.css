@@ -2024,6 +2024,98 @@ body.dark .search-input:focus {
 .dashboard-card--highlight {
   background: linear-gradient(135deg, var(--primary-bg), rgba(37,99,235,0.06));
 }
+/* ── ROLE NOTIFICATION BANNERS ── */
+.dashboard-role-notifications {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.role-notification-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(52, 211, 153, 0.04));
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 0.75rem;
+  animation: notifSlideIn 0.4s ease-out;
+}
+
+@keyframes notifSlideIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.role-notification-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.role-notification-content {
+  flex: 1;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.role-notification-content strong {
+  color: #10b981;
+  margin-right: 0.25rem;
+}
+
+.role-notification-content em {
+  font-weight: 600;
+  font-style: normal;
+  color: var(--text);
+}
+
+.role-notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.role-notification-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 0.35rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.role-notification-close:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+
+@media (max-width: 640px) {
+  .role-notification-banner {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .role-notification-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+}
 
 .dashboard-next-step {
   display: grid;
