@@ -70,6 +70,35 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const registerStudent = useCallback(async ({ name, email, password, branch }) => {
+    setLoading(true);
+    try {
+      const { data } = await api.post("/students/register", { name, email, password, branch });
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Shared manual (email/password) login for students and guides.
+  const login = useCallback(async (role, { email, password }) => {
+    setLoading(true);
+    try {
+      const path = role === "guide" ? "/guides/login" : "/students/login";
+      const { data } = await api.post(path, { email, password });
+      const loggedInUser = data.data.user;
+
+      setAccessToken(data.data.accessToken);
+      setActiveRole(role);
+      storeUser(loggedInUser);
+      setUser(loggedInUser);
+
+      return loggedInUser;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   // Merge fresh fields (e.g. updated AI preferences) into the cached user
   const updateUser = useCallback((patch) => {
     setUser((prev) => {
@@ -97,9 +126,9 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       user, role: user?.role || null, isAuthenticated: !!user, initialized, loading,
-      registerGuide, updateUser, logout,
+      registerGuide, registerStudent, login, updateUser, logout,
     }),
-    [user, initialized, loading, registerGuide, updateUser, logout]
+    [user, initialized, loading, registerGuide, registerStudent, login, updateUser, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

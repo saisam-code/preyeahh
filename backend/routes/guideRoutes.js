@@ -2,6 +2,11 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import {
   registerGuide,
+  loginGuide,
+  forgotPassword,
+  resetPassword,
+  verifyEmail,
+  resendVerification,
   getMe,
   getGuideBranchOverview,
   listGuides,
@@ -21,10 +26,16 @@ import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import {
   registerRules,
+  loginRules,
   idParamRule,
   setStatusRules,
   assignRolesRules,
 } from "../validators/guideValidator.js";
+import {
+  forgotPasswordRules,
+  resetPasswordRules,
+  resendVerificationRules,
+} from "../validators/authValidator.js";
 import { conversationIdRule, sendMentorshipMessageRules } from "../validators/mentorshipValidator.js";
 
 const router = express.Router();
@@ -43,6 +54,11 @@ const refreshLimiter = rateLimit({
 });
 
 router.post("/register", authLimiter, registerRules, validate, registerGuide);
+router.post("/login", authLimiter, loginRules, validate, loginGuide);
+router.post("/forgot-password", sensitiveLimiter, forgotPasswordRules, validate, forgotPassword);
+router.post("/reset-password", sensitiveLimiter, resetPasswordRules, validate, resetPassword);
+router.get("/verify-email/:token", verifyEmail);
+router.post("/resend-verification", authLimiter, resendVerificationRules, validate, resendVerification);
 router.post("/refresh", refreshLimiter, refreshToken);
 router.post("/logout", logoutGuide);
 

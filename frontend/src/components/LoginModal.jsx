@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaEye, FaEyeSlash } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchBranches } from "../services/branchService.js";
 import { fetchRoles } from "../services/rolesService.js";
@@ -9,13 +9,14 @@ import preyeahhLogo from "../assets/preyeahh-logo.png";
 const GUIDE_EMAIL_RE = /^[^\s@]+@nbkrist\.org$/i;
 
 export default function LoginModal({ open, onClose, startTab = "login" }) {
-  const { registerGuide } = useAuth();
+  const { registerGuide, registerStudent, login } = useAuth();
   const [tab, setTab] = useState(startTab);
   const [loginType, setLoginType] = useState("student");
   const [regType, setRegType] = useState("student");
   const [branches, setBranches] = useState([]);
   const [rolesForBranch, setRolesForBranch] = useState([]);
   const [regSuccess, setRegSuccess] = useState("");
+  const [showPass, setShowPass] = useState({ login: false, register: false });
 
   useEffect(() => {
     if (open) {
@@ -30,6 +31,23 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   });
   const watchedBranch = registerForm.watch("branch");
   const watchedRole = registerForm.watch("roleName");
+
+  const loginForm = useForm({ defaultValues: { email: "", password: "" } });
+
+  useEffect(() => {
+    loginForm.reset({ email: "", password: "" });
+    loginForm.clearErrors();
+  }, [loginType]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const onLoginSubmit = async (data) => {
+    try {
+      await login(loginType, { email: data.email.trim().toLowerCase(), password: data.password });
+      onClose();
+    } catch (err) {
+      const msg = err.response?.data?.message || "Invalid email or password.";
+      loginForm.setError("root", { message: msg });
+    }
+  };
 
   useEffect(() => {
     if (!open || regType !== "guide" || !watchedBranch) return;
@@ -48,9 +66,18 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
   if (!open) return null;
 
   const onRegisterSubmit = async (data) => {
-    if (regType === "student") return; // Students register via Google, not this form
-
     const email = data.email.trim().toLowerCase();
+
+    if (regType === "student") {
+      try {
+        const res = await registerStudent({ name: data.name.trim(), email, password: data.password, branch: data.branch });
+        setRegSuccess(res.message || "Check your email to verify your account before logging in.");
+      } catch (err) {
+        const msg = err.response?.data?.message || "Something went wrong. Please try again.";
+        registerForm.setError("root", { message: msg });
+      }
+      return;
+    }
 
     if (!GUIDE_EMAIL_RE.test(email)) {
       registerForm.setError("email", { message: "Guides must register with a @nbkrist.org email address." });
@@ -104,13 +131,45 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
                 Guide
               </button>
             </div>
-            
+
+            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
+              <div className="form-group">
+                <label>Email</label>
+                <input
+                  type="email"
+                  placeholder={loginType === "guide" ? "you@nbkrist.org" : "you@gmail.com"}
+                  {...loginForm.register("email", { required: true })}
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Password</label>
+                <div className="pass-wrap">
+                  <input
+                    type={showPass.login ? "text" : "password"}
+                    placeholder="Your password"
+                    {...loginForm.register("password", { required: true })}
+                  />
+                  <button type="button" className="pass-eye" tabIndex={-1} onClick={() => setShowPass((s) => ({ ...s, login: !s.login }))}>
+                    {showPass.login ? <FaEyeSlash /> : <FaEye />}
+                  </button>
+                </div>
+              </div>
+
+              {loginForm.formState.errors.root && <p className="ulm-err" style={{ display: "block" }}>{loginForm.formState.errors.root.message}</p>}
+
+              <button className="btn btn-primary" style={{ width: "100%", marginBottom: "1rem" }} type="submit" disabled={loginForm.formState.isSubmitting}>
+                {loginForm.formState.isSubmitting ? "Signing in..." : "Sign In"}
+              </button>
+            </form>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", margin: "0.75rem 0 1.25rem" }}>
+              <div style={{ flex: 1, height: 1, background: "var(--border, #333)" }} />
+              <span style={{ fontSize: "0.75rem", color: "var(--muted, #888)" }}>OR</span>
+              <div style={{ flex: 1, height: 1, background: "var(--border, #333)" }} />
+            </div>
+
             <div style={{ textAlign: "center" }}>
-              <p style={{ color: "var(--text-dim, #888)", fontSize: "0.9rem", marginBottom: "1.25rem" }}>
-                {loginType === "student" 
-                  ? "Students log in with Google. No password needed."
-                  : "Guides log in with Google. No password needed."}
-              </p>
               <a
                 href={`${import.meta.env.VITE_API_URL || "/api"}/auth/google?role=${loginType}`}
                 className="btn btn-outline"
@@ -142,10 +201,58 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
             </div>
 
             {!regSuccess && regType === "student" && (
-              <div style={{ textAlign: "center", padding: "1rem 0" }}>
-                <p style={{ color: "var(--text-dim, #888)", fontSize: "0.9rem", marginBottom: "1.25rem" }}>
-                  Students register with Google. Click below to get started — no password needed.
-                </p>
+              <>
+                <div className="form-group">
+                  <label>Full Name</label>
+                  <input type="text" placeholder="Your name" {...registerForm.register("name", { required: true })} />
+                </div>
+
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    placeholder="you@gmail.com"
+                    {...registerForm.register("email", { required: true })}
+                  />
+                  <small style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.3rem", display: "block" }}>
+                    Only @gmail.com and @nbkrist.org emails are supported.
+                  </small>
+                  {registerForm.formState.errors.email && (
+                    <small style={{ color: "var(--error, #ef4444)", display: "block", marginTop: "0.25rem" }}>
+                      {registerForm.formState.errors.email.message}
+                    </small>
+                  )}
+                </div>
+
+                <div className="form-group">
+                  <label>Password</label>
+                  <div className="pass-wrap">
+                    <input
+                      type={showPass.register ? "text" : "password"}
+                      placeholder="Min 6 characters"
+                      {...registerForm.register("password", { required: true, minLength: 6 })}
+                    />
+                    <button type="button" className="pass-eye" tabIndex={-1} onClick={() => setShowPass((s) => ({ ...s, register: !s.register }))}>
+                      {showPass.register ? <FaEyeSlash /> : <FaEye />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Branch</label>
+                  <select {...registerForm.register("branch", { required: true })}>
+                    {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+                  </select>
+                </div>
+
+                <p className="ulm-note">We'll email you a verification link before you can log in.</p>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", margin: "1rem 0" }}>
+                  <div style={{ flex: 1, height: 1, background: "var(--border, #333)" }} />
+                  <span style={{ fontSize: "0.75rem", color: "var(--muted, #888)" }}>OR</span>
+                  <div style={{ flex: 1, height: 1, background: "var(--border, #333)" }} />
+                </div>
+
                 <a
                   href={`${import.meta.env.VITE_API_URL || "/api"}/auth/google?role=student`}
                   className="btn btn-outline"
@@ -158,12 +265,9 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
                     <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
                     <path fill="none" d="M0 0h48v48H0z"/>
                   </svg>
-                  Continue with Google
+                  Continue with Google instead
                 </a>
-                <small style={{ fontSize: "0.75rem", color: "var(--muted, #888)", marginTop: "0.75rem", display: "block" }}>
-                  Only @gmail.com and @nbkrist.org emails are supported.
-                </small>
-              </div>
+              </>
             )}
 
             {!regSuccess && regType === "guide" && (
@@ -251,9 +355,11 @@ export default function LoginModal({ open, onClose, startTab = "login" }) {
             {registerForm.formState.errors.root && <p className="ulm-err" style={{ display: "block" }}>{registerForm.formState.errors.root.message}</p>}
             {regSuccess && <p className="ulm-ok">{regSuccess}</p>}
 
-            {!regSuccess && regType === "guide" ? (
+            {!regSuccess ? (
               <button className="btn btn-primary" style={{ width: "100%" }} type="submit" disabled={registerForm.formState.isSubmitting}>
-                {registerForm.formState.isSubmitting ? "Submitting..." : "Submit Registration"}
+                {registerForm.formState.isSubmitting
+                  ? "Submitting..."
+                  : regType === "guide" ? "Submit Registration" : "Create Account"}
               </button>
             ) : regSuccess ? (
               <button className="btn btn-outline" style={{ width: "100%" }} type="button" onClick={onClose}>
