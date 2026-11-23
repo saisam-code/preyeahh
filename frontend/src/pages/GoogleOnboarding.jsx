@@ -27,7 +27,7 @@ import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 export default function GoogleOnboarding() {
   const navigate = useNavigate();
-  const { updateUser } = useAuth();
+  const { setSession } = useAuth();
   const tokenStored = useRef(false);
 
   const [branches, setBranches] = useState([]);
@@ -52,7 +52,7 @@ export default function GoogleOnboarding() {
       // Clean up any stale token from a previous attempt
       setAccessToken(null);
       setActiveRole(null);
-      navigate("/?google_error=no_token", { replace: true });
+      navigate("/login?google_error=no_token", { replace: true });
       return;
     }
 
@@ -102,12 +102,10 @@ export default function GoogleOnboarding() {
       // The response contains the NORMAL application access token + user profile
       const { accessToken, user } = data.data;
 
-      // Replace the onboarding token with the normal application token
-      setAccessToken(accessToken);
-      updateUser(user);
-      localStorage.setItem("pp_user", JSON.stringify(user));
+      // Establish authenticated session in AuthContext & localStorage
+      setSession({ user, accessToken, role: "student" });
 
-      navigate("/", { replace: true });
+      navigate("/planner", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Could not complete setup. Please try again.");
     } finally {

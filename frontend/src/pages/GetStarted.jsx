@@ -45,11 +45,7 @@ export default function GetStarted() {
   const [selectedRole, setSelectedRole] = useState("student");
 
   const handleProceed = () => {
-    if (selectedRole === "student") {
-      navigate("/onboarding");
-    } else {
-      navigate(`/login?role=${selectedRole}`);
-    }
+    navigate(`/register?role=${selectedRole}`);
   };
 
   return (

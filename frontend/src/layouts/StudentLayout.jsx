@@ -14,6 +14,7 @@ import {
   FaRightFromBracket,
   FaBars,
   FaXmark,
+  FaBuildingColumns,
 } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -21,6 +22,7 @@ import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 const STUDENT_NAV_ITEMS = [
   { to: "/discovery", label: "Discovery", icon: FaCompass },
+  { to: "/government-careers", label: "Govt Careers", icon: FaBuildingColumns },
   { to: "/planner", label: "Career Planner", icon: FaCalendarCheck },
   { to: "/roadmaps", label: "Roadmaps", icon: FaMap },
   { to: "/quiz", label: "Quiz & Learn", icon: FaGraduationCap },

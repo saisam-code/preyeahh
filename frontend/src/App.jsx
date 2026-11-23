@@ -7,6 +7,7 @@ import StudentLayout from "./layouts/StudentLayout.jsx";
 import GuideLayout from "./layouts/GuideLayout.jsx";
 import ParentLayout from "./layouts/ParentLayout.jsx";
 import InstitutionLayout from "./layouts/InstitutionLayout.jsx";
+import RoleLayout from "./layouts/RoleLayout.jsx";
 
 // Guards
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
@@ -17,6 +18,11 @@ import About from "./pages/About.jsx";
 
 // Auth Experience Pages
 import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import VerifyEmail from "./pages/VerifyEmail.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
+import ResendVerification from "./pages/ResendVerification.jsx";
 import GetStarted from "./pages/GetStarted.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import GoogleCallback from "./pages/GoogleCallback.jsx";
@@ -38,6 +44,7 @@ import GuidePanel from "./pages/GuidePanel.jsx";
 import ParentPortal from "./pages/ParentPortal.jsx";
 import InstitutionPortal from "./pages/InstitutionPortal.jsx";
 import Admin from "./pages/Admin.jsx";
+import GovernmentCareers from "./pages/GovernmentCareers.jsx";
 
 export default function App() {
   const [searchParams] = useSearchParams();
@@ -51,46 +58,57 @@ export default function App() {
 
   return (
     <Routes>
-      {/* ── EXPERIENCE A: PUBLIC WEBSITE (ONLY Home & About) ── */}
+      {/* ── EXPERIENCE A: PUBLIC WEBSITE (Home, About & Government Careers) ── */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        <Route path="/government-careers" element={<GovernmentCareers />} />
+        <Route path="/discovery/government" element={<GovernmentCareers />} />
       </Route>
 
       {/* ── EXPERIENCE B: AUTHENTICATION EXPERIENCE ── */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/verify-email/:token" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/resend-verification" element={<ResendVerification />} />
         <Route path="/get-started" element={<GetStarted />} />
         <Route path="/onboarding" element={<StudentOnboarding />} />
         <Route path="/google-callback" element={<GoogleCallback />} />
         <Route path="/google-onboarding" element={<GoogleOnboarding />} />
       </Route>
 
-      {/* ── EXPERIENCE C: AUTHENTICATED STUDENT APPLICATION ── */}
+      {/* ── SHARED AUTHENTICATED ROUTES: STUDENT & GUIDE (SINGLE DEFINITION VIA ROLELAYOUT) ── */}
+      <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/login" />}>
+        <Route element={<RoleLayout />}>
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/resources" element={<Resources />} />
+          <Route path="/roles" element={<Roles />} />
+          <Route path="/beyond" element={<Beyond />} />
+        </Route>
+      </Route>
+
+      {/* ── STUDENT-ONLY AUTHENTICATED APPLICATION ── */}
       <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/login" />}>
         <Route element={<StudentLayout />}>
           <Route path="/planner" element={<PersonalCareerPlanner />} />
           <Route path="/discovery" element={<CareerDiscovery />} />
+          <Route path="/government-careers" element={<GovernmentCareers />} />
+          <Route path="/discovery/government" element={<GovernmentCareers />} />
           <Route path="/roadmaps" element={<MyRoadmaps />} />
           <Route path="/roadmap/:id" element={<RoadmapView />} />
           <Route path="/quiz" element={<Quiz />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/roles" element={<Roles />} />
-          <Route path="/beyond" element={<Beyond />} />
-          <Route path="/chat" element={<Chat />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/dashboard" element={<Navigate to="/planner" replace />} />
         </Route>
       </Route>
 
-      {/* ── EXPERIENCE C: AUTHENTICATED GUIDE APPLICATION ── */}
+      {/* ── GUIDE-ONLY AUTHENTICATED APPLICATION ── */}
       <Route element={<ProtectedRoute allowedRoles={["guide"]} redirectTo="/login" />}>
         <Route element={<GuideLayout />}>
           <Route path="/guide-panel" element={<GuidePanel />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/roles" element={<Roles />} />
-          <Route path="/beyond" element={<Beyond />} />
         </Route>
       </Route>
 

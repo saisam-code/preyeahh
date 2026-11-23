@@ -194,10 +194,37 @@ export default function PersonalCareerPlanner() {
     }
   };
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Asia/Kolkata";
+  const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: userTimezone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+
   const todayTasks = plan?.tasks?.filter((t) => t.scheduledDate === todayStr) || [];
   const completedToday = todayTasks.filter((t) => t.isCompleted).length;
-  const upcomingTasks = plan?.tasks?.filter((t) => t.scheduledDate >= todayStr) || [];
+
+  // Week calculation (today through +6 days)
+  const weekDates = [];
+  const [ty, tm, td] = todayStr.split("-").map(Number);
+  const baseWeek = new Date(Date.UTC(ty, tm - 1, td));
+  for (let i = 0; i < 7; i++) {
+    const cur = new Date(baseWeek);
+    cur.setUTCDate(baseWeek.getUTCDate() + i);
+    weekDates.push(cur.toISOString().slice(0, 10));
+  }
+  const weekTasks = plan?.tasks?.filter((t) => weekDates.includes(t.scheduledDate)) || [];
+
+  // Month calculation (all days of current month)
+  const daysInMonth = new Date(ty, tm, 0).getDate();
+  const firstDayOfMonth = new Date(ty, tm - 1, 1).getDay(); // 0 is Sunday
+  const monthDays = Array.from({ length: daysInMonth }, (_, i) => {
+    const dStr = String(i + 1).padStart(2, "0");
+    const fullDate = `${ty}-${String(tm).padStart(2, "0")}-${dStr}`;
+    return {
+      dayNum: i + 1,
+      fullDate,
+      isToday: fullDate === todayStr,
+      tasks: (plan?.tasks || []).filter((t) => t.scheduledDate === fullDate),
+      deadlines: (plan?.deadlines || []).filter((dl) => dl.date === fullDate),
+    };
+  });
 
   return (
     <div className="planner-container" style={{ padding: "1.5rem 0", maxWidth: 1100, margin: "0 auto" }}>
@@ -227,6 +254,13 @@ export default function PersonalCareerPlanner() {
             style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}
           >
             <FaPlus /> Add Task
+          </button>
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={() => setShowDeadlineModal(true)}
+            style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}
+          >
+            <FaCalendarCheck /> Add Deadline
           </button>
           <button
             className="btn btn-outline btn-sm"
@@ -281,18 +315,18 @@ export default function PersonalCareerPlanner() {
       {/* ── TAB CONTENTS ── */}
       {loading ? (
         <div className="empty"><p>Loading planner...</p></div>
-      ) : activeTab === "today" || activeTab === "week" || activeTab === "month" ? (
+      ) : activeTab === "today" || activeTab === "week" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-          {(activeTab === "today" ? todayTasks : upcomingTasks).length === 0 ? (
+          {((activeTab === "today" ? todayTasks : weekTasks)).length === 0 ? (
             <div className="empty" style={{ padding: "3rem 1rem", textAlign: "center", background: "var(--card-bg, #fff)", borderRadius: "1rem", border: "1px solid var(--border)" }}>
               <FaCalendarDays style={{ fontSize: "2.2rem", color: "var(--text-muted)", marginBottom: "0.75rem" }} />
-              <h4 style={{ margin: "0 0 0.25rem" }}>No tasks scheduled</h4>
+              <h4 style={{ margin: "0 0 0.25rem" }}>{activeTab === "today" ? "No tasks scheduled for today" : "No tasks scheduled for the next 7 days"}</h4>
               <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>
                 Click <strong>AI Adaptive Timetable</strong> to generate your weekly plan or <strong>Add Task</strong> above.
               </p>
             </div>
           ) : (
-            (activeTab === "today" ? todayTasks : upcomingTasks).map((t) => (
+            (activeTab === "today" ? todayTasks : weekTasks).map((t) => (
               <div
                 key={t._id}
                 style={{
@@ -330,12 +364,14 @@ export default function PersonalCareerPlanner() {
 
                   <div>
                     <strong style={{ fontSize: "0.95rem" }}>{t.title}</strong>
-                    <div style={{ display: "flex", gap: "0.5rem", fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                    <div style={{ display: "flex", gap: "0.5rem", fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.2rem", flexWrap: "wrap" }}>
                       <span>{t.category}</span>
                       <span>•</span>
                       <span><FaClock size={11} /> {t.startTime || "18:00"} ({t.durationMinutes}m)</span>
                       <span>•</span>
-                      <span>{t.scheduledDate}</span>
+                      <span style={{ fontWeight: t.scheduledDate === todayStr ? 700 : 400, color: t.scheduledDate === todayStr ? "var(--primary)" : "inherit" }}>
+                        {t.scheduledDate} {t.scheduledDate === todayStr ? "(Today)" : ""}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -355,6 +391,103 @@ export default function PersonalCareerPlanner() {
               </div>
             ))
           )}
+        </div>
+      ) : activeTab === "month" ? (
+        /* Real Monthly Calendar Grid */
+        <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <h3 style={{ margin: 0, fontSize: "1.15rem" }}>
+              {new Date(ty, tm - 1).toLocaleString("default", { month: "long" })} {ty}
+            </h3>
+            <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              {plan?.deadlines?.length || 0} Deadlines registered
+            </span>
+          </div>
+
+          {/* Calendar Grid Header */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem", textAlign: "center", fontWeight: 700, fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+              <div key={day} style={{ padding: "0.4rem 0" }}>{day}</div>
+            ))}
+          </div>
+
+          {/* Calendar Days */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem" }}>
+            {/* Empty slots before first day of month */}
+            {Array.from({ length: firstDayOfMonth }, (_, i) => (
+              <div key={`empty-${i}`} style={{ minHeight: 70, background: "transparent" }} />
+            ))}
+
+            {monthDays.map((md) => (
+              <div
+                key={md.fullDate}
+                style={{
+                  minHeight: 70,
+                  border: md.isToday ? "2px solid var(--primary)" : "1px solid var(--border)",
+                  borderRadius: "0.5rem",
+                  padding: "0.4rem",
+                  background: md.isToday ? "rgba(21,128,61,0.04)" : "var(--surface)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: "0.82rem", fontWeight: md.isToday ? 800 : 500, color: md.isToday ? "var(--primary)" : "inherit" }}>
+                    {md.dayNum}
+                  </span>
+                  {md.deadlines.length > 0 && (
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--error)" }} title={`${md.deadlines.length} Exam / Target Deadlines`} />
+                  )}
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.2rem", marginTop: "0.25rem" }}>
+                  {md.tasks.slice(0, 2).map((t) => (
+                    <div
+                      key={t._id}
+                      style={{
+                        fontSize: "0.68rem",
+                        padding: "0.15rem 0.35rem",
+                        borderRadius: "0.25rem",
+                        background: t.isCompleted ? "#10b981" : "rgba(21,128,61,0.1)",
+                        color: t.isCompleted ? "#fff" : "var(--primary)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                      title={t.title}
+                    >
+                      {t.title}
+                    </div>
+                  ))}
+                  {md.tasks.length > 2 && (
+                    <span style={{ fontSize: "0.65rem", color: "var(--text-muted)" }}>
+                      +{md.tasks.length - 2} more
+                    </span>
+                  )}
+                  {md.deadlines.map((dl, dli) => (
+                    <div
+                      key={dli}
+                      style={{
+                        fontSize: "0.68rem",
+                        padding: "0.15rem 0.35rem",
+                        borderRadius: "0.25rem",
+                        background: "rgba(239,68,68,0.15)",
+                        color: "var(--error)",
+                        fontWeight: 700,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                      title={`Target: ${dl.title}`}
+                    >
+                      🎯 {dl.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : activeTab === "milestones" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -505,6 +638,55 @@ export default function PersonalCareerPlanner() {
               <div className="modal-actions" style={{ marginTop: "1.25rem", display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
                 <button type="button" className="btn btn-outline" onClick={() => setShowGoalModal(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Add Goal</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD DEADLINE MODAL ── */}
+      {showDeadlineModal && (
+        <div className="modal-backdrop">
+          <div className="modal-card" style={{ maxWidth: 450, padding: "1.5rem" }}>
+            <h3 style={{ margin: "0 0 1rem" }}>Register Exam or Target Deadline</h3>
+            <form onSubmit={handleCreateDeadline}>
+              <div className="form-group">
+                <label>Examination / Target Title</label>
+                <input
+                  type="text"
+                  value={deadlineTitle}
+                  onChange={(e) => setDeadlineTitle(e.target.value)}
+                  placeholder="e.g. UPSC CSE Prelims 2026, GATE CS, Semester 6 Finals"
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Category</label>
+                  <select value={deadlineCategory} onChange={(e) => setDeadlineCategory(e.target.value)}>
+                    <option value="University Exam">University Exam</option>
+                    <option value="Competitive Exam">Competitive Exam</option>
+                    <option value="Entrance Exam">Entrance Exam</option>
+                    <option value="Certification">Certification</option>
+                    <option value="Internship Deadline">Internship Deadline</option>
+                    <option value="Scholarship">Scholarship</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Target Date</label>
+                  <input
+                    type="date"
+                    value={deadlineDate}
+                    onChange={(e) => setDeadlineDate(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="modal-actions" style={{ marginTop: "1.25rem", display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+                <button type="button" className="btn btn-outline" onClick={() => setShowDeadlineModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Deadline</button>
               </div>
             </form>
           </div>

@@ -108,6 +108,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  // Direct session setter for OAuth callbacks and onboarding completion
+  const setSession = useCallback(({ user, accessToken, role }) => {
+    if (accessToken) setAccessToken(accessToken);
+    if (role) setActiveRole(role);
+    storeUser(user);
+    setUser(user);
+  }, []);
+
   // Shared manual (email/password) login for student, guide, parent, institution.
   const login = useCallback(async (role, { email, password }) => {
     setLoading(true);
@@ -120,22 +128,23 @@ export function AuthProvider({ children }) {
       const { data } = await api.post(path, { email, password });
       const loggedInUser = data.data.user;
 
-      setAccessToken(data.data.accessToken);
-      setActiveRole(role);
-      storeUser(loggedInUser);
-      setUser(loggedInUser);
+      setSession({
+        user: loggedInUser,
+        accessToken: data.data.accessToken,
+        role,
+      });
 
       return loggedInUser;
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [setSession]);
 
   // Merge fresh fields (e.g. updated AI preferences) into the cached user
   const updateUser = useCallback((patch) => {
     setUser((prev) => {
-      if (!prev) return prev;
-      const next = { ...prev, ...patch };
+      const base = prev || loadStoredUser() || {};
+      const next = { ...base, ...patch };
       storeUser(next);
       return next;
     });
@@ -160,9 +169,9 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       user, role: user?.role || null, isAuthenticated: !!user, initialized, loading,
-      registerGuide, registerStudent, registerParent, registerInstitution, login, updateUser, logout,
+      registerGuide, registerStudent, registerParent, registerInstitution, login, setSession, updateUser, logout,
     }),
-    [user, initialized, loading, registerGuide, registerStudent, registerParent, registerInstitution, login, updateUser, logout]
+    [user, initialized, loading, registerGuide, registerStudent, registerParent, registerInstitution, login, setSession, updateUser, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

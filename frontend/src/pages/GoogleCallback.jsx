@@ -17,7 +17,7 @@ import api from "../services/api.js";
 
 export default function GoogleCallback() {
   const navigate = useNavigate();
-  const { updateUser } = useAuth();
+  const { setSession } = useAuth();
   const processed = useRef(false); // prevent double-run in StrictMode
 
   useEffect(() => {
@@ -38,11 +38,12 @@ export default function GoogleCallback() {
           setActiveRole(null);
           const searchParams = new URLSearchParams(window.location.search);
           const googleError = searchParams.get("google_error");
-          navigate(`/?google_error=${googleError || "unknown"}`, { replace: true });
+          // Redirect to /login (not Home) so the error message is displayed
+          navigate(`/login?google_error=${googleError || "unknown"}`, { replace: true });
           return;
         }
 
-        // Store the application's access token (same path as email/password login)
+        // Store the application's access token temporarily to fetch /me
         setAccessToken(token);
         setActiveRole(role);
 
@@ -54,21 +55,26 @@ export default function GoogleCallback() {
         const { data } = await api.get(mePath);
         const user = data.data;
 
-        // Persist user in AuthContext and localStorage (same as email/password flow)
-        updateUser(user);
-        localStorage.setItem("pp_user", JSON.stringify(user));
+        // Atomically set full authenticated session in AuthContext & localStorage
+        setSession({ user, accessToken: token, role });
 
-        navigate("/", { replace: true });
+        // Redirect to role-specific workspace (not generic Home)
+        const dest =
+          role === "guide" ? "/guide-panel" :
+          role === "parent" ? "/parent-portal" :
+          role === "institution" ? "/institution-portal" :
+          "/planner";
+        navigate(dest, { replace: true });
       } catch (err) {
         console.error("[GoogleCallback] Error:", err);
         setAccessToken(null);
         setActiveRole(null);
-        navigate("/?google_error=session_error", { replace: true });
+        navigate("/login?google_error=session_error", { replace: true });
       }
     }
 
     handleCallback();
-  }, [navigate, updateUser]);
+  }, [navigate, setSession]);
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>

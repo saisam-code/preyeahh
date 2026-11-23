@@ -25,6 +25,15 @@ import {
   submitReport,
 } from "../services/careerPlannerService.js";
 
+function formatRealityFact(fact) {
+  if (!fact) return "No verified data yet";
+  if (typeof fact === "string") return fact.trim() || "No verified data yet";
+  if (typeof fact === "object" && fact.value && fact.value.trim()) {
+    return fact.value.trim();
+  }
+  return "No verified data yet";
+}
+
 const CATEGORIES = [
   "all",
   "Conventional",
@@ -304,11 +313,11 @@ export default function CareerDiscovery() {
                       <div style={{ background: "rgba(0,0,0,0.02)", border: "1px solid var(--border)", borderRadius: "0.5rem", padding: "0.75rem", fontSize: "0.82rem", display: "flex", flexDirection: "column", gap: "0.35rem", marginBottom: "1rem" }}>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                           <span style={{ color: "var(--text-muted)" }}>Starting Salary:</span>
-                          <strong>{role.reality?.salaryRange?.starting || "₹4 - ₹8 LPA"}</strong>
+                          <strong>{formatRealityFact(role.reality?.salaryRange?.starting)}</strong>
                         </div>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                           <span style={{ color: "var(--text-muted)" }}>Job Demand:</span>
-                          <span style={{ color: "var(--primary)", fontWeight: 600 }}>{role.reality?.demandLevel || "High"}</span>
+                          <span style={{ color: "var(--primary)", fontWeight: 600 }}>{formatRealityFact(role.reality?.demandLevel)}</span>
                         </div>
                       </div>
                     </div>
@@ -523,9 +532,9 @@ export default function CareerDiscovery() {
               <div style={{ padding: "0.85rem", background: "rgba(26,86,219,0.06)", borderRadius: "0.5rem" }}>
                 <strong>Salary & Income Trajectory (Estimated INR):</strong>
                 <div style={{ marginTop: "0.35rem", fontSize: "0.88rem", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
-                  <div>Entry: <strong>{selectedRole.reality?.salaryRange?.starting || "₹4 - ₹7 LPA"}</strong></div>
-                  <div>Mid-Level: <strong>{selectedRole.reality?.salaryRange?.mid || "₹10 - ₹18 LPA"}</strong></div>
-                  <div>Senior: <strong>{selectedRole.reality?.salaryRange?.experienced || "₹25+ LPA"}</strong></div>
+                  <div>Entry: <strong>{formatRealityFact(selectedRole.reality?.salaryRange?.starting)}</strong></div>
+                  <div>Mid-Level: <strong>{formatRealityFact(selectedRole.reality?.salaryRange?.mid)}</strong></div>
+                  <div>Senior: <strong>{formatRealityFact(selectedRole.reality?.salaryRange?.experienced)}</strong></div>
                 </div>
               </div>
 

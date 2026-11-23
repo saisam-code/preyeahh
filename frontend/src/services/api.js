@@ -65,8 +65,14 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
+    const url = original?.url || "";
 
-    if (error.response?.status === 401 && !original._retry && getActiveRole()) {
+    const isAuthEndpoint =
+      url.includes("/login") ||
+      url.includes("/register") ||
+      url.includes("/refresh");
+
+    if (error.response?.status === 401 && !original._retry && getActiveRole() && !isAuthEndpoint) {
       original._retry = true;
       try {
         if (!refreshPromise) refreshPromise = performRefresh().finally(() => { refreshPromise = null; });

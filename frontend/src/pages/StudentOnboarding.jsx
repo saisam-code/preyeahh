@@ -119,8 +119,8 @@ export default function StudentOnboarding() {
         toast.success("Welcome aboard! Your career workspace is ready.");
         navigate("/planner");
       } else {
-        toast.success("Preferences configured! Please sign in or create an account to save your workspace.");
-        navigate("/login", {
+        toast.success("Preferences configured! Create your student account to activate your plan.");
+        navigate("/register?role=student", {
           state: {
             onboardingData: {
               educationStage: stage,

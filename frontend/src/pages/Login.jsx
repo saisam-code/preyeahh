@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash, FaArrowRight, FaXmark, FaCheck } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -44,6 +44,19 @@ export default function Login() {
 
   const next = location.state?.from?.pathname || params.get("next") || "";
   const googleError = params.get("google_error");
+
+  // Redirect authenticated users to their workspace — must be in useEffect
+  // so all hooks run unconditionally before any early return.
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const dest =
+        user.role === "institution" ? "/institution-portal" :
+        user.role === "guide" ? "/guide-panel" :
+        user.role === "parent" ? "/parent-portal" :
+        "/planner";
+      navigate(next || dest, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate, next]);
 
   useEffect(() => {
     form.reset({ email: "", password: "" });
@@ -292,6 +305,65 @@ export default function Login() {
               ))}
             </div>
 
+            {/* Quick Sample Demo Login Bar */}
+            <div
+              style={{
+                marginBottom: "1.25rem",
+                background: "rgba(21,128,61,0.06)",
+                border: "1px dashed var(--primary)",
+                borderRadius: "0.75rem",
+                padding: "0.75rem 1rem",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
+                <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: 0.8 }}>
+                  Sample Demo Account
+                </span>
+                <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>Instant Evaluation</span>
+              </div>
+              <p style={{ margin: "0 0 0.6rem", fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.35 }}>
+                {role === "parent" && "Demo Parent (Ramesh Sharma): View verified student milestones, privacy toggles & ROI calculator."}
+                {role === "institution" && "Demo Institution (NBKRIST Placement Cell): Review student links, notices & workshop drives."}
+                {role === "guide" && "Demo Guide (Dr. Radhika / CSE Faculty): Guide chat, office hours & mentorship evaluations."}
+                {role === "student" && "Demo Student: Experience career planning, roadmaps, and government exams intelligence."}
+              </p>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                style={{
+                  width: "100%",
+                  fontSize: "0.8rem",
+                  padding: "0.4rem 0.6rem",
+                  borderColor: "var(--primary)",
+                  color: "var(--primary)",
+                  background: "var(--surface)",
+                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.4rem",
+                }}
+                onClick={() => {
+                  if (role === "parent") {
+                    form.setValue("email", "parent.demo@preyeahh.com");
+                    form.setValue("password", "DemoParent123!");
+                  } else if (role === "institution") {
+                    form.setValue("email", "placement@nbkrist.org");
+                    form.setValue("password", "DemoInst123!");
+                  } else if (role === "guide") {
+                    form.setValue("email", "guide@nbkrist.org");
+                    form.setValue("password", "GuidePass123!");
+                  } else {
+                    form.setValue("email", "demo@gmail.com");
+                    form.setValue("password", "Student123!");
+                  }
+                  toast.success(`Demo ${role} credentials pre-filled!`);
+                }}
+              >
+                ⚡ Fill Sample {role.charAt(0).toUpperCase() + role.slice(1)} Login
+              </button>
+            </div>
+
             <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
               <div className="form-group">
                 <label htmlFor="lp-email">Email</label>
@@ -323,6 +395,12 @@ export default function Login() {
                 {errors.password && <small className="lp-err">{errors.password.message}</small>}
               </div>
 
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
+                <Link to={`/forgot-password?role=${role}`} style={{ fontSize: "0.82rem", color: "var(--primary)", textDecoration: "none", fontWeight: 600 }}>
+                  Forgot password?
+                </Link>
+              </div>
+
               {errors.root && <p className="ulm-err" style={{ display: "block" }}>{errors.root.message}</p>}
 
               <button className="btn btn-primary lp-full" type="submit" disabled={isSubmitting}>
@@ -330,20 +408,32 @@ export default function Login() {
               </button>
             </form>
 
-            <div className="lp-or"><span>OR</span></div>
+            {/* Google OAuth is only supported for student and guide */}
+            {(role === "student" || role === "guide") && (
+              <>
+                <div className="lp-or"><span>OR</span></div>
 
-            <a href={`${API_BASE}/auth/google?role=${role}`} className="btn btn-outline lp-full lp-google">
-              <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-              </svg>
-              Continue with Google
-            </a>
+                <a href={`${API_BASE}/auth/google?role=${role}`} className="btn btn-outline lp-full lp-google">
+                  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                  </svg>
+                  Continue with Google
+                </a>
+              </>
+            )}
 
-            <div style={{ marginTop: "1.25rem", textAlign: "center", fontSize: "0.85rem", color: "var(--text-muted)" }}>
-              New to Preyeahh? <Link to="/get-started" style={{ color: "var(--primary)", fontWeight: 600 }}>Create an account</Link>
+            <div style={{ marginTop: "1.25rem", textAlign: "center", fontSize: "0.85rem", color: "var(--text-muted)", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+              <div>
+                New to Preyeahh? <Link to={`/register?role=${role}`} style={{ color: "var(--primary)", fontWeight: 600 }}>Create an account</Link>
+              </div>
+              <div>
+                <Link to={`/resend-verification?role=${role}`} style={{ fontSize: "0.78rem", color: "var(--text-muted)", textDecoration: "none" }}>
+                  Need to verify your email? Resend verification
+                </Link>
+              </div>
             </div>
           </div>
         </div>

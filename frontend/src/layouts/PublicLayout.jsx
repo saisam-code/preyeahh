@@ -2,10 +2,18 @@ import { useState } from "react";
 import { NavLink, Link, Outlet } from "react-router-dom";
 import { FaBars, FaXmark, FaHouse, FaCircleInfo, FaArrowRight } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 export default function PublicLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { isAuthenticated, user } = useAuth();
+
+  const workspacePath =
+    user?.role === "guide" ? "/guide-panel" :
+    user?.role === "parent" ? "/parent-portal" :
+    user?.role === "institution" ? "/institution-portal" :
+    "/planner";
 
   return (
     <div className="public-layout-root" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -32,7 +40,7 @@ export default function PublicLayout() {
             </span>
           </Link>
 
-          {/* Navigation Items (ONLY Home and About) */}
+          {/* Navigation Items (Home, About & Government Careers) */}
           <nav className="desktop-public-nav" style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
             <NavLink
               to="/"
@@ -63,35 +71,72 @@ export default function PublicLayout() {
             >
               About
             </NavLink>
+            <NavLink
+              to="/government-careers"
+              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+              style={({ isActive }) => ({
+                textDecoration: "none",
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                color: isActive ? "var(--primary)" : "var(--text)",
+                padding: "0.35rem 0.6rem",
+                borderRadius: "0.4rem",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.3rem",
+              })}
+            >
+              Govt Careers
+            </NavLink>
           </nav>
 
-          {/* Right Actions: Login & Get Started */}
+          {/* Right Actions: Login & Get Started OR Open Workspace */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <ThemeToggle />
 
-            <Link
-              to="/login"
-              className="btn btn-outline btn-sm"
-              style={{ padding: "0.45rem 1rem", fontSize: "0.88rem", fontWeight: 600, textDecoration: "none" }}
-            >
-              Login
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to={workspacePath}
+                className="btn btn-primary btn-sm"
+                style={{
+                  padding: "0.45rem 1.15rem",
+                  fontSize: "0.88rem",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "0.35rem",
+                }}
+              >
+                Open Workspace <FaArrowRight style={{ fontSize: "0.75rem" }} />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="btn btn-outline btn-sm"
+                  style={{ padding: "0.45rem 1rem", fontSize: "0.88rem", fontWeight: 600, textDecoration: "none" }}
+                >
+                  Login
+                </Link>
 
-            <Link
-              to="/get-started"
-              className="btn btn-primary btn-sm"
-              style={{
-                padding: "0.45rem 1.15rem",
-                fontSize: "0.88rem",
-                fontWeight: 600,
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.35rem",
-              }}
-            >
-              Get Started <FaArrowRight style={{ fontSize: "0.75rem" }} />
-            </Link>
+                <Link
+                  to="/get-started"
+                  className="btn btn-primary btn-sm"
+                  style={{
+                    padding: "0.45rem 1.15rem",
+                    fontSize: "0.88rem",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.35rem",
+                  }}
+                >
+                  Get Started <FaArrowRight style={{ fontSize: "0.75rem" }} />
+                </Link>
+              </>
+            )}
 
             {/* Mobile Hamburger */}
             <button
@@ -159,26 +204,46 @@ export default function PublicLayout() {
             >
               About
             </NavLink>
+            <NavLink
+              to="/government-careers"
+              onClick={() => setDrawerOpen(false)}
+              style={{ textDecoration: "none", color: "var(--text)", fontSize: "1rem", fontWeight: 600, padding: "0.5rem 0" }}
+            >
+              Govt Careers
+            </NavLink>
 
             <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0.5rem 0" }} />
 
-            <Link
-              to="/login"
-              onClick={() => setDrawerOpen(false)}
-              className="btn btn-outline"
-              style={{ textDecoration: "none", textAlign: "center" }}
-            >
-              Login
-            </Link>
+            {isAuthenticated ? (
+              <Link
+                to={workspacePath}
+                onClick={() => setDrawerOpen(false)}
+                className="btn btn-primary"
+                style={{ textDecoration: "none", textAlign: "center" }}
+              >
+                Open Workspace
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  onClick={() => setDrawerOpen(false)}
+                  className="btn btn-outline"
+                  style={{ textDecoration: "none", textAlign: "center" }}
+                >
+                  Login
+                </Link>
 
-            <Link
-              to="/get-started"
-              onClick={() => setDrawerOpen(false)}
-              className="btn btn-primary"
-              style={{ textDecoration: "none", textAlign: "center" }}
-            >
-              Get Started
-            </Link>
+                <Link
+                  to="/get-started"
+                  onClick={() => setDrawerOpen(false)}
+                  className="btn btn-primary"
+                  style={{ textDecoration: "none", textAlign: "center" }}
+                >
+                  Get Started
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -201,6 +266,7 @@ export default function PublicLayout() {
           <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
             <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>Home</Link>
             <Link to="/about" style={{ textDecoration: "none", color: "inherit" }}>About</Link>
+            <Link to="/government-careers" style={{ textDecoration: "none", color: "inherit" }}>Govt Careers</Link>
             <Link to="/get-started" style={{ textDecoration: "none", color: "inherit" }}>Get Started</Link>
             <Link to="/login" style={{ textDecoration: "none", color: "inherit" }}>Sign In</Link>
           </div>
