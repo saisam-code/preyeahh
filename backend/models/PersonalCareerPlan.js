@@ -156,7 +156,6 @@ const personalCareerPlanSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-personalCareerPlanSchema.index({ student: 1 });
 personalCareerPlanSchema.index({ "tasks.scheduledDate": 1 });
 
 export default mongoose.model("PersonalCareerPlan", personalCareerPlanSchema);

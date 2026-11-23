@@ -124,81 +124,108 @@ export default function ParentPortal() {
         </h2>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "1.5rem" }}>
-          {associated.map((st, i) => (
+          {associated.length === 0 ? (
             <div
-              key={i}
               style={{
                 background: "var(--surface)",
-                border: "1px solid var(--border)",
+                border: "1px dashed var(--border)",
                 borderRadius: "1.25rem",
-                padding: "1.75rem",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                padding: "2.5rem 1.5rem",
+                textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-                <div>
-                  <h3 style={{ margin: "0 0 0.25rem", fontSize: "1.25rem", fontWeight: 800 }}>
-                    {st.name || "Arjun Sharma"}
-                  </h3>
-                  <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>
-                    {st.branch || "Computer Science & Engineering"} • {st.year || "3rd Year"}
-                  </span>
-                  <span style={{ fontSize: "0.82rem", color: "var(--primary)", fontWeight: 600 }}>
-                    {st.institution || "N.B.K.R. Institute of Science & Technology"}
-                  </span>
-                </div>
-                <span
-                  style={{
-                    fontSize: "0.75rem",
-                    background: "rgba(21,128,61,0.1)",
-                    color: "var(--primary)",
-                    padding: "0.25rem 0.65rem",
-                    borderRadius: "1rem",
-                    fontWeight: 700,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.3rem",
-                  }}
-                >
-                  <FaCircleCheck /> Verified
-                </span>
-              </div>
-
-              {/* Target Career & Readiness Bar */}
-              <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1rem", marginBottom: "1.25rem" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "0.35rem" }}>
-                  <span style={{ color: "var(--text-muted)" }}>Target Pathway:</span>
-                  <strong style={{ color: "var(--text)" }}>{st.targetCareer || "Cloud Architect / Govt CSE"}</strong>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
-                  <span style={{ color: "var(--text-muted)" }}>Planner Readiness Completion:</span>
-                  <strong style={{ color: "var(--primary)" }}>{st.plannerProgress || 68}%</strong>
-                </div>
-                <div style={{ height: 8, background: "rgba(0,0,0,0.08)", borderRadius: 4, overflow: "hidden" }}>
-                  <div style={{ width: `${st.plannerProgress || 68}%`, height: "100%", background: "var(--primary)", borderRadius: 4 }} />
-                </div>
-              </div>
-
-              {/* Recent Verified Milestones */}
-              <h4 style={{ margin: "0 0 0.75rem", fontSize: "0.92rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)" }}>
-                Recent Verified Milestones
-              </h4>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.85rem" }}>
-                  <FaCircleCheck style={{ color: "var(--primary)", flexShrink: 0 }} />
-                  <span><strong>Semester 5 Capstone:</strong> Distributed Cache Engine (Verified by Faculty)</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.85rem" }}>
-                  <FaCircleCheck style={{ color: "var(--primary)", flexShrink: 0 }} />
-                  <span><strong>AWS Certified Solutions Architect:</strong> 75% Syllabus Completed</span>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.85rem" }}>
-                  <FaCalendarCheck style={{ color: "#f59e0b", flexShrink: 0 }} />
-                  <span><strong>UPSC CSE 2026 / GATE CS:</strong> Milestone tasks scheduled in planner</span>
-                </div>
-              </div>
+              <FaUserGraduate style={{ fontSize: "2.5rem", color: "var(--text-muted)", marginBottom: "0.75rem" }} />
+              <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.2rem", fontWeight: 700 }}>No Student Linked Yet</h3>
+              <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", maxWidth: 440, margin: "0 auto 1.25rem", lineHeight: 1.5 }}>
+                Connect your ward's student account to view verified milestones, upcoming entrance examination schedules, and career roadmaps with mutual consent.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => toast("Student link request available in Account Settings.", { icon: "ℹ️" })}
+              >
+                Link Student Account
+              </button>
             </div>
-          ))}
+          ) : (
+            associated.map((st, i) => (
+              <div
+                key={i}
+                style={{
+                  background: "var(--surface)",
+                  border: "1px solid var(--border)",
+                  borderRadius: "1.25rem",
+                  padding: "1.75rem",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+                  <div>
+                    <h3 style={{ margin: "0 0 0.25rem", fontSize: "1.25rem", fontWeight: 800 }}>
+                      {st.name || "Student"}
+                    </h3>
+                    <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>
+                      {st.branch || "General"} • {st.year || "Enrolled"}
+                    </span>
+                    <span style={{ fontSize: "0.82rem", color: "var(--primary)", fontWeight: 600 }}>
+                      {st.institution || "Educational Institution"}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "0.75rem",
+                      background: "rgba(21,128,61,0.1)",
+                      color: "var(--primary)",
+                      padding: "0.25rem 0.65rem",
+                      borderRadius: "1rem",
+                      fontWeight: 700,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.3rem",
+                    }}
+                  >
+                    <FaCircleCheck /> Verified
+                  </span>
+                </div>
+
+                {/* Target Career & Readiness Bar */}
+                <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1rem", marginBottom: "1.25rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "0.35rem" }}>
+                    <span style={{ color: "var(--text-muted)" }}>Target Pathway:</span>
+                    <strong style={{ color: "var(--text)" }}>{st.targetCareer || "Exploring Careers"}</strong>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
+                    <span style={{ color: "var(--text-muted)" }}>Planner Readiness Completion:</span>
+                    <strong style={{ color: "var(--primary)" }}>{st.plannerProgress || 0}%</strong>
+                  </div>
+                  <div style={{ height: 8, background: "rgba(0,0,0,0.08)", borderRadius: 4, overflow: "hidden" }}>
+                    <div style={{ width: `${st.plannerProgress || 0}%`, height: "100%", background: "var(--primary)", borderRadius: 4 }} />
+                  </div>
+                </div>
+
+                {/* Recent Verified Milestones */}
+                <h4 style={{ margin: "0 0 0.75rem", fontSize: "0.92rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)" }}>
+                  Recent Verified Milestones
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                  {st.milestones?.length ? (
+                    st.milestones.map((m, mIdx) => (
+                      <div key={mIdx} style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.85rem" }}>
+                        <FaCircleCheck style={{ color: "var(--primary)", flexShrink: 0 }} />
+                        <span><strong>{m.title}:</strong> {m.status || "Completed"}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>No verified milestones recorded yet.</span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
 
           {/* Privacy & Notification Consent Management */}
           <div

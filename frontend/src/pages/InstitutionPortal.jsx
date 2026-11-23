@@ -22,96 +22,14 @@ export default function InstitutionPortal() {
   const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Interactive Pending Student Association Requests State
-  const [pendingRequests, setPendingRequests] = useState([
-    {
-      id: "req-1",
-      studentName: "K. Sai Praneeth",
-      email: "praneeth.k@nbkrist.org",
-      rollNo: "21NB1A0582",
-      branch: "Computer Science & Engineering",
-      year: "4th Year",
-      cgpa: "8.72",
-      submittedDate: "2026-03-24",
-    },
-    {
-      id: "req-2",
-      studentName: "V. Haritha",
-      email: "haritha.v@nbkrist.org",
-      rollNo: "22NB1A0419",
-      branch: "Electronics & Communication",
-      year: "3rd Year",
-      cgpa: "8.95",
-      submittedDate: "2026-03-25",
-    },
-    {
-      id: "req-3",
-      studentName: "M. Dinesh Kumar",
-      email: "dinesh.m@nbkrist.org",
-      rollNo: "21NB1A0304",
-      branch: "Mechanical Engineering",
-      year: "4th Year",
-      cgpa: "7.84",
-      submittedDate: "2026-03-26",
-    },
-  ]);
-
-  // Interactive Campus Notices State
-  const [notices, setNotices] = useState([
-    {
-      id: 1,
-      title: "Semester 6 & 7 Placement Readiness Diagnostic & Mock Coding Drive",
-      branch: "All Engineering Branches",
-      priority: "HIGH",
-      date: "March 26, 2026",
-      content: "All eligible students must complete their verified project portfolios and attend mandatory diagnostic tests in Digital Lab 2.",
-    },
-    {
-      id: 2,
-      title: "UPSC Civil Services & Engineering Services (ESE) Free Campus Coaching Orientation",
-      branch: "Inter-departmental",
-      priority: "MEDIUM",
-      date: "March 22, 2026",
-      content: "Special seminar with IAS/IES alumni officers scheduled at the Central Auditorium on Saturday 10:00 AM.",
-    },
-  ]);
-
-  // Interactive Notice Form
+  // Institution State
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const [notices, setNotices] = useState([]);
   const [showNoticeForm, setShowNoticeForm] = useState(false);
   const [newNoticeTitle, setNewNoticeTitle] = useState("");
   const [newNoticeBranch, setNewNoticeBranch] = useState("All Engineering Branches");
   const [newNoticeContent, setNewNoticeContent] = useState("");
-
-  // Campus Events & Workshops State
-  const [workshops, setWorkshops] = useState([
-    {
-      id: "w1",
-      title: "Annual Tech Symposium & Project Expo 2026",
-      host: "Career Development Cell & CSE Dept",
-      date: "April 14, 2026",
-      location: "Auditorium Hall",
-      status: "Registration Open",
-      registeredCount: 342,
-    },
-    {
-      id: "w2",
-      title: "Full-Stack System Design & Microservices Bootcamp",
-      host: "Preyeahh Industry Faculty Guide",
-      date: "April 02, 2026",
-      location: "Virtual Lab Room 4",
-      status: "Upcoming",
-      registeredCount: 188,
-    },
-    {
-      id: "w3",
-      title: "Public Sector (PSU GATE) Executive Prep Seminar",
-      host: "ONGC / PowerGrid Alumni Mentors",
-      date: "April 08, 2026",
-      location: "Seminar Complex",
-      status: "Upcoming",
-      registeredCount: 95,
-    },
-  ]);
+  const [workshops, setWorkshops] = useState([]);
 
   useEffect(() => {
     listInstitutions()
@@ -222,15 +140,15 @@ export default function InstitutionPortal() {
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
                 <FaUserGraduate /> Associated Students
               </div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--primary)" }}>1,248</div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Across 5 Engineering Branches</div>
+              <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--primary)" }}>{user?.studentCount ?? 0}</div>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Verified enrolled students</div>
             </div>
 
             <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
                 <FaPeopleGroup /> Active Faculty Guides
               </div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, color: "#10b981" }}>36</div>
+              <div style={{ fontSize: "2rem", fontWeight: 800, color: "#10b981" }}>{user?.guideCount ?? 0}</div>
               <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Verified Mentors Onboarded</div>
             </div>
 
@@ -398,36 +316,43 @@ export default function InstitutionPortal() {
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {workshops.map((w) => (
-              <div
-                key={w.id}
-                style={{
-                  border: "1px solid var(--border)",
-                  borderRadius: "0.75rem",
-                  padding: "1.25rem",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "1rem",
-                  background: "var(--surface-mid)",
-                }}
-              >
-                <div>
-                  <strong style={{ fontSize: "1rem", display: "block" }}>{w.title}</strong>
-                  <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
-                    Host: {w.host} • Date: <strong>{w.date}</strong> • Venue: {w.location}
+            {workshops.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--text-muted)", background: "var(--surface)", border: "1px dashed var(--border)", borderRadius: "0.75rem" }}>
+                <p style={{ fontSize: "1.05rem", fontWeight: 600 }}>No workshops or campus recruitment drives scheduled yet.</p>
+                <span>Use the "Add Workshop" button above to schedule your first event.</span>
+              </div>
+            ) : (
+              workshops.map((w) => (
+                <div
+                  key={w.id}
+                  style={{
+                    border: "1px solid var(--border)",
+                    borderRadius: "0.75rem",
+                    padding: "1.25rem",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "1rem",
+                    background: "var(--surface-mid)",
+                  }}
+                >
+                  <div>
+                    <strong style={{ fontSize: "1rem", display: "block" }}>{w.title}</strong>
+                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                      Host: {w.host} • Date: <strong>{w.date}</strong> • Venue: {w.location}
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                    <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--primary)" }}>
+                      {w.registeredCount} Students Enrolled
+                    </span>
+                    <span className="branch-tag">{w.status}</span>
                   </div>
                 </div>
-
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--primary)" }}>
-                    {w.registeredCount} Students Enrolled
-                  </span>
-                  <span className="branch-tag">{w.status}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       )}
@@ -499,31 +424,38 @@ export default function InstitutionPortal() {
 
           {/* Notices List */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-            {notices.map((n) => (
-              <div
-                key={n.id}
-                style={{
-                  borderLeft: "4px solid var(--primary)",
-                  background: "var(--surface-mid)",
-                  borderTop: "1px solid var(--border)",
-                  borderRight: "1px solid var(--border)",
-                  borderBottom: "1px solid var(--border)",
-                  borderRadius: "0.5rem",
-                  padding: "1.25rem",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
-                  <strong style={{ fontSize: "1.05rem" }}>{n.title}</strong>
-                  <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{n.date}</span>
-                </div>
-                <div style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.5rem" }}>
-                  Target: {n.branch}
-                </div>
-                <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
-                  {n.content}
-                </p>
+            {notices.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--text-muted)", background: "var(--surface)", border: "1px dashed var(--border)", borderRadius: "0.75rem" }}>
+                <p style={{ fontSize: "1.05rem", fontWeight: 600 }}>No campus bulletins published yet.</p>
+                <span>Click "+ Compose Notice" above to broadcast notifications to students and parents.</span>
               </div>
-            ))}
+            ) : (
+              notices.map((n) => (
+                <div
+                  key={n.id}
+                  style={{
+                    borderLeft: "4px solid var(--primary)",
+                    background: "var(--surface-mid)",
+                    borderTop: "1px solid var(--border)",
+                    borderRight: "1px solid var(--border)",
+                    borderBottom: "1px solid var(--border)",
+                    borderRadius: "0.5rem",
+                    padding: "1.25rem",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
+                    <strong style={{ fontSize: "1.05rem" }}>{n.title}</strong>
+                    <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{n.date}</span>
+                  </div>
+                  <div style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.5rem" }}>
+                    Target: {n.branch}
+                  </div>
+                  <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
+                    {n.content}
+                  </p>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}

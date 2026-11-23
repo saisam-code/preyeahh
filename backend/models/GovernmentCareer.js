@@ -137,7 +137,7 @@ const governmentJobSchema = new mongoose.Schema(
 
     // Examination & Selection Procedure
     examination: {
-      examName: { type: String, required: true, index: true },
+      examName: { type: String, required: true },
       conductingBody: {
         type: String,
         enum: [
