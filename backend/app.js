@@ -29,6 +29,7 @@ import googleAuthRoutes from "./routes/googleAuthRoutes.js";
 import careerIntelligenceRoutes from "./routes/careerIntelligenceRoutes.js";
 import plannerRoutes from "./routes/plannerRoutes.js";
 import studentDevelopmentRoutes from "./routes/studentDevelopmentRoutes.js";
+import extendedAuthRoutes from "./routes/extendedAuthRoutes.js";
 
 const app = express();
 
@@ -96,6 +97,7 @@ app.use("/api/guidance", guidanceRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/role-requests", roleRequestRoutes);
 app.use("/api/auth", googleAuthRoutes);
+app.use("/api/auth/extended", extendedAuthRoutes);
 
 // ── AI learning modules (student-facing) ──
 app.use("/api/chat", chatRoutes);

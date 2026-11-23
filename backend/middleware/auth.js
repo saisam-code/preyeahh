@@ -4,8 +4,16 @@ import ApiError from "../utils/ApiError.js";
 import Student from "../models/Student.js";
 import Guide from "../models/Guide.js";
 import Admin from "../models/Admin.js";
+import Parent from "../models/Parent.js";
+import { Institution } from "../models/Institution.js";
 
-const MODEL_BY_ROLE = { student: Student, guide: Guide, admin: Admin };
+const MODEL_BY_ROLE = {
+  student: Student,
+  guide: Guide,
+  admin: Admin,
+  parent: Parent,
+  institution: Institution,
+};
 
 /**
  * Verifies the Bearer access token and attaches req.user.

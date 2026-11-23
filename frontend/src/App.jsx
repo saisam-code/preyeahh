@@ -19,6 +19,9 @@ import Quiz from "./pages/Quiz.jsx";
 import Profile from "./pages/Profile.jsx";
 import PersonalCareerPlanner from "./pages/PersonalCareerPlanner.jsx";
 import CareerDiscovery from "./pages/CareerDiscovery.jsx";
+import GetStarted from "./pages/GetStarted.jsx";
+import StudentOnboarding from "./pages/StudentOnboarding.jsx";
+import InstitutionPortal from "./pages/InstitutionPortal.jsx";
 
 export default function App() {
   return (
@@ -27,10 +30,13 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
+        <Route path="/get-started" element={<GetStarted />} />
+        <Route path="/onboarding" element={<StudentOnboarding />} />
         <Route path="/roles" element={<Roles />} />
         <Route path="/beyond" element={<Beyond />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/discovery" element={<CareerDiscovery />} />
+        <Route path="/institution-portal" element={<InstitutionPortal />} />
         <Route path="/admin" element={<Admin />} />
 
         <Route path="/dashboard" element={<Navigate to="/" replace />} />

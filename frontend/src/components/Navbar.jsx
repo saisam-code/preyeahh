@@ -18,6 +18,7 @@ const NAV_ITEMS = [
   { to: "/", label: "Home", icon: FaHouse, exact: true },
   { to: "/discovery", label: "Discovery", icon: FaCompass },
   { to: "/planner", label: "Planner", icon: FaCalendarCheck, studentOnly: true },
+  { to: "/institution-portal", label: "Institutions", icon: FaGraduationCap },
   { to: "/admin", label: "Admin Panel", icon: FaGauge, requiresRole: ["admin"] },
   { to: "/roles", label: "Roles", icon: FaBriefcase, branchGated: true },
   { to: "/beyond", label: "Beyond", icon: FaCompass, branchGated: true },

@@ -20,25 +20,34 @@ const plannerTaskSchema = new mongoose.Schema(
         "Mentorship",
         "Personal activity",
         "Rest and breaks",
+        "Financial planning",
       ],
       default: "Academic study",
     },
     priority: {
       type: String,
-      enum: ["High", "Medium", "Low"],
+      enum: ["Critical", "High", "Medium", "Low"],
       default: "Medium",
+    },
+    status: {
+      type: String,
+      enum: ["Not Started", "In Progress", "Completed", "Postponed", "Skipped", "Cancelled"],
+      default: "Not Started",
     },
     careerRelevance: { type: String, default: "" },
     scheduledDate: { type: String, required: true }, // Format: YYYY-MM-DD
-    startTime: { type: String, default: "" }, // e.g. "07:00"
-    endTime: { type: String, default: "" },   // e.g. "07:45"
+    startTime: { type: String, default: "" },         // e.g. "07:00"
+    endTime: { type: String, default: "" },           // e.g. "07:45"
     durationMinutes: { type: Number, default: 45 },
     isCompleted: { type: Boolean, default: false },
     completedAt: { type: Date, default: null },
-    relatedCareerId: { type: mongoose.Schema.Types.ObjectId, ref: "Role", default: null },
+    relatedCareerGoal: { type: String, default: "" },
+    relatedSkill: { type: String, default: "" },
+    relatedProject: { type: String, default: "" },
     relatedMilestoneId: { type: String, default: null },
     isRescheduled: { type: Boolean, default: false },
     aiGenerated: { type: Boolean, default: false },
+    notes: { type: String, default: "" },
   },
   { timestamps: true }
 );
@@ -46,6 +55,7 @@ const plannerTaskSchema = new mongoose.Schema(
 const plannerMilestoneSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
+    description: { type: String, default: "" },
     timeHorizon: {
       type: String,
       enum: ["Next Milestone", "3 Months", "6 Months", "1 Year", "3 Years", "Long-term Target"],
@@ -60,41 +70,89 @@ const plannerMilestoneSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const plannerGoalSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    goalType: {
+      type: String,
+      enum: ["Primary", "Alternative", "Exploring", "Temporary", "Long-term"],
+      default: "Primary",
+    },
+    description: { type: String, default: "" },
+    targetTimeline: { type: String, default: "4 years" },
+    requiredSkills: { type: [String], default: [] },
+    status: {
+      type: String,
+      enum: ["Active", "Paused", "Archived"],
+      default: "Active",
+    },
+    progressPercent: { type: Number, default: 0, min: 0, max: 100 },
+  },
+  { timestamps: true }
+);
+
+const plannerExamDeadlineSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    category: {
+      type: String,
+      enum: ["University Exam", "Entrance Exam", "Competitive Exam", "Certification", "Assignment", "Scholarship", "Internship Deadline"],
+      default: "University Exam",
+    },
+    date: { type: Date, required: true },
+    priority: { type: String, enum: ["Critical", "High", "Medium", "Low"], default: "High" },
+    notes: { type: String, default: "" },
+    preparationTasksCreated: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
+const plannerReviewSchema = new mongoose.Schema(
+  {
+    periodType: { type: String, enum: ["Weekly", "Monthly"], default: "Weekly" },
+    periodDate: { type: Date, default: Date.now },
+    tasksCompleted: { type: Number, default: 0 },
+    tasksPostponed: { type: Number, default: 0 },
+    learningHours: { type: Number, default: 0 },
+    reflectionNotes: { type: String, default: "" },
+    aiFeedback: { type: String, default: "" },
+  },
+  { timestamps: true }
+);
+
 const personalCareerPlanSchema = new mongoose.Schema(
   {
     student: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Student",
       required: true,
+      unique: true,
       index: true,
     },
-    primaryCareer: { type: String, default: "" },
+    primaryCareer: { type: String, default: "Software Engineer" },
     alternativeCareer: { type: String, default: "" },
     exploringCareers: { type: [String], default: [] },
     weeklyHoursAvailable: { type: Number, default: 14 },
-    dailyStudyWindows: {
-      type: [
-        {
-          start: String,
-          end: String,
-          label: String,
-        },
-      ],
-      default: [],
-    },
+    preferredWorkingHours: { type: String, default: "Evening (18:00 - 21:00)" },
     academicStage: {
       type: String,
+      enum: [
+        "Class 6-8",
+        "Class 9-10",
+        "Class 11-12 / Intermediate",
+        "Diploma",
+        "Undergraduate",
+        "Postgraduate",
+        "PhD",
+        "Independent Learner / Career Switcher",
+      ],
       default: "Undergraduate",
     },
-    upcomingExams: [
-      {
-        name: String,
-        date: Date,
-        notes: String,
-      },
-    ],
+    goals: [plannerGoalSchema],
     milestones: [plannerMilestoneSchema],
     tasks: [plannerTaskSchema],
+    deadlines: [plannerExamDeadlineSchema],
+    reviews: [plannerReviewSchema],
     lastAiScheduleGeneratedAt: { type: Date, default: null },
   },
   { timestamps: true }

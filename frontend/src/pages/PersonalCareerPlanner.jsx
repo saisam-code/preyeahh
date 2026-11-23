@@ -8,9 +8,15 @@ import {
   FaCheck,
   FaTrash,
   FaCalendarDays,
+  FaBullseye,
   FaFlag,
-  FaArrowRight,
+  FaChartLine,
   FaRotate,
+  FaPen,
+  FaGraduationCap,
+  FaAward,
+  FaLayerGroup,
+  FaTriangleExclamation,
 } from "react-icons/fa6";
 import {
   getStudentPlan,
@@ -19,6 +25,9 @@ import {
   reschedulePlannerTask,
   deletePlannerTask,
   generateAdaptiveSchedule,
+  addCareerGoal,
+  addExamDeadline,
+  submitPlannerReview,
 } from "../services/careerPlannerService.js";
 
 const CATEGORIES = [
@@ -32,10 +41,19 @@ const CATEGORIES = [
   "Rest and breaks",
 ];
 
+const VIEWS = [
+  { id: "today", label: "Today" },
+  { id: "week", label: "Weekly Schedule" },
+  { id: "month", label: "Monthly Calendar" },
+  { id: "milestones", label: "Milestones & Timeline" },
+  { id: "goals", label: "Career Goals" },
+  { id: "analytics", label: "Planner Analytics" },
+];
+
 export default function PersonalCareerPlanner() {
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("today"); // today, week, milestones
+  const [activeTab, setActiveTab] = useState("today");
   const [generating, setGenerating] = useState(false);
 
   // New task form state
@@ -47,12 +65,24 @@ export default function PersonalCareerPlanner() {
   const [taskStart, setTaskStart] = useState("18:00");
   const [taskDuration, setTaskDuration] = useState(45);
 
+  // New Goal modal
+  const [showGoalModal, setShowGoalModal] = useState(false);
+  const [newGoalTitle, setNewGoalTitle] = useState("");
+  const [newGoalType, setNewGoalType] = useState("Alternative");
+  const [newGoalTimeline, setNewGoalTimeline] = useState("3 years");
+
+  // New Deadline modal
+  const [showDeadlineModal, setShowDeadlineModal] = useState(false);
+  const [deadlineTitle, setDeadlineTitle] = useState("");
+  const [deadlineCategory, setDeadlineCategory] = useState("University Exam");
+  const [deadlineDate, setDeadlineDate] = useState("");
+
   const loadPlan = async () => {
     try {
       setLoading(true);
       const data = await getStudentPlan();
       setPlan(data);
-    } catch (err) {
+    } catch {
       toast.error("Could not load career planner");
     } finally {
       setLoading(false);
@@ -70,7 +100,7 @@ export default function PersonalCareerPlanner() {
         ...prev,
         tasks: prev.tasks.map((t) => (t._id === taskId ? { ...t, isCompleted: updated.isCompleted } : t)),
       }));
-      toast.success(updated.isCompleted ? "Task completed! Great progress." : "Task marked incomplete");
+      toast.success(updated.isCompleted ? "Task completed!" : "Task marked incomplete");
     } catch {
       toast.error("Failed to update task");
     }
@@ -105,9 +135,49 @@ export default function PersonalCareerPlanner() {
       setPlan((prev) => ({ ...prev, tasks: [...prev.tasks, newTask] }));
       setShowAddModal(false);
       setTaskTitle("");
-      toast.success("Task added to schedule");
+      toast.success("Activity scheduled");
     } catch {
       toast.error("Error creating task");
+    }
+  };
+
+  const handleCreateGoal = async (e) => {
+    e.preventDefault();
+    if (!newGoalTitle.trim()) return toast.error("Goal title is required");
+    try {
+      const g = await addCareerGoal({
+        title: newGoalTitle.trim(),
+        goalType: newGoalType,
+        targetTimeline: newGoalTimeline,
+      });
+      setPlan((prev) => ({
+        ...prev,
+        goals: [...(prev.goals || []), g],
+        primaryCareer: newGoalType === "Primary" ? newGoalTitle.trim() : prev.primaryCareer,
+      }));
+      setShowGoalModal(false);
+      setNewGoalTitle("");
+      toast.success("Career goal added!");
+    } catch {
+      toast.error("Failed to add goal");
+    }
+  };
+
+  const handleCreateDeadline = async (e) => {
+    e.preventDefault();
+    if (!deadlineTitle.trim() || !deadlineDate) return toast.error("Title and date required");
+    try {
+      const d = await addExamDeadline({
+        title: deadlineTitle.trim(),
+        category: deadlineCategory,
+        date: deadlineDate,
+      });
+      setPlan((prev) => ({ ...prev, deadlines: [...(prev.deadlines || []), d] }));
+      setShowDeadlineModal(false);
+      setDeadlineTitle("");
+      toast.success("Deadline saved");
+    } catch {
+      toast.error("Failed to save deadline");
     }
   };
 
@@ -126,22 +196,23 @@ export default function PersonalCareerPlanner() {
 
   const todayStr = new Date().toISOString().split("T")[0];
   const todayTasks = plan?.tasks?.filter((t) => t.scheduledDate === todayStr) || [];
+  const completedToday = todayTasks.filter((t) => t.isCompleted).length;
   const upcomingTasks = plan?.tasks?.filter((t) => t.scheduledDate >= todayStr) || [];
 
   return (
-    <div className="planner-container" style={{ padding: "1.5rem 0", maxWidth: 1000, margin: "0 auto" }}>
-      {/* Header & Positioning */}
+    <div className="planner-container" style={{ padding: "1.5rem 0", maxWidth: 1100, margin: "0 auto" }}>
+      {/* ── HEADER ── */}
       <div style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
         <div>
-          <h2 style={{ fontSize: "1.6rem", fontWeight: 700, margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <h1 style={{ fontSize: "1.8rem", fontWeight: 800, margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <FaCalendarCheck style={{ color: "var(--primary)" }} /> Personal Career Planner
-          </h2>
+          </h1>
           <p style={{ color: "var(--text-muted)", margin: "0.35rem 0 0", fontSize: "0.95rem" }}>
             <em>"Know your destination. Know your next step. Know when to take it."</em>
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <button
             className="btn btn-outline btn-sm"
             onClick={handleGenerateAiSchedule}
@@ -157,56 +228,68 @@ export default function PersonalCareerPlanner() {
           >
             <FaPlus /> Add Task
           </button>
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={() => setShowGoalModal(true)}
+            style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}
+          >
+            <FaBullseye /> Add Goal
+          </button>
         </div>
       </div>
 
-      {/* Target career badge banner */}
+      {/* ── DESTINATION CARD ── */}
       {plan?.primaryCareer && (
-        <div style={{ background: "var(--primary-bg, rgba(26,86,219,0.08))", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1rem", marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.25rem 1.5rem", marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
           <div>
-            <span style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: 0.8, color: "var(--primary)", fontWeight: 700 }}>Active Target Goal</span>
-            <h4 style={{ margin: "0.15rem 0 0", fontSize: "1.1rem" }}>{plan.primaryCareer}</h4>
+            <div style={{ fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: 1, color: "var(--primary)", fontWeight: 700 }}>
+              Career Destination
+            </div>
+            <h3 style={{ margin: "0.2rem 0", fontSize: "1.3rem" }}>{plan.primaryCareer}</h3>
+            {plan.alternativeCareer && (
+              <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                Alternative: <strong>{plan.alternativeCareer}</strong>
+              </span>
+            )}
           </div>
-          <span className="branch-tag">{plan.academicStage || "Undergraduate"}</span>
+          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+            <div style={{ textAlign: "right" }}>
+              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Today's Tasks</div>
+              <div style={{ fontSize: "1.2rem", fontWeight: 700, color: completedToday === todayTasks.length && todayTasks.length > 0 ? "#10b981" : "inherit" }}>
+                {completedToday} / {todayTasks.length}
+              </div>
+            </div>
+            <span className="branch-tag">{plan.academicStage || "Undergraduate"}</span>
+          </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="tabs" style={{ marginBottom: "1.5rem" }}>
-        <button className={`tab ${activeTab === "today" ? "active" : ""}`} onClick={() => setActiveTab("today")}>
-          Today's Plan ({todayTasks.length})
-        </button>
-        <button className={`tab ${activeTab === "week" ? "active" : ""}`} onClick={() => setActiveTab("week")}>
-          All Scheduled ({upcomingTasks.length})
-        </button>
-        <button className={`tab ${activeTab === "milestones" ? "active" : ""}`} onClick={() => setActiveTab("milestones")}>
-          Milestones & Timeline
-        </button>
+      {/* ── NAVIGATION VIEWS ── */}
+      <div className="tabs" style={{ marginBottom: "1.5rem", overflowX: "auto" }}>
+        {VIEWS.map((v) => (
+          <button
+            key={v.id}
+            className={`tab ${activeTab === v.id ? "active" : ""}`}
+            onClick={() => setActiveTab(v.id)}
+            style={{ whiteSpace: "nowrap" }}
+          >
+            {v.label}
+          </button>
+        ))}
       </div>
 
-      {/* Tasks List */}
+      {/* ── TAB CONTENTS ── */}
       {loading ? (
         <div className="empty"><p>Loading planner...</p></div>
-      ) : activeTab === "milestones" ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {plan?.milestones?.map((m, idx) => (
-            <div key={idx} style={{ padding: "1rem 1.25rem", background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "0.75rem", display: "flex", alignItems: "center", gap: "1rem" }}>
-              <span style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--primary)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
-                {idx + 1}
-              </span>
-              <div style={{ flex: 1 }}>
-                <strong style={{ fontSize: "1rem" }}>{m.title}</strong>
-                <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>{m.timeHorizon}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
+      ) : activeTab === "today" || activeTab === "week" || activeTab === "month" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {(activeTab === "today" ? todayTasks : upcomingTasks).length === 0 ? (
-            <div className="empty" style={{ padding: "2.5rem 1rem", textAlign: "center" }}>
-              <FaCalendarDays style={{ fontSize: "2rem", color: "var(--text-muted)", marginBottom: "0.5rem" }} />
-              <p>No tasks scheduled yet. Click <strong>AI Adaptive Timetable</strong> or <strong>Add Task</strong> above.</p>
+            <div className="empty" style={{ padding: "3rem 1rem", textAlign: "center", background: "var(--card-bg, #fff)", borderRadius: "1rem", border: "1px solid var(--border)" }}>
+              <FaCalendarDays style={{ fontSize: "2.2rem", color: "var(--text-muted)", marginBottom: "0.75rem" }} />
+              <h4 style={{ margin: "0 0 0.25rem" }}>No tasks scheduled</h4>
+              <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.9rem" }}>
+                Click <strong>AI Adaptive Timetable</strong> to generate your weekly plan or <strong>Add Task</strong> above.
+              </p>
             </div>
           ) : (
             (activeTab === "today" ? todayTasks : upcomingTasks).map((t) => (
@@ -250,7 +333,7 @@ export default function PersonalCareerPlanner() {
                     <div style={{ display: "flex", gap: "0.5rem", fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
                       <span>{t.category}</span>
                       <span>•</span>
-                      <span><FaClock size={11} /> {t.startTime || "Anytime"} ({t.durationMinutes}m)</span>
+                      <span><FaClock size={11} /> {t.startTime || "18:00"} ({t.durationMinutes}m)</span>
                       <span>•</span>
                       <span>{t.scheduledDate}</span>
                     </div>
@@ -258,7 +341,7 @@ export default function PersonalCareerPlanner() {
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span style={{ fontSize: "0.75rem", padding: "0.2rem 0.5rem", borderRadius: 4, background: t.priority === "High" ? "rgba(239,68,68,0.15)" : "var(--badge-bg)", color: t.priority === "High" ? "var(--error)" : "inherit" }}>
+                  <span style={{ fontSize: "0.75rem", padding: "0.2rem 0.5rem", borderRadius: 4, background: t.priority === "High" || t.priority === "Critical" ? "rgba(239,68,68,0.15)" : "var(--badge-bg)", color: t.priority === "High" || t.priority === "Critical" ? "var(--error)" : "inherit" }}>
                     {t.priority}
                   </span>
                   <button
@@ -273,12 +356,68 @@ export default function PersonalCareerPlanner() {
             ))
           )}
         </div>
+      ) : activeTab === "milestones" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {plan?.milestones?.map((m, idx) => (
+            <div key={idx} style={{ padding: "1.25rem", background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "0.75rem", display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: "var(--primary)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0 }}>
+                {idx + 1}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <strong style={{ fontSize: "1.05rem" }}>{m.title}</strong>
+                  <span className="branch-tag">{m.timeHorizon}</span>
+                </div>
+                <p style={{ margin: "0.35rem 0 0", fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                  {m.description || "Foundational milestone contributing to primary career goal."}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : activeTab === "goals" ? (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem" }}>
+          {plan?.goals?.map((g, idx) => (
+            <div key={idx} style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "0.85rem", padding: "1.25rem" }}>
+              <span className="branch-tag" style={{ marginBottom: "0.5rem" }}>{g.goalType} Goal</span>
+              <h4 style={{ margin: "0.3rem 0", fontSize: "1.15rem" }}>{g.title}</h4>
+              <p style={{ margin: "0 0 1rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                {g.description || `Target career goal planned for ${g.targetTimeline}.`}
+              </p>
+              <div style={{ fontSize: "0.82rem", color: "var(--primary)", fontWeight: 600 }}>
+                Status: {g.status}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* Analytics View */
+        <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
+            <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Total Tasks Scheduled</div>
+              <div style={{ fontSize: "1.8rem", fontWeight: 800 }}>{plan?.tasks?.length || 0}</div>
+            </div>
+            <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Completed Tasks</div>
+              <div style={{ fontSize: "1.8rem", fontWeight: 800, color: "#10b981" }}>
+                {plan?.tasks?.filter((t) => t.isCompleted).length || 0}
+              </div>
+            </div>
+            <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
+              <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Milestones in Progress</div>
+              <div style={{ fontSize: "1.8rem", fontWeight: 800, color: "var(--primary)" }}>
+                {plan?.milestones?.length || 0}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
-      {/* Manual Task Modal */}
+      {/* ── ADD TASK MODAL ── */}
       {showAddModal && (
         <div className="modal-backdrop">
-          <div className="modal-card" style={{ maxWidth: 450, padding: "1.5rem" }}>
+          <div className="modal-card" style={{ maxWidth: 460, padding: "1.5rem" }}>
             <h3 style={{ margin: "0 0 1rem" }}>Add Activity to Schedule</h3>
             <form onSubmit={handleAddTask}>
               <div className="form-group">
@@ -325,6 +464,47 @@ export default function PersonalCareerPlanner() {
               <div className="modal-actions" style={{ marginTop: "1.25rem", display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
                 <button type="button" className="btn btn-outline" onClick={() => setShowAddModal(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Save Activity</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD GOAL MODAL ── */}
+      {showGoalModal && (
+        <div className="modal-backdrop">
+          <div className="modal-card" style={{ maxWidth: 450, padding: "1.5rem" }}>
+            <h3 style={{ margin: "0 0 1rem" }}>Add Career Goal</h3>
+            <form onSubmit={handleCreateGoal}>
+              <div className="form-group">
+                <label>Career Goal Title</label>
+                <input
+                  type="text"
+                  value={newGoalTitle}
+                  onChange={(e) => setNewGoalTitle(e.target.value)}
+                  placeholder="e.g. AI Research Scientist"
+                  required
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Goal Type</label>
+                  <select value={newGoalType} onChange={(e) => setNewGoalType(e.target.value)}>
+                    <option value="Primary">Primary</option>
+                    <option value="Alternative">Alternative</option>
+                    <option value="Exploring">Exploring</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Target Timeline</label>
+                  <input type="text" value={newGoalTimeline} onChange={(e) => setNewGoalTimeline(e.target.value)} placeholder="e.g. 3 years" />
+                </div>
+              </div>
+
+              <div className="modal-actions" style={{ marginTop: "1.25rem", display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+                <button type="button" className="btn btn-outline" onClick={() => setShowGoalModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Add Goal</button>
               </div>
             </form>
           </div>

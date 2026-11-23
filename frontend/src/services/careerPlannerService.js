@@ -18,6 +18,9 @@ export const togglePlannerTask = (taskId) => api.patch(`/planner/tasks/${taskId}
 export const reschedulePlannerTask = (taskId, payload) => api.patch(`/planner/tasks/${taskId}/reschedule`, payload).then((r) => r.data.data);
 export const deletePlannerTask = (taskId) => api.delete(`/planner/tasks/${taskId}`).then((r) => r.data);
 export const generateAdaptiveSchedule = (payload) => api.post("/planner/generate-schedule", payload).then((r) => r.data.data);
+export const addCareerGoal = (payload) => api.post("/planner/goals", payload).then((r) => r.data.data);
+export const addExamDeadline = (payload) => api.post("/planner/deadlines", payload).then((r) => r.data.data);
+export const submitPlannerReview = (payload) => api.post("/planner/reviews", payload).then((r) => r.data.data);
 
 // Student Development (Projects & Opportunities)
 export const getStudentProjects = () => api.get("/development/projects").then((r) => r.data.data);
@@ -26,3 +29,9 @@ export const listOpportunities = (params = {}) => api.get("/development/opportun
 export const listInstitutions = () => api.get("/development/institutions").then((r) => r.data.data);
 export const getStudentInstitutionStatus = () => api.get("/development/institution/status").then((r) => r.data.data);
 export const requestInstitutionAssociation = (payload) => api.post("/development/institution/associate", payload).then((r) => r.data.data);
+
+// Advanced Capabilities (Outcomes, ROI, Safety)
+export const calculateFinancialRoi = (payload) => api.post("/career-intelligence/financial-roi", payload).then((r) => r.data.data);
+export const getPublicOutcomes = () => api.get("/career-intelligence/outcomes").then((r) => r.data.data);
+export const recordCareerOutcome = (payload) => api.post("/career-intelligence/outcomes", payload).then((r) => r.data.data);
+export const submitReport = (payload) => api.post("/career-intelligence/report", payload).then((r) => r.data.data);

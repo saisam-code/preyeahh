@@ -7,7 +7,6 @@ import { callGroqChat } from "../services/groqService.js";
 
 /**
  * GET /api/planner
- * Get the student's active personal career plan or create a baseline default if none exists
  */
 export const getStudentPlan = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
@@ -15,20 +14,28 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
 
   if (!plan) {
     const student = await Student.findById(studentId);
+    const primary = student?.preferences?.targetRole || student?.preferences?.primaryCareerGoal || "Software Engineer";
+    const alt = student?.preferences?.alternativeCareerGoal || "";
+
     plan = await PersonalCareerPlan.create({
       student: studentId,
-      primaryCareer: student?.preferences?.targetRole || student?.preferences?.primaryCareerGoal || "Software Engineer",
-      alternativeCareer: student?.preferences?.alternativeCareerGoal || "",
-      exploringCareers: student?.preferences?.exploringCareers || [],
+      primaryCareer: primary,
+      alternativeCareer: alt,
       weeklyHoursAvailable: student?.preferences?.weeklyHoursAvailable || 14,
       academicStage: student?.preferences?.educationStage || "Undergraduate",
+      goals: [
+        { title: primary, goalType: "Primary", description: `Primary career target in ${primary}` },
+        ...(alt ? [{ title: alt, goalType: "Alternative", description: `Alternative pathway in ${alt}` }] : []),
+      ],
       milestones: [
-        { title: "Understand Fundamentals & Core Concepts", timeHorizon: "Next Milestone" },
-        { title: "Complete First Career Experiment / Mini Project", timeHorizon: "3 Months" },
-        { title: "Build Portfolio & Practice Intermediate Skills", timeHorizon: "6 Months" },
-        { title: "Apply for Internships / Competitions", timeHorizon: "1 Year" },
+        { title: "Core Fundamentals Mastery", timeHorizon: "Next Milestone", description: "Learn fundamentals and foundational concepts." },
+        { title: "First Practical Career Experiment", timeHorizon: "3 Months", description: "Build a small end-to-end prototype." },
+        { title: "Intermediate Skills & Portfolio Project", timeHorizon: "6 Months", description: "Demonstrate verified competence through practical projects." },
+        { title: "Target Internships & Competitions", timeHorizon: "1 Year", description: "Participate in real-world professional opportunities." },
+        { title: "Professional Readiness & Outcome", timeHorizon: "3 Years", description: "Attain high-impact employability and career outcome." },
       ],
       tasks: [],
+      deadlines: [],
     });
   }
 
@@ -37,7 +44,6 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
 
 /**
  * POST /api/planner/tasks
- * Add a manual task to the student's personal career planner
  */
 export const addTask = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
@@ -51,6 +57,8 @@ export const addTask = asyncHandler(async (req, res) => {
     startTime,
     endTime,
     durationMinutes,
+    relatedCareerGoal,
+    relatedSkill,
   } = req.body;
 
   if (!title || !scheduledDate) {
@@ -72,7 +80,10 @@ export const addTask = asyncHandler(async (req, res) => {
     startTime: startTime || "",
     endTime: endTime || "",
     durationMinutes: Number(durationMinutes) || 45,
+    relatedCareerGoal: relatedCareerGoal || plan.primaryCareer || "",
+    relatedSkill: relatedSkill || "",
     isCompleted: false,
+    status: "Planned",
     aiGenerated: false,
   };
 
@@ -85,7 +96,6 @@ export const addTask = asyncHandler(async (req, res) => {
 
 /**
  * PATCH /api/planner/tasks/:taskId/toggle
- * Toggle completion status of a planner task
  */
 export const toggleTaskCompletion = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
@@ -98,6 +108,7 @@ export const toggleTaskCompletion = asyncHandler(async (req, res) => {
   if (!task) throw ApiError.notFound("Task not found");
 
   task.isCompleted = !task.isCompleted;
+  task.status = task.isCompleted ? "Completed" : "In Progress";
   task.completedAt = task.isCompleted ? new Date() : null;
   await plan.save();
 
@@ -106,7 +117,6 @@ export const toggleTaskCompletion = asyncHandler(async (req, res) => {
 
 /**
  * PATCH /api/planner/tasks/:taskId/reschedule
- * Intelligently reschedule a task without marking as failure
  */
 export const rescheduleTask = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
@@ -125,6 +135,7 @@ export const rescheduleTask = asyncHandler(async (req, res) => {
   if (startTime) task.startTime = startTime;
   if (endTime) task.endTime = endTime;
   task.isRescheduled = true;
+  task.status = "In Progress";
   await plan.save();
 
   res.status(200).json(new ApiResponse(200, task, "Task rescheduled successfully"));
@@ -147,32 +158,103 @@ export const deleteTask = asyncHandler(async (req, res) => {
 });
 
 /**
+ * POST /api/planner/goals
+ */
+export const addCareerGoal = asyncHandler(async (req, res) => {
+  const { title, goalType, description, targetTimeline } = req.body;
+  if (!title) throw ApiError.badRequest("Goal title is required");
+
+  const plan = await PersonalCareerPlan.findOne({ student: req.user.id });
+  if (!plan) throw ApiError.notFound("Plan not found");
+
+  if (goalType === "Primary") {
+    plan.primaryCareer = title.trim();
+  } else if (goalType === "Alternative") {
+    plan.alternativeCareer = title.trim();
+  }
+
+  plan.goals.push({
+    title: title.trim(),
+    goalType: goalType || "Alternative",
+    description: description || "",
+    targetTimeline: targetTimeline || "3 years",
+    status: "Active",
+  });
+
+  await plan.save();
+  res.status(201).json(new ApiResponse(201, plan.goals[plan.goals.length - 1], "Career goal added"));
+});
+
+/**
+ * POST /api/planner/deadlines
+ */
+export const addExamDeadline = asyncHandler(async (req, res) => {
+  const { title, category, date, priority, notes } = req.body;
+  if (!title || !date) throw ApiError.badRequest("Title and date are required");
+
+  const plan = await PersonalCareerPlan.findOne({ student: req.user.id });
+  if (!plan) throw ApiError.notFound("Plan not found");
+
+  plan.deadlines.push({
+    title: title.trim(),
+    category: category || "University Exam",
+    date: new Date(date),
+    priority: priority || "High",
+    notes: notes || "",
+  });
+
+  await plan.save();
+  res.status(201).json(new ApiResponse(201, plan.deadlines[plan.deadlines.length - 1], "Deadline registered"));
+});
+
+/**
+ * POST /api/planner/reviews
+ */
+export const submitReview = asyncHandler(async (req, res) => {
+  const { periodType, tasksCompleted, tasksPostponed, learningHours, reflectionNotes } = req.body;
+
+  const plan = await PersonalCareerPlan.findOne({ student: req.user.id });
+  if (!plan) throw ApiError.notFound("Plan not found");
+
+  const review = {
+    periodType: periodType || "Weekly",
+    periodDate: new Date(),
+    tasksCompleted: Number(tasksCompleted) || 0,
+    tasksPostponed: Number(tasksPostponed) || 0,
+    learningHours: Number(learningHours) || 0,
+    reflectionNotes: reflectionNotes || "",
+    aiFeedback: "Keep up the steady, consistent momentum! Prioritize depth in your practical builds.",
+  };
+
+  plan.reviews.push(review);
+  await plan.save();
+
+  res.status(201).json(new ApiResponse(201, review, "Review saved"));
+});
+
+/**
  * POST /api/planner/generate-schedule
- * AI timetable generation connecting long-term career goal with balanced daily routine
  */
 export const generateAdaptiveSchedule = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
-  const { constraints = "", availableHoursPerDay = 2, targetDateRange = "week" } = req.body;
+  const { constraints = "", availableHoursPerDay = 2 } = req.body;
 
   const plan = await PersonalCareerPlan.findOne({ student: studentId });
   const student = await Student.findById(studentId);
 
-  const careerGoal = plan?.primaryCareer || student?.preferences?.targetRole || "Career Exploration";
-  const prompt = `Generate a realistic 7-day balanced career action plan for a student pursuing: "${careerGoal}".
+  const careerGoal = plan?.primaryCareer || student?.preferences?.targetRole || "Software Engineer";
+  const prompt = `Generate a 7-day balanced career plan for a student pursuing: "${careerGoal}".
 Academic stage: ${plan?.academicStage || "College/School"}.
-Available daily hours for prep/skills: ${availableHoursPerDay} hrs.
-Student constraints/context: "${constraints || "Standard academic routine with evening study windows"}".
-Rules:
-- Include academic study, skill practice, career research/experiment, and breaks.
-- Never overload or burn out the student.
-- Format strictly as a valid JSON array of objects with keys:
-  [{"title":"...", "category":"Academic study|Skill development|Career research|Career experiment|Practical project|Exam preparation|Rest and breaks", "priority":"High|Medium|Low", "durationMinutes":45, "dayOffset":0, "startTime":"18:00", "endTime":"18:45", "careerRelevance":"..."}]
-where dayOffset is 0 for today, 1 for tomorrow, up to 6.`;
+Available daily hours: ${availableHoursPerDay} hrs.
+Student constraints: "${constraints || "Evening study routine"}".
+Format strictly as a valid JSON array:
+[{"title":"...", "category":"Academic study|Skill development|Career research|Career experiment|Practical project|Exam preparation|Rest and breaks", "priority":"High|Medium|Low", "durationMinutes":45, "dayOffset":0, "startTime":"18:00", "endTime":"18:45", "careerRelevance":"..."}]
+dayOffset is 0 to 6.`;
 
   try {
     const rawAi = await callGroqChat({
       messages: [
-        { role: "system", content: "You are Preyeahh's Personal Career Planner AI. Return strictly valid JSON." },
+        { role: "system", content: "You are Preyeahh's Personal Career Planner AI. Return strictly valid JSON array." },
         { role: "user", content: prompt },
       ],
       temperature: 0.3,
@@ -180,9 +262,7 @@ where dayOffset is 0 for today, 1 for tomorrow, up to 6.`;
     });
 
     const jsonMatch = rawAi.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      throw new Error("Invalid format from AI");
-    }
+    if (!jsonMatch) throw new Error("Invalid format from AI");
     const scheduleItems = JSON.parse(jsonMatch[0]);
 
     const today = new Date();

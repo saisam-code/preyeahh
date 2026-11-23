@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 /**
  * Institution Model (Schools, Colleges, Universities, Training & Placement Cells)
@@ -15,11 +16,52 @@ const institutionSchema = new mongoose.Schema(
     location: { type: String, default: "" },
     website: { type: String, default: "" },
     associationCode: { type: String, unique: true, sparse: true, uppercase: true }, // Code students use to join
+    contactEmail: { type: String, required: true, lowercase: true, trim: true },
+    password: { type: String, select: false }, // For Placement Cell / Institution Admin login
+    contactPerson: { type: String, default: "" },
+    designation: { type: String, default: "Placement Officer / Principal" },
+    phone: { type: String, default: "" },
+    studentCountApprox: { type: Number, default: 0 },
+    status: {
+      type: String,
+      enum: ["PENDING", "UNDER_REVIEW", "APPROVED", "REJECTED", "SUSPENDED"],
+      default: "APPROVED",
+      index: true,
+    },
     isActive: { type: Boolean, default: true },
-    contactEmail: { type: String, default: "" },
+    role: { type: String, default: "institution" },
   },
   { timestamps: true }
 );
+
+institutionSchema.pre("save", async function (next) {
+  if (!this.isModified("password") || !this.password) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+institutionSchema.methods.comparePassword = function (candidate) {
+  if (!this.password) return Promise.resolve(false);
+  return bcrypt.compare(candidate, this.password);
+};
+
+institutionSchema.methods.toSafeJSON = function () {
+  return {
+    id: this._id,
+    name: this.name,
+    code: this.code,
+    category: this.category,
+    location: this.location,
+    website: this.website,
+    contactEmail: this.contactEmail,
+    contactPerson: this.contactPerson,
+    designation: this.designation,
+    associationCode: this.associationCode,
+    status: this.status,
+    role: "institution",
+    createdAt: this.createdAt,
+  };
+};
 
 /**
  * Student Institution Membership
