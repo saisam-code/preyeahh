@@ -21,10 +21,15 @@ const guidanceSchema = new mongoose.Schema(
       type: String,
       required: [true, "Branch is required"],
       trim: true,
-      uppercase: true,
-      // "All" (not uppercased away) is a valid sentinel meaning global —
-      // matches beyond/guidance semantics in the original schema/app.js.
-      set: (v) => (v?.toUpperCase() === "ALL" ? "All" : v?.toUpperCase()),
+      // NOTE: do NOT use `uppercase: true` here — it runs after the setter and
+      // would turn the "All" sentinel back to "ALL", breaking branch-wide queries.
+      // Normalisation is handled entirely by the setter below.
+      set: (v) => {
+        if (!v) return v;
+        const upper = v.toUpperCase();
+        // "All" is the special sentinel meaning "every branch"
+        return upper === "ALL" ? "All" : upper;
+      },
     },
     icon: { type: String, default: "*" },
     points: {

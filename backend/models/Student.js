@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { EDUCATION_STAGES, normalizeEducationStage } from "../constants/educationStages.js";
 
 const EMAIL_REGEX = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
 
@@ -21,17 +22,8 @@ const preferencesSchema = new mongoose.Schema(
   {
     educationStage: {
       type: String,
-      enum: [
-        "Class 6-8",
-        "Class 9-10",
-        "Intermediate / Class 11-12",
-        "Diploma",
-        "Undergraduate",
-        "Postgraduate",
-        "PhD",
-        "Independent Learner / Career Switcher",
-        "",
-      ],
+      enum: [...EDUCATION_STAGES, ""],
+      set: (v) => normalizeEducationStage(v),
       default: "Undergraduate",
     },
     academicStream: { type: String, default: "" }, // MPC, BiPC, CEC, MEC, etc.

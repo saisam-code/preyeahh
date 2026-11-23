@@ -1,6 +1,7 @@
 import { CareerOutcome, UserReport, UserBlock, VerificationSubmission } from "../models/SafetyAndOutcomes.js";
 import Role from "../models/Role.js";
 import Student from "../models/Student.js";
+import Guide from "../models/Guide.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -94,12 +95,26 @@ export const submitReport = asyncHandler(async (req, res) => {
   const { reportedUserId, reason, details } = req.body;
   if (!reportedUserId || !reason) throw ApiError.badRequest("Reported user ID and reason are required");
 
+  // 1.11 — Self-report guard
+  if (String(reportedUserId) === String(req.user.id)) {
+    throw ApiError.badRequest("You cannot report yourself");
+  }
+
+  // 1.11 — Verify the target user actually exists (Student or Guide)
+  const targetExists = await Student.exists({ _id: reportedUserId }) || await Guide.exists({ _id: reportedUserId });
+  if (!targetExists) throw ApiError.notFound("Reported user not found");
+
+  const ALLOWED_REASONS = ["spam", "harassment", "misinformation", "inappropriate_content", "other"];
+  if (!ALLOWED_REASONS.includes(reason)) {
+    throw ApiError.badRequest(`reason must be one of: ${ALLOWED_REASONS.join(", ")}`);
+  }
+
   const report = await UserReport.create({
     reporter: req.user.id,
     reporterModel: req.user.role === "guide" ? "Guide" : "Student",
     reportedUser: reportedUserId,
     reason,
-    details: details || "",
+    details: typeof details === "string" ? details.slice(0, 1000) : "",
     status: "PENDING",
   });
 

@@ -17,26 +17,32 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
     const primary = student?.preferences?.targetRole || student?.preferences?.primaryCareerGoal || "";
     const alt = student?.preferences?.alternativeCareerGoal || "";
 
-    plan = await PersonalCareerPlan.create({
-      student: studentId,
-      primaryCareer: primary,
-      alternativeCareer: alt,
-      weeklyHoursAvailable: student?.preferences?.weeklyHoursAvailable || 14,
-      academicStage: student?.preferences?.educationStage || "Undergraduate",
-      goals: [
-        ...(primary ? [{ title: primary, goalType: "Primary", description: `Primary career target in ${primary}` }] : []),
-        ...(alt ? [{ title: alt, goalType: "Alternative", description: `Alternative pathway in ${alt}` }] : []),
-      ],
-      milestones: [
-        { title: "Core Fundamentals Mastery", timeHorizon: "Next Milestone", description: "Learn fundamentals and foundational concepts." },
-        { title: "First Practical Career Experiment", timeHorizon: "3 Months", description: "Build a small end-to-end prototype." },
-        { title: "Intermediate Skills & Portfolio Project", timeHorizon: "6 Months", description: "Demonstrate verified competence through practical projects." },
-        { title: "Target Internships & Competitions", timeHorizon: "1 Year", description: "Participate in real-world professional opportunities." },
-        { title: "Professional Readiness & Outcome", timeHorizon: "3 Years", description: "Attain high-impact employability and career outcome." },
-      ],
-      tasks: [],
-      deadlines: [],
-    });
+    plan = await PersonalCareerPlan.findOneAndUpdate(
+      { student: studentId },
+      {
+        $setOnInsert: {
+          student: studentId,
+          primaryCareer: primary,
+          alternativeCareer: alt,
+          weeklyHoursAvailable: student?.preferences?.weeklyHoursAvailable || 14,
+          academicStage: student?.preferences?.educationStage || "Undergraduate",
+          goals: [
+            ...(primary ? [{ title: primary, goalType: "Primary", description: `Primary career target in ${primary}` }] : []),
+            ...(alt ? [{ title: alt, goalType: "Alternative", description: `Alternative pathway in ${alt}` }] : []),
+          ],
+          milestones: [
+            { title: "Core Fundamentals Mastery", timeHorizon: "Next Milestone", description: "Learn fundamentals and foundational concepts." },
+            { title: "First Practical Career Experiment", timeHorizon: "3 Months", description: "Build a small end-to-end prototype." },
+            { title: "Intermediate Skills & Portfolio Project", timeHorizon: "6 Months", description: "Demonstrate verified competence through practical projects." },
+            { title: "Target Internships & Competitions", timeHorizon: "1 Year", description: "Participate in real-world professional opportunities." },
+            { title: "Professional Readiness & Outcome", timeHorizon: "3 Years", description: "Attain high-impact employability and career outcome." },
+          ],
+          tasks: [],
+          deadlines: [],
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
   }
 
   res.status(200).json(new ApiResponse(200, plan, "Personal Career Plan fetched"));
@@ -83,7 +89,7 @@ export const addTask = asyncHandler(async (req, res) => {
     relatedCareerGoal: relatedCareerGoal || plan.primaryCareer || "",
     relatedSkill: relatedSkill || "",
     isCompleted: false,
-    status: "Planned",
+    status: "Not Started", // must match enum in PersonalCareerPlan.js
     aiGenerated: false,
   };
 
@@ -237,56 +243,112 @@ export const submitReview = asyncHandler(async (req, res) => {
  */
 export const generateAdaptiveSchedule = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
-  const { constraints = "", availableHoursPerDay = 2 } = req.body;
+  const { constraints = "", availableHoursPerDay = 2, timezone = "Asia/Kolkata" } = req.body;
 
   const plan = await PersonalCareerPlan.findOne({ student: studentId });
+  if (!plan) throw ApiError.notFound("Personal career plan not found. Please initialize plan first.");
   const student = await Student.findById(studentId);
 
-  const careerGoal = plan?.primaryCareer || student?.preferences?.targetRole || "General career development";
-  const prompt = `Generate a 7-day balanced career plan for a student pursuing: "${careerGoal}".
-Academic stage: ${plan?.academicStage || "College/School"}.
-Available daily hours: ${availableHoursPerDay} hrs.
-Student constraints: "${constraints || "Evening study routine"}".
-Format strictly as a valid JSON array:
-[{"title":"...", "category":"Academic study|Skill development|Career research|Career experiment|Practical project|Exam preparation|Rest and breaks", "priority":"High|Medium|Low", "durationMinutes":45, "dayOffset":0, "startTime":"18:00", "endTime":"18:45", "careerRelevance":"..."}]
-dayOffset is 0 to 6.`;
+  const careerGoal = plan.primaryCareer || student?.preferences?.targetRole || "General career development";
+
+  // Check upcoming exam deadlines in the next 14 days to adapt study load
+  const upcomingDeadlines = (plan.deadlines || []).filter((d) => {
+    const diffDays = (new Date(d.date) - new Date()) / (1000 * 60 * 60 * 24);
+    return diffDays >= 0 && diffDays <= 14;
+  });
+
+  const deadlineContext = upcomingDeadlines.length > 0
+    ? `Upcoming exam/deadlines in next 14 days: ${upcomingDeadlines.map((d) => `${d.title} on ${d.date}`).join(", ")}. Dedicate at least 50% of available time to exam preparation and reduce excessive cognitive load.`
+    : "No immediate exams in the next 14 days. Emphasize balanced skill acquisition and practical building.";
+
+  const prompt = `Generate a 7-day balanced career study plan for a student pursuing: "${careerGoal}".
+Academic stage: ${plan.academicStage || "Undergraduate"}.
+Available daily hours: ${Math.min(Math.max(Number(availableHoursPerDay) || 2, 1), 8)} hrs/day.
+Deadlines: ${deadlineContext}
+Student constraints: "${constraints || "Standard daily study routine"}".
+
+Categories MUST be one of: "Academic study", "Skill development", "Career research", "Career experiment", "Practical project", "Exam preparation", "Rest and breaks".
+Priority MUST be one of: "Critical", "High", "Medium", "Low".
+Format strictly as a valid JSON array of 7 to 14 task objects:
+[{"title":"...", "category":"...", "priority":"...", "durationMinutes":45, "dayOffset":0, "startTime":"18:00", "endTime":"18:45", "careerRelevance":"..."}]
+dayOffset is integer 0 to 6.`;
 
   try {
     const rawAi = await chatCompletion(
       [
-        { role: "system", content: "You are Preyeahh's Personal Career Planner AI. Return strictly valid JSON array." },
+        { role: "system", content: "You are Preyeahh's Personal Career Planner AI. Return strictly valid JSON array without markdown formatting." },
         { role: "user", content: prompt },
       ],
-      { temperature: 0.3, maxTokens: 1200 },
+      { temperature: 0.3, maxTokens: 1400 },
     );
 
     const jsonMatch = rawAi.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error("Invalid format from AI");
+    if (!jsonMatch) throw new Error("Invalid format received from AI");
     const scheduleItems = JSON.parse(jsonMatch[0]);
 
-    const today = new Date();
-    const newTasks = scheduleItems.map((item) => {
-      const taskDate = new Date(today);
-      taskDate.setDate(today.getDate() + (Number(item.dayOffset) || 0));
-      const yyyy = taskDate.getFullYear();
-      const mm = String(taskDate.getMonth() + 1).padStart(2, "0");
-      const dd = String(taskDate.getDate()).padStart(2, "0");
+    const ALLOWED_CATEGORIES = new Set([
+      "Academic study",
+      "Skill development",
+      "Career research",
+      "Career experiment",
+      "Practical project",
+      "Exam preparation",
+      "Rest and breaks",
+    ]);
+    const ALLOWED_PRIORITIES = new Set(["Critical", "High", "Medium", "Low"]);
 
-      return {
-        title: item.title,
+    // Calculate dates in user's timezone (default IST)
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" });
+    const todayStr = formatter.format(now); // YYYY-MM-DD
+
+    const dateList = [];
+    const baseDate = new Date(`${todayStr}T00:00:00Z`);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(baseDate);
+      d.setUTCDate(baseDate.getUTCDate() + i);
+      dateList.push(d.toISOString().slice(0, 10));
+    }
+
+    const maxDailyMinutes = (Number(availableHoursPerDay) || 2) * 60;
+    const dailyMinutesAccumulator = {};
+
+    const newTasks = [];
+    for (const item of scheduleItems.slice(0, 14)) {
+      const offset = Math.min(Math.max(Number(item.dayOffset) || 0, 0), 6);
+      const scheduledDate = dateList[offset];
+
+      const duration = Math.min(Math.max(Number(item.durationMinutes) || 45, 15), 180);
+      const currentDayTotal = dailyMinutesAccumulator[scheduledDate] || 0;
+      if (currentDayTotal + duration > maxDailyMinutes * 1.25) {
+        continue; // Prevent overloading the day past 125% of allocated hours
+      }
+      dailyMinutesAccumulator[scheduledDate] = currentDayTotal + duration;
+
+      const category = ALLOWED_CATEGORIES.has(item.category) ? item.category : "Skill development";
+      const priority = ALLOWED_PRIORITIES.has(item.priority) ? item.priority : "Medium";
+      const startTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(item.startTime) ? item.startTime : "18:00";
+      const endTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(item.endTime) ? item.endTime : "18:45";
+
+      newTasks.push({
+        title: String(item.title || "Career Preparation Session").slice(0, 120),
         description: `Career activity aligned with ${careerGoal}`,
-        category: item.category || "Skill development",
-        priority: item.priority || "Medium",
+        category,
+        priority,
         careerRelevance: item.careerRelevance || `Builds competence in ${careerGoal}`,
-        scheduledDate: `${yyyy}-${mm}-${dd}`,
-        startTime: item.startTime || "18:00",
-        endTime: item.endTime || "18:45",
-        durationMinutes: Number(item.durationMinutes) || 45,
+        scheduledDate,
+        startTime,
+        endTime,
+        durationMinutes: duration,
         isCompleted: false,
+        status: "Not Started",
         aiGenerated: true,
-      };
-    });
+      });
+    }
 
+    // Deduplicate / replace previous uncompleted AI tasks in this generated 7-day window
+    const generatedDatesSet = new Set(dateList);
+    plan.tasks = plan.tasks.filter((t) => !(t.aiGenerated && !t.isCompleted && generatedDatesSet.has(t.scheduledDate)));
     plan.tasks.push(...newTasks);
     plan.lastAiScheduleGeneratedAt = new Date();
     await plan.save();

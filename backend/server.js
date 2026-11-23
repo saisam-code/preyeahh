@@ -1,10 +1,13 @@
 import "dotenv/config";
 
+import { validateEnv } from "./config/env.js";
 import app from "./app.js";
 import connectDB from "./config/db.js";
 import logger from "./utils/logger.js";
 import { verifyEmailTransport } from "./utils/sendEmail.js";
 import "./models/index.js"; // registers every schema before the app starts handling requests
+
+validateEnv();
 
 const PORT = process.env.PORT || 5000;
 

@@ -3,6 +3,7 @@ import { Institution, InstitutionMembership } from "../models/Institution.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import escapeRegex from "../utils/escapeRegex.js";
 
 /**
  * PROJECTS & PORTFOLIO
@@ -47,7 +48,7 @@ export const listOpportunities = asyncHandler(async (req, res) => {
   if (category && category !== "all") filter.category = category;
   if (stage && stage !== "all") filter.educationLevels = stage;
   if (search) {
-    const re = new RegExp(search.trim(), "i");
+    const re = new RegExp(escapeRegex(search.trim()), "i");
     filter.$or = [{ title: re }, { description: re }, { eligibility: re }];
   }
 

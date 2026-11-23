@@ -61,7 +61,11 @@ import Guide from "../models/Guide.js";
 export async function initiateGoogleAuth(req, res) {
   try {
     const client = getOAuthClient();
-    const role = req.query.role === "guide" ? "guide" : "student";
+    const requestedRole = req.query.role || "student";
+    if (requestedRole && !["student", "guide"].includes(requestedRole)) {
+      return res.redirect(`${getClientUrl()}/login?google_error=role_not_supported`);
+    }
+    const role = requestedRole === "guide" ? "guide" : "student";
 
     // Generate a cryptographically random state value to prevent CSRF
     const state = crypto.randomBytes(32).toString("hex") + "__" + role;
@@ -70,7 +74,6 @@ export async function initiateGoogleAuth(req, res) {
     res.cookie(STATE_COOKIE, state, stateCookieOptions());
 
     const authUrl = client.generateAuthUrl({
-      access_type: "offline",
       scope: ["openid", "email", "profile"],
       state,
       prompt: "select_account",
@@ -79,7 +82,7 @@ export async function initiateGoogleAuth(req, res) {
     res.redirect(authUrl);
   } catch (err) {
     logger.error("[google-auth] Failed to initiate OAuth:", err.message);
-    res.redirect(`${getClientUrl()}/?google_error=config`);
+    res.redirect(`${getClientUrl()}/login?google_error=config`);
   }
 }
 
@@ -94,7 +97,7 @@ export async function handleGoogleCallback(req, res) {
     // ── 1. User denied access or Google returned an error ────────────────────
     if (oauthError) {
       logger.warn("[google-auth] OAuth error from Google:", oauthError);
-      return res.redirect(`${clientUrl}/?google_error=access_denied`);
+      return res.redirect(`${clientUrl}/login?google_error=access_denied`);
     }
 
     // ── 2. Validate CSRF state ────────────────────────────────────────────────
@@ -103,13 +106,13 @@ export async function handleGoogleCallback(req, res) {
 
     if (!storedState || !returnedState || storedState !== returnedState) {
       logger.warn("[google-auth] State mismatch — possible CSRF");
-      return res.redirect(`${clientUrl}/?google_error=state_mismatch`);
+      return res.redirect(`${clientUrl}/login?google_error=state_mismatch`);
     }
     
     const role = returnedState.split("__")[1] || "student";
 
     if (!code) {
-      return res.redirect(`${clientUrl}/?google_error=no_code`);
+      return res.redirect(`${clientUrl}/login?google_error=no_code`);
     }
 
     // ── 3. Exchange authorization code for tokens ─────────────────────────────
@@ -120,7 +123,7 @@ export async function handleGoogleCallback(req, res) {
       tokens = response.tokens;
     } catch (err) {
       logger.error("[google-auth] Token exchange failed:", err.message);
-      return res.redirect(`${clientUrl}/?google_error=token_exchange`);
+      return res.redirect(`${clientUrl}/login?google_error=token_exchange`);
     }
 
     // ── 4. Verify and decode the Google ID token ──────────────────────────────
@@ -133,7 +136,7 @@ export async function handleGoogleCallback(req, res) {
       payload = ticket.getPayload();
     } catch (err) {
       logger.error("[google-auth] ID token verification failed:", err.message);
-      return res.redirect(`${clientUrl}/?google_error=token_invalid`);
+      return res.redirect(`${clientUrl}/login?google_error=token_invalid`);
     }
 
     // ── 5. Validate the Google identity we received ───────────────────────────
@@ -141,17 +144,17 @@ export async function handleGoogleCallback(req, res) {
 
     if (!email_verified) {
       logger.warn("[google-auth] Google email not verified for:", email);
-      return res.redirect(`${clientUrl}/?google_error=email_not_verified`);
+      return res.redirect(`${clientUrl}/login?google_error=email_not_verified`);
     }
 
     if (!EMAIL_REGEX.test(email)) {
       logger.warn("[google-auth] Disallowed email domain:", email);
-      return res.redirect(`${clientUrl}/?google_error=domain_not_allowed`);
+      return res.redirect(`${clientUrl}/login?google_error=domain_not_allowed`);
     }
     
     if (role === "guide" && !email.toLowerCase().endsWith("@nbkrist.org")) {
       logger.warn("[google-auth] Disallowed email domain for guide:", email);
-      return res.redirect(`${clientUrl}/?google_error=domain_not_allowed`);
+      return res.redirect(`${clientUrl}/login?google_error=domain_not_allowed`);
     }
 
     // ── 6. Handle Guide Role ──────────────────────────────────────────────────
@@ -163,12 +166,22 @@ export async function handleGoogleCallback(req, res) {
         if (guide) {
           guide.googleId = googleId;
           if (!guide.isVerified) guide.isVerified = true;
+          // 1.1 — Remove password hash so the account can't be used with the old password
+          if (guide.password) {
+            guide.password = undefined;
+            logger.info("[google-auth] Wiped password hash after Google link for guide:", email);
+          }
           await guide.save({ validateBeforeSave: false });
           logger.info("[google-auth] Linked Google identity to existing guide:", email);
         } else {
           logger.warn("[google-auth] Guide account not found for:", email);
-          return res.redirect(`${clientUrl}/?google_error=not_found`);
+          return res.redirect(`${clientUrl}/login?google_error=not_found`);
         }
+      }
+
+      if (guide.status !== "approved") {
+        logger.warn("[google-auth] Guide account pending approval:", email);
+        return res.redirect(`${clientUrl}/login?google_error=guide_pending_approval`);
       }
       
       const accessToken = issueTokens(res, guide, "guide");
@@ -184,6 +197,11 @@ export async function handleGoogleCallback(req, res) {
       if (student) {
         student.googleId = googleId;
         if (!student.isVerified) student.isVerified = true;
+        // 1.1 — Remove password hash so the account can't be used with the old password after Google link
+        if (student.password) {
+          student.password = undefined;
+          logger.info("[google-auth] Wiped password hash after Google link for student:", email);
+        }
         await student.save({ validateBeforeSave: false });
         logger.info("[google-auth] Linked Google identity to existing student:", email);
       }
@@ -221,6 +239,6 @@ export async function handleGoogleCallback(req, res) {
     return res.redirect(`${clientUrl}/google-callback#token=${accessToken}&role=student`);
   } catch (err) {
     logger.error("[google-auth] Unexpected error in callback:", err.message);
-    return res.redirect(`${getClientUrl()}/?google_error=server_error`);
+    return res.redirect(`${getClientUrl()}/login?google_error=server_error`);
   }
 }

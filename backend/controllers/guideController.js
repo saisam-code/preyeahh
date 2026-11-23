@@ -31,10 +31,13 @@ export const registerGuide = asyncHandler(async (req, res) => {
     logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
   }
 
-  await sendEmail({
+  // Send verification email asynchronously so SMTP downtime does not abort registration
+  sendEmail({
     to: guide.email,
     subject: "Verify your Preyeahh guide account",
     html: `<p>Hi ${guide.name},</p><p>Verify your email first, then the admin will review your registration:</p><p><a href="${verifyUrl}">Verify Email</a></p>`,
+  }).catch((err) => {
+    logger.error(`[email] Verification email delivery failed for ${guide.email}: ${err.message}`);
   });
 
   res.status(201).json(

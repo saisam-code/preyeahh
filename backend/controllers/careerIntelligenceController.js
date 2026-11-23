@@ -1,9 +1,11 @@
 import Role from "../models/Role.js";
 import { StudentExperiment, CareerComparison, StudentProject, Opportunity } from "../models/StudentDevelopment.js";
+import PersonalCareerPlan from "../models/PersonalCareerPlan.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { chatCompletion } from "../services/groqService.js";
+import escapeRegex from "../utils/escapeRegex.js";
 
 /**
  * GET /api/career-intelligence/roles
@@ -19,7 +21,7 @@ export const discoverCareers = asyncHandler(async (req, res) => {
   if (branch && branch !== "all") filter.branch = branch.toUpperCase();
   if (stage && stage !== "all") filter.educationStages = stage;
   if (search) {
-    const re = new RegExp(search.trim(), "i");
+    const re = new RegExp(escapeRegex(search.trim()), "i");
     filter.$or = [{ title: re }, { description: re }, { domain: re }];
   }
 
@@ -142,7 +144,31 @@ export const startExperiment = asyncHandler(async (req, res) => {
     status: "in_progress",
   });
 
-  res.status(201).json(new ApiResponse(201, experiment, "Career experiment started"));
+  // Wire to student's PersonalCareerPlan so it appears in their active daily/weekly schedule
+  try {
+    const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
+    await PersonalCareerPlan.findOneAndUpdate(
+      { student: req.user.id },
+      {
+        $push: {
+          tasks: {
+            title: `Experiment: ${experimentTitle}`,
+            category: "Career experiment",
+            priority: "High",
+            status: "Not Started",
+            scheduledDate: todayStr,
+            durationMinutes: 60,
+            notes: `Domain: ${careerDomain || "General"} · Experiment ID: ${experiment._id}`,
+          },
+        },
+      },
+      { upsert: true }
+    );
+  } catch {
+    // Non-fatal: experiment record was created
+  }
+
+  res.status(201).json(new ApiResponse(201, experiment, "Career experiment started and added to planner"));
 });
 
 export const getStudentExperiments = asyncHandler(async (req, res) => {

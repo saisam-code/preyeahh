@@ -48,7 +48,7 @@ const studentProjectSchema = new mongoose.Schema(
       enum: ["in_progress", "completed"],
       default: "completed",
     },
-    isPublicOnPortfolio: { type: Boolean, default: true },
+    isPublicOnPortfolio: { type: Boolean, default: false },
     completedAt: { type: Date, default: Date.now },
   },
   { timestamps: true }

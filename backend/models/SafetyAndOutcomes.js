@@ -70,7 +70,7 @@ const careerOutcomeSchema = new mongoose.Schema(
     roleOrDegree: { type: String, default: "" },
     outcomeDate: { type: Date, default: Date.now },
     verificationEvidenceUrl: { type: String, default: "" },
-    isPublic: { type: Boolean, default: true },
+    isPublic: { type: Boolean, default: false },
     storySummary: { type: String, default: "" },
   },
   { timestamps: true }

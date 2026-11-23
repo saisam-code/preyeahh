@@ -39,7 +39,16 @@ export const createResource = asyncHandler(async (req, res) => {
     }
     req.body.branches = [req.user.branch];
   }
-  const resource = await resourceService.createResource({ ...req.body, createdBy: contributorSnapshot(req.user), editHistory: [] });
+
+  // 1.10 — Whitelist fields: only accept validated fields, never spread raw req.body
+  const { title, description, type, url, technology, category, provider, tags, branches, difficulty, estimatedDuration } = req.body;
+  const resource = await resourceService.createResource({
+    title, description, type, url, technology, category, provider, tags,
+    branches: req.user?.role === "guide" ? [req.user.branch] : branches,
+    difficulty, estimatedDuration,
+    createdBy: contributorSnapshot(req.user),
+    editHistory: [],
+  });
   res.status(201).json(new ApiResponse(201, resource, "Resource added"));
 });
 

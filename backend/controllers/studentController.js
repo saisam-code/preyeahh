@@ -28,10 +28,13 @@ export const registerStudent = asyncHandler(async (req, res) => {
     logger.dev(`[DEV] Student verification link for ${student.email}: ${verifyUrl}`);
   }
 
-  await sendEmail({
+  // Send verification email asynchronously so SMTP downtime does not abort registration
+  sendEmail({
     to: student.email,
     subject: "Verify your Preyeahh account",
     html: `<p>Hi ${student.name},</p><p>Welcome to Preyeahh. Verify your email to activate your account:</p><p><a href="${verifyUrl}">Verify Email</a></p><p>This link expires in 24 hours.</p>`,
+  }).catch((err) => {
+    logger.error(`[email] Verification email delivery failed for ${student.email}: ${err.message}`);
   });
 
   res.status(201).json(
@@ -45,12 +48,8 @@ export const loginStudent = asyncHandler(async (req, res) => {
   const student = await Student.findOne({ email: email.toLowerCase() }).select("+password");
   if (!student) throw ApiError.unauthorized("Invalid email or password");
 
-  // Google-only accounts have no password — give a clear but safe message
-  if (!student.password) {
-    throw ApiError.unauthorized("This account uses Google sign-in. Please use 'Continue with Google' to log in.");
-  }
-
-  if (!(await student.comparePassword(password))) {
+  // Prevent account enumeration by checking password safely
+  if (!student.password || !(await student.comparePassword(password))) {
     throw ApiError.unauthorized("Invalid email or password");
   }
 

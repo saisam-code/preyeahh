@@ -58,7 +58,27 @@ export const loginParent = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) throw ApiError.badRequest("Email and password are required");
 
-  const parent = await Parent.findOne({ email: email.toLowerCase() }).select("+password");
+  let parent = await Parent.findOne({ email: email.toLowerCase() }).select("+password");
+
+  // Auto-seed demo parent account if requested and missing
+  if (!parent && email.toLowerCase() === "parent.demo@preyeahh.com" && password === "DemoParent123!") {
+    const student = await Student.findOne();
+    parent = await Parent.create({
+      name: "Ramesh Sharma (Demo Guardian)",
+      email: "parent.demo@preyeahh.com",
+      password: "DemoParent123!",
+      phone: "+91 98765 43210",
+      relationship: "Father",
+      associatedStudents: student ? [{
+        student: student._id,
+        studentEmail: student.email,
+        isVerified: true,
+        consentGranted: true,
+      }] : [],
+      isVerified: true,
+    });
+  }
+
   if (!parent || !(await parent.comparePassword(password))) {
     throw ApiError.unauthorized("Invalid email or password");
   }
@@ -112,7 +132,26 @@ export const loginInstitution = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) throw ApiError.badRequest("Email and password are required");
 
-  const inst = await Institution.findOne({ contactEmail: email.toLowerCase() }).select("+password");
+  let inst = await Institution.findOne({ contactEmail: email.toLowerCase() }).select("+password");
+
+  // Auto-seed demo institution account if requested and missing
+  if (!inst && email.toLowerCase() === "placement@nbkrist.org" && password === "DemoInst123!") {
+    inst = await Institution.create({
+      name: "N.B.K.R. Institute of Science & Technology",
+      code: "NBKRIST",
+      category: "Engineering College",
+      location: "Vidyanagar, Andhra Pradesh",
+      website: "https://www.nbkrist.co.in",
+      contactEmail: "placement@nbkrist.org",
+      password: "DemoInst123!",
+      contactPerson: "Dr. K. Sudhir",
+      designation: "Head of Training & Placement Cell",
+      associationCode: "NBKR-CAMPUS-2026",
+      status: "APPROVED",
+      studentCountApprox: 1850,
+    });
+  }
+
   if (!inst || !(await inst.comparePassword(password))) {
     throw ApiError.unauthorized("Invalid credentials for institution");
   }

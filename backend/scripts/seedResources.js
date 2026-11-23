@@ -1,6 +1,7 @@
 /**
  * Seeds the curated resource library.
- * Usage: npm run seed:resources   (WARNING: replaces all existing resources)
+ * Usage: npm run seed:resources -- --force   (WARNING: replaces all existing resources)
+ * --force flag is REQUIRED to prevent accidental data loss.
  */
 import "dotenv/config";
 import mongoose from "mongoose";
@@ -74,6 +75,13 @@ const seedData = [
 ];
 
 const seedDB = async () => {
+  // 1.15 — Require --force to prevent accidental production data wipe
+  if (!process.argv.includes("--force")) {
+    console.error("Error: seedResources requires --force flag to prevent accidental use.");
+    console.error("Usage: node scripts/seedResources.js --force");
+    process.exit(1);
+  }
+
   try {
     const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/preyeah";
 

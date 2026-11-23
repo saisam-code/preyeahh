@@ -10,6 +10,9 @@ const guidanceRules = [
   body("guidance.skills.*").optional().isString().trim(),
   body("guidance.resources").optional().isArray().withMessage("guidance.resources must be an array of strings"),
   body("guidance.resources.*").optional().isString().trim(),
+  body("reality").optional().isObject().withMessage("reality must be an object"),
+  body("experiments").optional().isArray().withMessage("experiments must be an array"),
+  body("verification").optional().isObject().withMessage("verification must be an object"),
 ];
 
 export const createRoleRules = [

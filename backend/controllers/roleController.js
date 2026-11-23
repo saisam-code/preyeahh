@@ -3,10 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { assertGuideOwnsContent, contributorSnapshot, recordContentEdit } from "../utils/contentAuthorization.js";
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+import escapeRegex from "../utils/escapeRegex.js";
 
 /**
  * GET /api/roles?branch=CSE&type=core&search=engineer&page=1&limit=20
@@ -59,7 +56,7 @@ export const getRoleById = asyncHandler(async (req, res) => {
  * role.branch = _guide.branch and never lets the guide type a different one.
  */
 export const createRole = asyncHandler(async (req, res) => {
-  const { title, type, description, guidance } = req.body;
+  const { title, type, description, guidance, reality, experiments, verification } = req.body;
   let branch = req.body.branch;
 
   if (req.user.role === "guide") {
@@ -72,6 +69,9 @@ export const createRole = asyncHandler(async (req, res) => {
     type,
     description,
     guidance: guidance || {},
+    reality: reality || {},
+    experiments: Array.isArray(experiments) ? experiments : [],
+    verification: req.user.role === "admin" && verification ? verification : { status: "UNVERIFIED" },
     createdBy: contributorSnapshot(req.user),
   });
 
@@ -103,6 +103,15 @@ export const updateRole = asyncHandler(async (req, res) => {
 
   if (req.body.guidance) {
     role.guidance = { ...role.guidance.toObject(), ...req.body.guidance };
+  }
+  if (req.body.reality) {
+    role.reality = { ...role.reality.toObject(), ...req.body.reality };
+  }
+  if (Array.isArray(req.body.experiments)) {
+    role.experiments = req.body.experiments;
+  }
+  if (req.body.verification && req.user.role === "admin") {
+    role.verification = { ...role.verification.toObject(), ...req.body.verification };
   }
 
   recordContentEdit(role, req.user);

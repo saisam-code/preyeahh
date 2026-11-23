@@ -26,11 +26,16 @@ function normalizeSkills(v) {
   return out.slice(0, 30);
 }
 
-/** Validates/cleans a raw preferences object (from AI or from the form) into $set-ready dotted fields. */
+/**
+ * Validates/cleans a raw preferences object (from AI or from the form) into $set-ready dotted fields.
+ *
+ * SECURITY: shareContactWithGuides and shareProfileWithGuides are INTENTIONALLY excluded.
+ * Privacy consent flags must only be changed by the student through an explicit UI action
+ * (PUT /students/profile/privacy). AI passive extraction must NEVER override them.
+ */
 function toSetFields(raw) {
   const set = {};
-  if (typeof raw.shareContactWithGuides === "boolean") set["preferences.shareContactWithGuides"] = raw.shareContactWithGuides;
-  if (typeof raw.shareProfileWithGuides === "boolean") set["preferences.shareProfileWithGuides"] = raw.shareProfileWithGuides;
+  // NOTE: share flags deliberately omitted — see security comment above.
   if (str(raw.currentRole)) set["preferences.currentRole"] = str(raw.currentRole);
   if (str(raw.targetRole)) set["preferences.targetRole"] = str(raw.targetRole);
   if (LEVELS.includes(raw.experienceLevel)) set["preferences.experienceLevel"] = raw.experienceLevel;

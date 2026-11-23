@@ -21,25 +21,69 @@ export const verificationMetadataSchema = new mongoose.Schema(
 );
 
 /**
+ * Verified Reality Fact Schema (Value + Kind + Source)
+ */
+export const realityFactSchema = new mongoose.Schema(
+  {
+    value: { type: String, default: "" },
+    kind: {
+      type: String,
+      enum: ["VERIFIED", "ESTIMATE", "AI_GENERATED", "UNVERIFIED"],
+      default: "UNVERIFIED",
+    },
+    source: { type: String, default: "" },
+  },
+  { _id: false }
+);
+
+function normalizeRealityFact(val) {
+  if (!val) return { value: "", kind: "UNVERIFIED", source: "" };
+  if (typeof val === "string") return { value: val.trim(), kind: "UNVERIFIED", source: "" };
+  if (typeof val === "object") {
+    return {
+      value: typeof val.value === "string" ? val.value.trim() : "",
+      kind: ["VERIFIED", "ESTIMATE", "AI_GENERATED", "UNVERIFIED"].includes(val.kind) ? val.kind : "UNVERIFIED",
+      source: typeof val.source === "string" ? val.source.trim() : "",
+    };
+  }
+  return { value: "", kind: "UNVERIFIED", source: "" };
+}
+
+/**
  * Career Reality and Financial Planning Schema
+ *
+ * NOTE: Default salary ranges, demand, and competition are deliberately empty.
+ * Missing data must render as "No verified data yet" to avoid misleading students.
  */
 export const careerRealitySchema = new mongoose.Schema(
   {
     salaryRange: {
-      starting: { type: String, default: "₹3.5 LPA - ₹6 LPA" },
-      mid: { type: String, default: "₹8 LPA - ₹15 LPA" },
-      experienced: { type: String, default: "₹20 LPA - ₹40+ LPA" },
+      starting: {
+        type: realityFactSchema,
+        set: normalizeRealityFact,
+        default: () => ({ value: "", kind: "UNVERIFIED", source: "" }),
+      },
+      mid: {
+        type: realityFactSchema,
+        set: normalizeRealityFact,
+        default: () => ({ value: "", kind: "UNVERIFIED", source: "" }),
+      },
+      experienced: {
+        type: realityFactSchema,
+        set: normalizeRealityFact,
+        default: () => ({ value: "", kind: "UNVERIFIED", source: "" }),
+      },
       currency: { type: String, default: "INR" },
     },
     demandLevel: {
-      type: String,
-      enum: ["Very High", "High", "Moderate", "Emerging", "Niche"],
-      default: "High",
+      type: realityFactSchema,
+      set: normalizeRealityFact,
+      default: () => ({ value: "", kind: "UNVERIFIED", source: "" }),
     },
     competitionLevel: {
-      type: String,
-      enum: ["Very High", "High", "Moderate", "Low"],
-      default: "High",
+      type: realityFactSchema,
+      set: normalizeRealityFact,
+      default: () => ({ value: "", kind: "UNVERIFIED", source: "" }),
     },
     costs: {
       educationEstimatedMin: { type: Number, default: 0 },

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { EDUCATION_STAGES, TASK_STATUSES, normalizeEducationStage } from "../constants/educationStages.js";
 
 const plannerTaskSchema = new mongoose.Schema(
   {
@@ -31,7 +32,7 @@ const plannerTaskSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Not Started", "In Progress", "Completed", "Postponed", "Skipped", "Cancelled"],
+      enum: TASK_STATUSES,
       default: "Not Started",
     },
     careerRelevance: { type: String, default: "" },
@@ -141,16 +142,8 @@ const personalCareerPlanSchema = new mongoose.Schema(
     preferredWorkingHours: { type: String, default: "Evening (18:00 - 21:00)" },
     academicStage: {
       type: String,
-      enum: [
-        "Class 6-8",
-        "Class 9-10",
-        "Class 11-12 / Intermediate",
-        "Diploma",
-        "Undergraduate",
-        "Postgraduate",
-        "PhD",
-        "Independent Learner / Career Switcher",
-      ],
+      enum: EDUCATION_STAGES,
+      set: (v) => normalizeEducationStage(v),
       default: "Undergraduate",
     },
     goals: [plannerGoalSchema],

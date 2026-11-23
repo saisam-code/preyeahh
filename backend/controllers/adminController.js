@@ -8,6 +8,7 @@ import Guide from "../models/Guide.js";
 import RoleRequest from "../models/RoleRequest.js";
 import RoleInterest from "../models/RoleInterest.js";
 import Student from "../models/Student.js";
+import escapeRegex from "../utils/escapeRegex.js";
 import Chat from "../models/Chat.js";
 import AIRoadmap from "../models/AIRoadmap.js";
 import ApiError from "../utils/ApiError.js";
@@ -148,7 +149,7 @@ export const getAllStudents = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.branch) filter.branch = req.query.branch.toUpperCase();
   if (req.query.search) {
-    const re = new RegExp(req.query.search.trim(), "i");
+    const re = new RegExp(escapeRegex(req.query.search.trim()), "i");
     filter.$or = [{ name: re }, { email: re }];
   }
   if (req.query.verified === "true") filter.isVerified = true;
@@ -245,7 +246,7 @@ export const getAllChats = asyncHandler(async (req, res) => {
   if (req.query.status === "archived") filter.isArchived = true;
   if (req.query.status === "active") filter.isArchived = false;
   if (req.query.search) {
-    const re = new RegExp(req.query.search.trim(), "i");
+    const re = new RegExp(escapeRegex(req.query.search.trim()), "i");
     filter.$or = [{ title: re }, { topic: re }, { branch: re }];
   }
 
@@ -280,7 +281,7 @@ export const getAllRoadmaps = asyncHandler(async (req, res) => {
   if (req.query.status === "completed") filter.isCompleted = true;
   if (req.query.status === "in-progress") filter.isCompleted = false;
   if (req.query.search) {
-    const re = new RegExp(req.query.search.trim(), "i");
+    const re = new RegExp(escapeRegex(req.query.search.trim()), "i");
     filter.$or = [{ title: re }, { description: re }, { roleTitle: re }];
   }
 
@@ -314,7 +315,7 @@ export const getAllMessages = asyncHandler(async (req, res) => {
     matchQuery["messages.role"] = req.query.role;
   }
   if (req.query.search) {
-    matchQuery["messages.content"] = { $regex: req.query.search.trim(), $options: "i" };
+    matchQuery["messages.content"] = { $regex: escapeRegex(req.query.search.trim()), $options: "i" };
   }
 
   const pipeline = [

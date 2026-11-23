@@ -99,8 +99,16 @@ export const getStudentNotifications = asyncHandler(async (req, res) => {
 
 // POST /api/role-requests/student-notifications/:id/read — student acknowledges the notification
 export const markNotificationRead = asyncHandler(async (req, res) => {
-  const request = await RoleRequest.findByIdAndUpdate(
-    req.params.id,
+  const studentId = req.user.id;
+  const studentEmail = req.user.doc?.email;
+
+  // IDOR fix: only let the student mark their OWN notifications as read
+  const ownerFilter = studentEmail
+    ? { _id: req.params.id, $or: [{ student: studentId }, { email: studentEmail.toLowerCase() }] }
+    : { _id: req.params.id, student: studentId };
+
+  const request = await RoleRequest.findOneAndUpdate(
+    ownerFilter,
     { notifiedStudent: true },
     { new: true }
   );

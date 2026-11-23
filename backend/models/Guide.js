@@ -46,6 +46,8 @@ guideSchema.pre("save", async function (next) {
 });
 
 guideSchema.methods.comparePassword = function (candidate) {
+  // Google-only guides have no password hash — return false without throwing
+  if (!this.password) return Promise.resolve(false);
   return bcrypt.compare(candidate, this.password);
 };
 
