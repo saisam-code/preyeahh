@@ -11,8 +11,8 @@ import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <ErrorBoundary>
-      <BrowserRouter>
+    <BrowserRouter>
+      <ErrorBoundary>
         <AuthProvider>
           <BranchProvider>
             <App />
@@ -28,7 +28,7 @@ createRoot(document.getElementById("root")).render(
             />
           </BranchProvider>
         </AuthProvider>
-      </BrowserRouter>
-    </ErrorBoundary>
+      </ErrorBoundary>
+    </BrowserRouter>
   </StrictMode>
 );
