@@ -10,6 +10,7 @@ import {
   FaRightFromBracket,
   FaBars,
   FaXmark,
+  FaBullseye,
 } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
