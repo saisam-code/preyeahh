@@ -6,6 +6,9 @@ import {
   rescheduleTask,
   deleteTask,
   generateAdaptiveSchedule,
+  addCareerGoal,
+  addExamDeadline,
+  submitReview,
 } from "../controllers/plannerController.js";
 import { protect, authorize } from "../middleware/auth.js";
 

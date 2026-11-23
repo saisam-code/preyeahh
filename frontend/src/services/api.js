@@ -49,7 +49,12 @@ async function performRefresh() {
   const role = getActiveRole();
   if (!role) throw new Error("No active role to refresh");
 
-  const path = role === "admin" ? "/admin/refresh" : role === "guide" ? "/guides/refresh" : "/students/refresh";
+  const path =
+    role === "admin" ? "/admin/refresh" :
+    role === "guide" ? "/guides/refresh" :
+    role === "parent" ? "/auth/extended/parent/refresh" :
+    role === "institution" ? "/auth/extended/institution/refresh" :
+    "/students/refresh";
   const { data } = await axios.post(`${API_BASE}${path}`, {}, { withCredentials: true });
 
   setAccessToken(data.data.accessToken);

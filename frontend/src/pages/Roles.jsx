@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaXmark, FaFire, FaEye, FaPaperPlane, FaHandPointer } from "react-icons/fa6";
 
@@ -11,7 +11,6 @@ import { getInterestForRole, recordInterest } from "../services/studentService.j
 import { submitRoleRequest } from "../services/roleRequestService.js";
 import { generateRoadmap } from "../services/aiRoadmapService.js";
 import BranchGate from "../components/BranchGate.jsx";
-import LoginModal from "../components/LoginModal.jsx";
 import ContributorLabel from "../components/ContributorLabel.jsx";
 
 function parseResource(str) {
@@ -30,6 +29,7 @@ export default function Roles() {
   const { branch } = useBranch();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [generating, setGenerating] = useState(false);
 
   const [roles, setRoles] = useState([]);
@@ -41,8 +41,6 @@ export default function Roles() {
   const [roadmap, setRoadmap] = useState(null);
 
   const [commitRole, setCommitRole] = useState(null);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [pendingCommit, setPendingCommit] = useState(null);
 
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestForm, setRequestForm] = useState({ roleName: "", branch: branch || "", summary: "" });
@@ -152,8 +150,7 @@ export default function Roles() {
     const role = commitRole;
     setCommitRole(null);
     if (!user || user.role !== "student") {
-      setPendingCommit({ role, committed });
-      setLoginOpen(true);
+      navigate("/login", { state: { from: location } });
       return;
     }
     doRecordInterest(role, committed);
@@ -396,8 +393,6 @@ export default function Roles() {
           </div>
         </div>
       </div>
-
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </div>
   );
 }

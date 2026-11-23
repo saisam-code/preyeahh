@@ -25,7 +25,7 @@ const institutionSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["PENDING", "UNDER_REVIEW", "APPROVED", "REJECTED", "SUSPENDED"],
-      default: "APPROVED",
+      default: "PENDING",
       index: true,
     },
     isActive: { type: Boolean, default: true },

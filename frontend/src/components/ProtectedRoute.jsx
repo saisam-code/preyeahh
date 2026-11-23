@@ -12,7 +12,7 @@ import { useAuth } from "../context/AuthContext.jsx";
  * @param {string[]} [allowedRoles] - if omitted, any authenticated user passes.
  * @param {string}   [redirectTo]   - where to send unauthenticated users.
  */
-export default function ProtectedRoute({ allowedRoles, redirectTo = "/" }) {
+export default function ProtectedRoute({ allowedRoles, redirectTo = "/login" }) {
   const { user, initialized } = useAuth();
   const location = useLocation();
 

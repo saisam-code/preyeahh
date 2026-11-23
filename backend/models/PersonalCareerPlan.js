@@ -129,9 +129,14 @@ const personalCareerPlanSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
-    primaryCareer: { type: String, default: "Software Engineer" },
+    primaryCareer: { type: String, default: "" },
     alternativeCareer: { type: String, default: "" },
     exploringCareers: { type: [String], default: [] },
+    status: {
+      type: String,
+      enum: ["Active", "Paused", "Archived"],
+      default: "Active",
+    },
     weeklyHoursAvailable: { type: Number, default: 14 },
     preferredWorkingHours: { type: String, default: "Evening (18:00 - 21:00)" },
     academicStage: {

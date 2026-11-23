@@ -4,28 +4,30 @@ import Student from "../models/Student.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import { callGroqChat } from "../services/groqService.js";
+import { chatCompletion } from "../services/groqService.js";
 
 /**
  * CAPABILITY 6: Financial ROI & Career Cost Comparison
  * POST /api/career-intelligence/financial-roi
  */
 export const calculateFinancialRoi = asyncHandler(async (req, res) => {
-  const { educationCostMin, educationCostMax, startingSalary, timeToPaybackYears = 3 } = req.body;
+  const { educationCostMin, educationCostMax, startingSalary, savingsRatePercent, timeToPaybackYears = 3 } = req.body;
 
   const totalEstCost = ((Number(educationCostMin) || 0) + (Number(educationCostMax) || 0)) / 2;
-  const annualSalary = Number(startingSalary) || 500000;
-  const estimatedSavingsPerYear = annualSalary * 0.35; // 35% estimated savings towards recovery
+  const annualSalary = Number(startingSalary) || 0;
+  const savingsRate = Math.min(Math.max(Number(savingsRatePercent) || 30, 5), 80) / 100;
+  const estimatedSavingsPerYear = annualSalary * savingsRate;
 
-  const estPaybackMonths = estimatedSavingsPerYear > 0 ? Math.ceil((totalEstCost / estimatedSavingsPerYear) * 12) : 36;
+  const estPaybackMonths = estimatedSavingsPerYear > 0 ? Math.ceil((totalEstCost / estimatedSavingsPerYear) * 12) : null;
 
   res.status(200).json(
     new ApiResponse(200, {
       totalEstimatedInvestment: totalEstCost,
-      annualStartingIncomeEstimate: annualSalary,
+      annualStartingIncomeEstimate: annualSalary || null,
+      savingsRateUsed: `${Math.round(savingsRate * 100)}%`,
       estimatedAnnualSavingsRate: estimatedSavingsPerYear,
       estimatedPaybackMonths: estPaybackMonths,
-      disclaimer: "Figures are realistic approximations based on user inputs and industry averages. Preyeahh never guarantees specific placement or starting remuneration.",
+      disclaimer: "Figures are realistic approximations based on user inputs and industry averages. Preyeahh never guarantees specific placement or starting remuneration. Savings rate is user-adjustable (default 30%).",
     }, "Financial ROI calculated")
   );
 });

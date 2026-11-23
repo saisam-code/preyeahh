@@ -116,12 +116,26 @@ export default function StudentOnboarding() {
           weeklyHoursAvailable: dailyHours * 7,
           onboardingCompleted: true,
         });
+        toast.success("Welcome aboard! Your career workspace is ready.");
+        navigate("/planner");
+      } else {
+        toast.success("Preferences configured! Please sign in or create an account to save your workspace.");
+        navigate("/login", {
+          state: {
+            onboardingData: {
+              educationStage: stage,
+              academicStream: stream,
+              interests: selectedInterests,
+              primaryCareerGoal: primaryGoal,
+              alternativeCareerGoal: alternativeGoal,
+              skills: selectedSkills,
+              weeklyHoursAvailable: dailyHours * 7,
+            },
+          },
+        });
       }
-      toast.success("Welcome aboard! Your career workspace is ready.");
-      navigate("/planner");
     } catch (err) {
-      toast.error("Failed to save preferences. Proceeding to planner.");
-      navigate("/planner");
+      toast.error("Failed to save preferences. Please try again.");
     } finally {
       setSaving(false);
     }

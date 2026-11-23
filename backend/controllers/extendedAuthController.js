@@ -40,9 +40,9 @@ export const registerParent = asyncHandler(async (req, res) => {
     email: email.toLowerCase(),
     password,
     phone: phone || "",
-    relationship: relationship || "Parent",
+    relationship: relationship || "Guardian",
     associatedStudents,
-    isVerified: true,
+    isVerified: false,
   });
 
   const token = createToken(parent._id, "parent");
@@ -96,7 +96,7 @@ export const registerInstitution = asyncHandler(async (req, res) => {
     contactPerson: contactPerson || "",
     designation: designation || "Placement Cell Head",
     associationCode,
-    status: "APPROVED",
+    status: "PENDING",
   });
 
   const token = createToken(inst._id, "institution");
@@ -121,4 +121,18 @@ export const loginInstitution = asyncHandler(async (req, res) => {
   res.status(200).json(
     new ApiResponse(200, { user: inst.toSafeJSON(), accessToken: token }, "Logged in as Institution")
   );
+});
+
+/**
+ * GET /api/auth/extended/me
+ */
+export const getExtendedMe = asyncHandler(async (req, res) => {
+  res.status(200).json(new ApiResponse(200, req.user.doc.toSafeJSON(), "Profile fetched"));
+});
+
+/**
+ * POST /api/auth/extended/logout
+ */
+export const logoutExtended = asyncHandler(async (req, res) => {
+  res.status(200).json(new ApiResponse(200, null, "Logged out successfully"));
 });

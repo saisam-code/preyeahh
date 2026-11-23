@@ -38,10 +38,18 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const mePath = role === "guide" ? "/guides/me" : "/students/me";
+        const mePath =
+          role === "guide" ? "/guides/me" :
+          role === "parent" ? "/auth/extended/parent/me" :
+          role === "institution" ? "/auth/extended/institution/me" :
+          "/students/me";
 
         if (!getAccessToken()) {
-          const refreshPath = role === "guide" ? "/guides/refresh" : "/students/refresh";
+          const refreshPath =
+            role === "guide" ? "/guides/refresh" :
+            role === "parent" ? "/auth/extended/parent/refresh" :
+            role === "institution" ? "/auth/extended/institution/refresh" :
+            "/students/refresh";
           const { data } = await api.post(refreshPath);
           setAccessToken(data.data.accessToken);
         }
@@ -80,11 +88,35 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // Shared manual (email/password) login for students and guides.
+  const registerParent = useCallback(async (payload) => {
+    setLoading(true);
+    try {
+      const { data } = await api.post("/auth/extended/parent/register", payload);
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const registerInstitution = useCallback(async (payload) => {
+    setLoading(true);
+    try {
+      const { data } = await api.post("/auth/extended/institution/register", payload);
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Shared manual (email/password) login for student, guide, parent, institution.
   const login = useCallback(async (role, { email, password }) => {
     setLoading(true);
     try {
-      const path = role === "guide" ? "/guides/login" : "/students/login";
+      const path =
+        role === "guide" ? "/guides/login" :
+        role === "parent" ? "/auth/extended/parent/login" :
+        role === "institution" ? "/auth/extended/institution/login" :
+        "/students/login";
       const { data } = await api.post(path, { email, password });
       const loggedInUser = data.data.user;
 
@@ -114,6 +146,8 @@ export function AuthProvider({ children }) {
     try {
       if (role === "guide") await api.post("/guides/logout");
       else if (role === "student") await api.post("/students/logout");
+      else if (role === "parent") await api.post("/auth/extended/parent/logout");
+      else if (role === "institution") await api.post("/auth/extended/institution/logout");
     } catch {
       // local state clears regardless of network outcome
     }
@@ -126,9 +160,9 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       user, role: user?.role || null, isAuthenticated: !!user, initialized, loading,
-      registerGuide, registerStudent, login, updateUser, logout,
+      registerGuide, registerStudent, registerParent, registerInstitution, login, updateUser, logout,
     }),
-    [user, initialized, loading, registerGuide, registerStudent, login, updateUser, logout]
+    [user, initialized, loading, registerGuide, registerStudent, registerParent, registerInstitution, login, updateUser, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

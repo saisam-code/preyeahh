@@ -5,10 +5,6 @@ import {
   FaUsers,
   FaCalendarDays,
   FaBullhorn,
-  FaPlus,
-  FaCheck,
-  FaXmark,
-  FaShieldHalved,
 } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { listInstitutions } from "../services/careerPlannerService.js";

@@ -1,0 +1,53 @@
+import { Link, Outlet } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa6";
+import ThemeToggle from "../components/ThemeToggle.jsx";
+import preyeahhLogo from "../assets/preyeahh-logo.png";
+
+export default function AuthLayout() {
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
+      {/* ── MINIMAL AUTH HEADER ── */}
+      <header
+        style={{
+          height: 64,
+          background: "var(--surface)",
+          borderBottom: "1px solid var(--border)",
+          padding: "0 1.5rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Link to="/" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
+          <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 32, height: 32, objectFit: "contain" }} />
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", fontWeight: 800, color: "var(--text)" }}>
+            Pre<span style={{ color: "var(--primary)" }}>yeahh</span>
+          </span>
+        </Link>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <ThemeToggle />
+          <Link
+            to="/"
+            style={{
+              color: "var(--text-muted)",
+              textDecoration: "none",
+              fontSize: "0.88rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.35rem",
+              fontWeight: 600,
+            }}
+          >
+            <FaArrowLeft style={{ fontSize: "0.75rem" }} /> Back to Home
+          </Link>
+        </div>
+      </header>
+
+      {/* Main Auth Content */}
+      <main style={{ flex: 1 }}>
+        <Outlet />
+      </main>
+    </div>
+  );
+}

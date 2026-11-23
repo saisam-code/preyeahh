@@ -29,7 +29,10 @@ export default function Login() {
   const [params] = useSearchParams();
 
   // Authentication State
-  const [role, setRole] = useState("student");
+  const [role, setRole] = useState(() => {
+    const r = params.get("role");
+    return ["student", "parent", "guide", "institution"].includes(r) ? r : "student";
+  });
   const [showPass, setShowPass] = useState(false);
   const form = useForm({ defaultValues: { email: "", password: "" } });
 
@@ -39,7 +42,7 @@ export default function Login() {
   const [selectedCareerRoles, setSelectedCareerRoles] = useState([]);
   const [savingInterests, setSavingInterests] = useState(false);
 
-  const next = location.state?.from?.pathname || params.get("next") || "/";
+  const next = location.state?.from?.pathname || params.get("next") || "";
   const googleError = params.get("google_error");
 
   useEffect(() => {
@@ -87,14 +90,13 @@ export default function Login() {
     try {
       await updatePreferences({
         interests: selectedDomainInterests,
-        primaryCareerGoal: selectedCareerRoles[0] || selectedDomain.careers[0]?.name || "Software Engineer",
-        targetRole: selectedCareerRoles[0] || selectedDomain.careers[0]?.name || "Software Engineer",
+        primaryCareerGoal: selectedCareerRoles[0] || selectedDomain.careers[0]?.name || "",
+        targetRole: selectedCareerRoles[0] || selectedDomain.careers[0]?.name || "",
       });
       toast.success("Career interests saved to your profile!");
       navigate("/planner");
     } catch {
-      toast.error("Could not save to profile. Navigating to planner.");
-      navigate("/planner");
+      toast.error("Could not save career interests. Please try again.");
     } finally {
       setSavingInterests(false);
     }
@@ -102,8 +104,17 @@ export default function Login() {
 
   const onSubmit = async ({ email, password }) => {
     try {
-      await login(role, { email: email.trim().toLowerCase(), password });
-      navigate(next, { replace: true });
+      const loggedIn = await login(role, { email: email.trim().toLowerCase(), password });
+      if (next && next !== "/") {
+        navigate(next, { replace: true });
+      } else {
+        const dest =
+          loggedIn.role === "institution" ? "/institution-portal" :
+          loggedIn.role === "guide" ? "/chat" :
+          loggedIn.role === "parent" ? "/parent-portal" :
+          "/planner";
+        navigate(dest, { replace: true });
+      }
     } catch (err) {
       form.setError("root", { message: err.response?.data?.message || "Invalid email or password." });
     }
@@ -223,7 +234,9 @@ export default function Login() {
               domains={CAREER_DOMAINS}
               selectedDomain={selectedDomain}
               onSelectDomain={setSelectedDomain}
-              multiSelectedIds={selectedDomainInterests}
+              multiSelectedIds={selectedDomainInterests.map(
+                (title) => CAREER_DOMAINS.find((d) => d.title === title)?.id
+              ).filter(Boolean)}
             />
 
             <div style={{ marginTop: "1rem", textAlign: "center", fontSize: "0.8rem", color: "var(--text-muted)" }}>
@@ -260,10 +273,21 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="ulm-reg-toggle lp-toggle" style={{ marginBottom: "1.25rem" }}>
-              {["student", "guide"].map((r) => (
-                <button key={r} type="button" className={`ulm-rt-btn ${role === r ? "active" : ""}`} onClick={() => setRole(r)}>
-                  {r === "student" ? "Student" : "Guide"}
+            <div className="ulm-reg-toggle lp-toggle" style={{ marginBottom: "1.25rem", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "0.25rem" }}>
+              {[
+                { id: "student", label: "Student" },
+                { id: "parent", label: "Parent" },
+                { id: "guide", label: "Guide" },
+                { id: "institution", label: "Institution" },
+              ].map(({ id, label }) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`ulm-rt-btn ${role === id ? "active" : ""}`}
+                  style={{ fontSize: "0.78rem", padding: "0.45rem 0.2rem" }}
+                  onClick={() => setRole(id)}
+                >
+                  {label}
                 </button>
               ))}
             </div>
@@ -273,7 +297,12 @@ export default function Login() {
                 <label htmlFor="lp-email">Email</label>
                 <input
                   id="lp-email" type="email" autoComplete="email"
-                  placeholder={role === "guide" ? "you@nbkrist.org" : "you@gmail.com"}
+                  placeholder={
+                    role === "guide" ? "you@nbkrist.org" :
+                    role === "parent" ? "parent@example.com" :
+                    role === "institution" ? "placement@college.edu" :
+                    "you@gmail.com"
+                  }
                   {...form.register("email", { required: "Email is required" })}
                 />
                 {errors.email && <small className="lp-err">{errors.email.message}</small>}

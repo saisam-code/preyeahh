@@ -3,7 +3,7 @@ import Student from "../models/Student.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import { callGroqChat } from "../services/groqService.js";
+import { chatCompletion } from "../services/groqService.js";
 
 /**
  * GET /api/planner
@@ -14,7 +14,7 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
 
   if (!plan) {
     const student = await Student.findById(studentId);
-    const primary = student?.preferences?.targetRole || student?.preferences?.primaryCareerGoal || "Software Engineer";
+    const primary = student?.preferences?.targetRole || student?.preferences?.primaryCareerGoal || "";
     const alt = student?.preferences?.alternativeCareerGoal || "";
 
     plan = await PersonalCareerPlan.create({
@@ -24,7 +24,7 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
       weeklyHoursAvailable: student?.preferences?.weeklyHoursAvailable || 14,
       academicStage: student?.preferences?.educationStage || "Undergraduate",
       goals: [
-        { title: primary, goalType: "Primary", description: `Primary career target in ${primary}` },
+        ...(primary ? [{ title: primary, goalType: "Primary", description: `Primary career target in ${primary}` }] : []),
         ...(alt ? [{ title: alt, goalType: "Alternative", description: `Alternative pathway in ${alt}` }] : []),
       ],
       milestones: [
@@ -242,7 +242,7 @@ export const generateAdaptiveSchedule = asyncHandler(async (req, res) => {
   const plan = await PersonalCareerPlan.findOne({ student: studentId });
   const student = await Student.findById(studentId);
 
-  const careerGoal = plan?.primaryCareer || student?.preferences?.targetRole || "Software Engineer";
+  const careerGoal = plan?.primaryCareer || student?.preferences?.targetRole || "General career development";
   const prompt = `Generate a 7-day balanced career plan for a student pursuing: "${careerGoal}".
 Academic stage: ${plan?.academicStage || "College/School"}.
 Available daily hours: ${availableHoursPerDay} hrs.
@@ -252,14 +252,13 @@ Format strictly as a valid JSON array:
 dayOffset is 0 to 6.`;
 
   try {
-    const rawAi = await callGroqChat({
-      messages: [
+    const rawAi = await chatCompletion(
+      [
         { role: "system", content: "You are Preyeahh's Personal Career Planner AI. Return strictly valid JSON array." },
         { role: "user", content: prompt },
       ],
-      temperature: 0.3,
-      max_tokens: 1200,
-    });
+      { temperature: 0.3, maxTokens: 1200 },
+    );
 
     const jsonMatch = rawAi.match(/\[[\s\S]*\]/);
     if (!jsonMatch) throw new Error("Invalid format from AI");

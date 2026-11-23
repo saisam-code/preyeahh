@@ -10,7 +10,7 @@ const parentSchema = new mongoose.Schema(
     relationship: {
       type: String,
       enum: ["Father", "Mother", "Guardian", "Other"],
-      default: "Parent",
+      default: "Guardian",
     },
     associatedStudents: [
       {

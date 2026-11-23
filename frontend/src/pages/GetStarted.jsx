@@ -48,7 +48,7 @@ export default function GetStarted() {
     if (selectedRole === "student") {
       navigate("/onboarding");
     } else {
-      navigate(`/?login=1&role=${selectedRole}`);
+      navigate(`/login?role=${selectedRole}`);
     }
   };
 
@@ -113,6 +113,16 @@ export default function GetStarted() {
         >
           Continue to Registration <FaArrowRight />
         </button>
+
+        <div style={{ marginTop: "1.25rem", fontSize: "0.9rem", color: "var(--text-muted)" }}>
+          Already have a Preyeahh account?{" "}
+          <span
+            onClick={() => navigate(`/login?role=${selectedRole}`)}
+            style={{ color: "var(--primary)", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
+          >
+            Sign In here
+          </span>
+        </div>
       </div>
     </div>
   );

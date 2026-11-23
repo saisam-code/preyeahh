@@ -3,7 +3,7 @@ import { StudentExperiment, CareerComparison, StudentProject, Opportunity } from
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import { callGroqChat } from "../services/groqService.js";
+import { chatCompletion } from "../services/groqService.js";
 
 /**
  * GET /api/career-intelligence/roles
@@ -69,14 +69,13 @@ export const compareCareers = asyncHandler(async (req, res) => {
       roles.map((r) => `- ${r.title} (${r.branch || "General"}): Domain: ${r.domain}, Salary range: ${JSON.stringify(r.reality?.salaryRange || {})}, Costs: ${JSON.stringify(r.reality?.costs || {})}`).join("\n") +
       `\nHighlight differences in entry barriers, day-to-day reality, transferable skills, and realistic outcomes. Keep it honest and practical.`;
 
-    aiAnalysis = await callGroqChat({
-      messages: [
+    aiAnalysis = await chatCompletion(
+      [
         { role: "system", content: "You are Preyeahh's Career Intelligence specialist. Never fabricate guaranteed salaries or jobs." },
         { role: "user", content: prompt },
       ],
-      temperature: 0.4,
-      max_tokens: 800,
-    });
+      { temperature: 0.4, maxTokens: 800 },
+    );
   } catch (err) {
     aiAnalysis = "AI comparative insights currently unavailable. Review the side-by-side factual metrics below.";
   }
@@ -114,14 +113,13 @@ Be encouraging, realistic, and do not guarantee placement.`;
 
   let analysis = "";
   try {
-    analysis = await callGroqChat({
-      messages: [
+    analysis = await chatCompletion(
+      [
         { role: "system", content: "You are a career transition specialist." },
         { role: "user", content: prompt },
       ],
-      temperature: 0.5,
-      max_tokens: 750,
-    });
+      { temperature: 0.5, maxTokens: 750 },
+    );
   } catch (err) {
     analysis = "Career switch analysis temporarily unavailable. Focus on bridging fundamental technical and practical project skills.";
   }

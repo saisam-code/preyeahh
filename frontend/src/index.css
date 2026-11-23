@@ -2811,7 +2811,9 @@ tbody td {
   }
 
   .nav-desktop-dashboard,
-  .nav-desktop-logout {
+  .nav-desktop-logout,
+  .desktop-public-nav,
+  .desktop-student-nav {
     display: none !important;
   }
 
@@ -2840,6 +2842,11 @@ tbody td {
 
   .nav-hamburger {
     display: none;
+  }
+
+  .desktop-public-nav,
+  .desktop-student-nav {
+    display: flex;
   }
 
   .bottom-nav {
@@ -2889,7 +2896,9 @@ tbody td {
 
   /* Hide desktop dashboard and logout buttons - use dropdown instead */
   .nav-desktop-dashboard,
-  .nav-desktop-logout {
+  .nav-desktop-logout,
+  .desktop-public-nav,
+  .desktop-student-nav {
     display: none !important;
   }
 
