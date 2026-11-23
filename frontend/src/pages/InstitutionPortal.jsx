@@ -1,12 +1,6 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import {
-  FaBuildingColumns,
-  FaUsers,
-  FaCalendarDays,
-  FaBullhorn,
-} from "react-icons/fa6";
-import { useAuth } from "../context/AuthContext.jsx";
+import { FaBullhorn } from "react-icons/fa6";
 import { listInstitutions } from "../services/careerPlannerService.js";
 
 export default function InstitutionPortal() {
@@ -17,7 +11,7 @@ export default function InstitutionPortal() {
   useEffect(() => {
     listInstitutions()
       .then(setInstitutions)
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
