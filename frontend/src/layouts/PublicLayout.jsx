@@ -13,7 +13,7 @@ export default function PublicLayout() {
     user?.role === "guide" ? "/guide-panel" :
     user?.role === "parent" ? "/parent-portal" :
     user?.role === "institution" ? "/institution-portal" :
-    "/planner";
+    "/dashboard";
 
   return (
     <div className="public-layout-root" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>

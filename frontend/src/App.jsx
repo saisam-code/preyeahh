@@ -45,6 +45,7 @@ import ParentPortal from "./pages/ParentPortal.jsx";
 import InstitutionPortal from "./pages/InstitutionPortal.jsx";
 import Admin from "./pages/Admin.jsx";
 import GovernmentCareers from "./pages/GovernmentCareers.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 
 export default function App() {
   const [searchParams] = useSearchParams();
@@ -101,7 +102,7 @@ export default function App() {
           <Route path="/roadmap/:id" element={<RoadmapView />} />
           <Route path="/quiz" element={<Quiz />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/dashboard" element={<Navigate to="/planner" replace />} />
+          <Route path="/dashboard" element={<Dashboard />} />
         </Route>
       </Route>
 

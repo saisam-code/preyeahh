@@ -105,7 +105,7 @@ export default function GoogleOnboarding() {
       // Establish authenticated session in AuthContext & localStorage
       setSession({ user, accessToken, role: "student" });
 
-      navigate("/planner", { replace: true });
+      navigate("/dashboard", { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || "Could not complete setup. Please try again.");
     } finally {

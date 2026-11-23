@@ -15,12 +15,14 @@ import {
   FaBars,
   FaXmark,
   FaBuildingColumns,
+  FaHouse,
 } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 const STUDENT_NAV_ITEMS = [
+  { to: "/dashboard", label: "Dashboard", icon: FaHouse },
   { to: "/discovery", label: "Discovery", icon: FaCompass },
   { to: "/government-careers", label: "Govt Careers", icon: FaBuildingColumns },
   { to: "/planner", label: "Career Planner", icon: FaCalendarCheck },
@@ -61,7 +63,7 @@ export default function StudentLayout() {
       >
         <div style={{ maxWidth: 1300, width: "100%", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {/* Logo */}
-          <Link to="/planner" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
+          <Link to="/dashboard" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
             <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 34, height: 34, objectFit: "contain" }} />
             <span style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", fontWeight: 800, color: "var(--text)" }}>
               Pre<span style={{ color: "var(--primary)" }}>yeahh</span>

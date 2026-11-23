@@ -63,7 +63,7 @@ export default function GoogleCallback() {
           role === "guide" ? "/guide-panel" :
           role === "parent" ? "/parent-portal" :
           role === "institution" ? "/institution-portal" :
-          "/planner";
+          "/dashboard";
         navigate(dest, { replace: true });
       } catch (err) {
         console.error("[GoogleCallback] Error:", err);
