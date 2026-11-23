@@ -16,6 +16,7 @@ import {
   FaXmark,
   FaBuildingColumns,
   FaHouse,
+  FaBullseye,
 } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -173,6 +174,42 @@ export default function StudentLayout() {
                     }}
                   >
                     <FaUser /> My Profile
+                  </Link>
+
+                  <Link
+                    to="/roles"
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      padding: "0.6rem 0.8rem",
+                      borderRadius: "0.4rem",
+                      fontSize: "0.85rem",
+                      color: "var(--text)",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <FaCompass /> Branch Roles Catalog
+                  </Link>
+
+                  <Link
+                    to="/beyond"
+                    onClick={() => setMenuOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      padding: "0.6rem 0.8rem",
+                      borderRadius: "0.4rem",
+                      fontSize: "0.85rem",
+                      color: "var(--text)",
+                      textDecoration: "none",
+                      fontWeight: 600,
+                    }}
+                  >
+                    <FaBullseye /> Beyond Degree
                   </Link>
 
                   <button
