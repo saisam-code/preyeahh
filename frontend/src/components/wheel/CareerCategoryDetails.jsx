@@ -1,4 +1,4 @@
-import { FaCheck, FaPlus, FaArrowRight, FaSparkles } from "react-icons/fa6";
+import { FaCheck, FaPlus, FaArrowRight } from "react-icons/fa6";
 
 export default function CareerCategoryDetails({
   domain,

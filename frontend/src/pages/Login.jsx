@@ -23,7 +23,7 @@ const GOOGLE_ERRORS = {
 };
 
 export default function Login() {
-  const { login, isAuthenticated, initialized, user } = useAuth();
+  const { login, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [params] = useSearchParams();

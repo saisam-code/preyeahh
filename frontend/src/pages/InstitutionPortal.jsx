@@ -10,7 +10,6 @@ import { useAuth } from "../context/AuthContext.jsx";
 import { listInstitutions } from "../services/careerPlannerService.js";
 
 export default function InstitutionPortal() {
-  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview"); // overview, students, events, announcements
   const [institutions, setInstitutions] = useState([]);
   const [loading, setLoading] = useState(true);

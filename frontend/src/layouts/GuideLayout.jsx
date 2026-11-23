@@ -20,7 +20,6 @@ export default function GuideLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -29,7 +28,9 @@ export default function GuideLayout() {
       try {
         const convos = await listMentorshipConversations("guide");
         if (active) setUnreadCount(convos.filter((c) => c.hasUnreadForGuide).length);
-      } catch {}
+      } catch (err) {
+        void err;
+      }
     };
     fetchUnread();
     const interval = setInterval(fetchUnread, 15000);

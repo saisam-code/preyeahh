@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { NavLink, Link, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Link, Outlet } from "react-router-dom";
 import { FaBars, FaXmark, FaHouse, FaCircleInfo, FaArrowRight } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 export default function PublicLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <div className="public-layout-root" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>

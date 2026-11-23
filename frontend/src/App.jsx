@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate, useSearchParams } from "react-router-dom";
-import { useEffect } from "react";
 
 // Layouts
 import PublicLayout from "./layouts/PublicLayout.jsx";

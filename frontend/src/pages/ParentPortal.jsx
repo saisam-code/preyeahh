@@ -13,7 +13,6 @@ import toast from "react-hot-toast";
 
 export default function ParentPortal() {
   const { user } = useAuth();
-  const [savingsRate, setSavingsRate] = useState(30);
 
   const associated = user?.associatedStudents || [];
 

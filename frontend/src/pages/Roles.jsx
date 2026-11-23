@@ -55,14 +55,6 @@ export default function Roles() {
       .finally(() => setLoading(false));
   }, [branch]);
 
-  useEffect(() => {
-    if (user && user.role === "student" && pendingCommit) {
-      doRecordInterest(pendingCommit.role, pendingCommit.committed);
-      setPendingCommit(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
   const filteredRoles = useMemo(() => {
     let list = roles;
     if (typeFilter !== "all") list = list.filter((r) => r.type === typeFilter);
