@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FaGraduationCap,
@@ -27,17 +27,18 @@ const STAGES = [
 ];
 
 const INTERESTS_LIST = [
-  "Technology & Software",
-  "Robotics & AI",
-  "Filmmaking & Media",
+  "Technology & Engineering",
   "Medicine & Healthcare",
-  "Design & UI/UX",
-  "Business & Startups",
-  "Aviation & Aerospace",
-  "Sports & Fitness",
-  "Culinary Arts",
-  "Law & Public Policy",
+  "Arts, Design & Media",
+  "Business & Entrepreneurship",
   "Science & Research",
+  "Law & Public Services",
+  "Education & Psychology",
+  "Sports & Fitness",
+  "Agriculture & Environment",
+  "Skilled Trades & Vocational",
+  "Aviation & Defence",
+  "Emerging & Unconventional",
 ];
 
 const SKILLS_LIST = [
@@ -53,6 +54,7 @@ const SKILLS_LIST = [
 
 export default function StudentOnboarding() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const totalSteps = 6;
@@ -69,6 +71,19 @@ export default function StudentOnboarding() {
   const [connectionType, setConnectionType] = useState("independent"); // independent, institution
   const [institutionCode, setInstitutionCode] = useState("");
   const [saving, setSaving] = useState(false);
+
+  // Consume pre-selected interests from Career Wheel if coming from Login / entry
+  useEffect(() => {
+    if (location.state?.preselectedInterests?.length) {
+      setSelectedInterests(location.state.preselectedInterests);
+    }
+    if (location.state?.preselectedRoles?.length) {
+      setPrimaryGoal(location.state.preselectedRoles[0]);
+      if (location.state.preselectedRoles[1]) {
+        setAlternativeGoal(location.state.preselectedRoles[1]);
+      }
+    }
+  }, [location.state]);
 
   const toggleInterest = (item) => {
     if (selectedInterests.includes(item)) {
