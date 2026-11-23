@@ -17,6 +17,8 @@ import MyRoadmaps from "./pages/MyRoadmaps.jsx";
 import RoadmapView from "./pages/RoadmapView.jsx";
 import Quiz from "./pages/Quiz.jsx";
 import Profile from "./pages/Profile.jsx";
+import PersonalCareerPlanner from "./pages/PersonalCareerPlanner.jsx";
+import CareerDiscovery from "./pages/CareerDiscovery.jsx";
 
 export default function App() {
   return (
@@ -28,6 +30,7 @@ export default function App() {
         <Route path="/roles" element={<Roles />} />
         <Route path="/beyond" element={<Beyond />} />
         <Route path="/resources" element={<Resources />} />
+        <Route path="/discovery" element={<CareerDiscovery />} />
         <Route path="/admin" element={<Admin />} />
 
         <Route path="/dashboard" element={<Navigate to="/" replace />} />
@@ -41,6 +44,7 @@ export default function App() {
         </Route>
 
         <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/?login=1" />}>
+          <Route path="/planner" element={<PersonalCareerPlanner />} />
           <Route path="/roadmaps" element={<MyRoadmaps />} />
           <Route path="/roadmap/:id" element={<RoadmapView />} />
           <Route path="/quiz" element={<Quiz />} />

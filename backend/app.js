@@ -26,6 +26,9 @@ import quizRoutes from "./routes/quizRoutes.js";
 import progressRoutes from "./routes/progressRoutes.js";
 import performanceRoutes from "./routes/performanceRoutes.js";
 import googleAuthRoutes from "./routes/googleAuthRoutes.js";
+import careerIntelligenceRoutes from "./routes/careerIntelligenceRoutes.js";
+import plannerRoutes from "./routes/plannerRoutes.js";
+import studentDevelopmentRoutes from "./routes/studentDevelopmentRoutes.js";
 
 const app = express();
 
@@ -101,6 +104,11 @@ app.use("/api/ai-roadmaps", aiRoadmapRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/progress", progressRoutes);
 app.use("/api/performance", performanceRoutes);
+
+// ── Career Intelligence, Personal Planner & Student Development ──
+app.use("/api/career-intelligence", careerIntelligenceRoutes);
+app.use("/api/planner", plannerRoutes);
+app.use("/api/development", studentDevelopmentRoutes);
 
 // ── 404 + centralized error handler (must be last) ───────────────
 app.use(notFound);

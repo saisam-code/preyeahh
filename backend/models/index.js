@@ -21,3 +21,7 @@ import "./Resource.js";
 import "./AIRoadmap.js";
 import "./Quiz.js";
 import "./MentorshipConversation.js";
+import "./CareerIntelligence.js";
+import "./PersonalCareerPlan.js";
+import "./StudentDevelopment.js";
+import "./Institution.js";

@@ -19,10 +19,33 @@ const skillSchema = new mongoose.Schema(
 
 const preferencesSchema = new mongoose.Schema(
   {
+    educationStage: {
+      type: String,
+      enum: [
+        "Class 6-8",
+        "Class 9-10",
+        "Intermediate / Class 11-12",
+        "Diploma",
+        "Undergraduate",
+        "Postgraduate",
+        "PhD",
+        "Independent Learner / Career Switcher",
+        "",
+      ],
+      default: "Undergraduate",
+    },
+    academicStream: { type: String, default: "" }, // MPC, BiPC, CEC, MEC, etc.
+    degreeOrProgram: { type: String, default: "" },
     currentRole: { type: String, default: "", trim: true },
     targetRole: { type: String, default: "", trim: true },
+    primaryCareerGoal: { type: String, default: "", trim: true },
+    alternativeCareerGoal: { type: String, default: "", trim: true },
+    exploringCareers: { type: [String], default: [] },
     experienceLevel: { type: String, enum: ["beginner", "intermediate", "advanced"], default: "beginner" },
     learningStyle: { type: String, enum: ["visual", "hands-on", "reading", ""], default: "" },
+    budgetRange: { type: String, default: "" },
+    strengths: { type: [String], default: [] },
+    weaknesses: { type: [String], default: [] },
     goals: { type: [String], default: [] },
     interests: { type: [String], default: [] },
     skills: { type: [skillSchema], default: [] },

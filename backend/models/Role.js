@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { contentAuditFields } from "./ContentAudit.js";
+import { careerRealitySchema, careerExperimentSchema, verificationMetadataSchema } from "./CareerIntelligence.js";
 
 /**
  * Mirrors: CREATE TABLE roles (... guidance_overview, guidance_steps,
@@ -36,6 +37,13 @@ const roleSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
+    domain: { type: String, default: "Engineering & Technology", trim: true },
+    category: {
+      type: String,
+      enum: ["Conventional", "Unconventional", "Emerging", "Creative", "Sports & Performing Arts"],
+      default: "Conventional",
+      index: true,
+    },
     type: {
       type: String,
       enum: {
@@ -44,8 +52,15 @@ const roleSchema = new mongoose.Schema(
       },
       required: true,
     },
+    educationStages: {
+      type: [String],
+      default: ["Undergraduate", "Postgraduate"], // e.g. Class 6-8, Class 9-10, Class 11-12, Diploma, Undergraduate, Postgraduate, PhD
+    },
     description: { type: String, default: "", trim: true, maxlength: 500 },
     guidance: { type: roleGuidanceSchema, default: () => ({}) },
+    reality: { type: careerRealitySchema, default: () => ({}) },
+    experiments: [careerExperimentSchema],
+    verification: { type: verificationMetadataSchema, default: () => ({ status: "UNVERIFIED" }) },
     ...contentAuditFields,
   },
   { timestamps: true }

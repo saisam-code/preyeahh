@@ -5,6 +5,7 @@ import {
   FaBars, FaXmark, FaHouse, FaBriefcase, FaCompass, FaCircleInfo,
   FaCircleUser, FaChevronDown, FaGauge, FaRightFromBracket,
   FaCommentDots, FaMap, FaGraduationCap, FaBookmark, FaUser,
+  FaCalendarCheck,
 } from "react-icons/fa6";
 import ThemeToggle from "./ThemeToggle.jsx";
 import LoginModal from "./LoginModal.jsx";
@@ -15,6 +16,8 @@ import { listMentorshipConversations } from "../services/mentorshipService.js";
 
 const NAV_ITEMS = [
   { to: "/", label: "Home", icon: FaHouse, exact: true },
+  { to: "/discovery", label: "Discovery", icon: FaCompass },
+  { to: "/planner", label: "Planner", icon: FaCalendarCheck, studentOnly: true },
   { to: "/admin", label: "Admin Panel", icon: FaGauge, requiresRole: ["admin"] },
   { to: "/roles", label: "Roles", icon: FaBriefcase, branchGated: true },
   { to: "/beyond", label: "Beyond", icon: FaCompass, branchGated: true },

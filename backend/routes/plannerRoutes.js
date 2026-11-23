@@ -1,0 +1,23 @@
+import express from "express";
+import {
+  getStudentPlan,
+  addTask,
+  toggleTaskCompletion,
+  rescheduleTask,
+  deleteTask,
+  generateAdaptiveSchedule,
+} from "../controllers/plannerController.js";
+import { protect, authorize } from "../middleware/auth.js";
+
+const router = express.Router();
+
+router.use(protect, authorize("student"));
+
+router.get("/", getStudentPlan);
+router.post("/tasks", addTask);
+router.patch("/tasks/:taskId/toggle", toggleTaskCompletion);
+router.patch("/tasks/:taskId/reschedule", rescheduleTask);
+router.delete("/tasks/:taskId", deleteTask);
+router.post("/generate-schedule", generateAdaptiveSchedule);
+
+export default router;
