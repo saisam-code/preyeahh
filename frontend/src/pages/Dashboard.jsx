@@ -12,7 +12,7 @@ import {
   FaCircleCheck,
   FaBolt,
   FaXmark,
-  FaPartyHorn,
+  FaBullhorn,
 } from "react-icons/fa6";
 
 import { useAuth } from "../context/AuthContext.jsx";
@@ -196,7 +196,7 @@ export default function Dashboard() {
           {roleNotifications.map((notif) => (
             <div key={notif._id} className="role-notification-banner">
               <div className="role-notification-icon">
-                <FaPartyHorn />
+                <FaBullhorn />
               </div>
               <div className="role-notification-content">
                 <strong>Great news!</strong> Your requested role <em>"{notif.roleName}"</em>
