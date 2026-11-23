@@ -129,6 +129,25 @@ export default function GuideLayout() {
             </NavLink>
 
             <NavLink
+              to="/roles"
+              className={({ isActive }) => (isActive ? "active" : "")}
+              style={({ isActive }) => ({
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                padding: "0.45rem 0.8rem",
+                borderRadius: "0.5rem",
+                fontSize: "0.88rem",
+                fontWeight: 600,
+                textDecoration: "none",
+                color: isActive ? "#fff" : "var(--text)",
+                background: isActive ? "var(--primary)" : "transparent",
+              })}
+            >
+              <FaCompass /> Roles Catalog
+            </NavLink>
+
+            <NavLink
               to="/resources"
               className={({ isActive }) => (isActive ? "active" : "")}
               style={({ isActive }) => ({
@@ -145,6 +164,25 @@ export default function GuideLayout() {
               })}
             >
               <FaBookmark /> Resources
+            </NavLink>
+
+            <NavLink
+              to="/beyond"
+              className={({ isActive }) => (isActive ? "active" : "")}
+              style={({ isActive }) => ({
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.4rem",
+                padding: "0.45rem 0.8rem",
+                borderRadius: "0.5rem",
+                fontSize: "0.88rem",
+                fontWeight: 600,
+                textDecoration: "none",
+                color: isActive ? "#fff" : "var(--text)",
+                background: isActive ? "var(--primary)" : "transparent",
+              })}
+            >
+              <FaBullseye /> Beyond Degree
             </NavLink>
           </div>
 

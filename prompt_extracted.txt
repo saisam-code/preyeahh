@@ -1,0 +1,108 @@
+<USER_REQUEST>
+PREYEAHH — FIX & CONSOLIDATION PROMPT (repo: preyeah-unified, backend/ + frontend/)
+
+RULES
+- Audit first. Do not rebuild. One phase at a time. After each phase run: `node --test` (backend), `npm run build` and `npm run lint` (frontend). Fix failures before continuing.
+- Never claim something is fixed without a test or a reproducible manual check. After each phase report: files changed, tests added, what remains open.
+- Never invent career, salary, exam or verification data. Missing data must display "No verified data yet".
+- Additive DB changes only. Write idempotent migration scripts and test them on a copy.
+
+VERIFY FIRST (report results, change nothing yet)
+a) Files unreadable in my review: backend/services/performanceService.js, frontend/src/index.css, frontend/src/components/admin/{AdminChats,AdminMessages,AdminRoadmaps,AdminStudents}.jsx, frontend/src/services/adminService.js (shown as binary; may be UTF-16 from a PowerShell redirect). Confirm each is UTF-8 without BOM. Re-save if not. grep the repo for mojibake ("â€", "â‚¹", "Ã") and fix.
+b) Confirm index.css defines every class used: modal-backdrop, modal-card, tabs, markdown-body, chat-workspace, chat-mode-rail, chat-ai-sidebar, chat-ai-main, chat-mentor-area, admin-* . Add or rename what is missing.
+c) models/Guidance.js has `uppercase: true` AND a custom setter returning "All". Setter order may re-uppercase it to "ALL", so "All" lookups miss. Write a test; if broken, remove `uppercase` and normalise in the setter only.
+d) Root: confirm .gitignore exists and no .env is committed. Remove digest.txt and .vscode from the repo. Check the production DB for demo accounts (demo.student@gmail.com, demo.guide@nbkrist.org) and delete them if present.
+e) Test GROQ_MODEL (default openai/gpt-oss-120b) with response_format json_object: if reasoning tokens eat max_tokens and JSON truncates, raise max_tokens or lower reasoning effort.
+
+PHASE 0 — APP-BREAKING
+0.1 Home.jsx uses <motion.div> without importing framer-motion. Add the import. Add a top-level ErrorBoundary in main.jsx.
+0.2 Auth funnel is dead. Navbar.jsx, LoginModal.jsx and Dashboard.jsx are mounted nowhere. Login.jsx has no register. GetStarted and StudentOnboarding send guests to /login, and "Create an account" loops to /get-started. Build:
+   - /register with role tabs student|guide|parent|institution, using the existing AuthContext register functions and per-role validation.
+   - /verify-email/:token (reads ?role=, calls GET /{students|guides}/verify-email/:token, shows result, links to login).
+   - /forgot-password and /reset-password for student|guide|admin (and parent|institution once Phase 1 adds endpoints). Backend email links and the AdminLogin link must match these routes.
+   - A resend-verification UI.
+   - Delete Navbar.jsx, LoginModal.jsx, Dashboard.jsx after moving anything useful (role-request-accepted banner, progress widgets from /api/progress and /api/performance) into the student planner/home.
+0.3 AuthContext.updateUser is a no-op when user is null, so Google login leaves the app logged out until refresh. Add setSession({ user, accessToken, role }) (sets token, active role, user state, localStorage). Use it in GoogleCallback, GoogleOnboarding and Login. Redirect by role after login. PublicLayout shows "Open workspace" when authenticated. /login redirects authenticated users.
+0.4 Guides are bounced: /chat, /resources, /roles, /beyond are defined under both the student and the guide ProtectedRoute groups, the router picks the student one, and guides get Navigate("/"). Define each path once under a RoleLayout (allowedRoles ["student","guide"]) that renders StudentLayout or GuideLayout by role. Add a router test for each role.
+0.5 Planner:
+   - addTask sets status "Planned", which is not in the enum, so every add fails. Use "Not Started".
+   - AI schedule: use jsonCompletion with a schema. Whitelist category, priority and time format. Clamp durations. Cap the item count. Reject output whose daily minutes exceed availableHours*60. Replace previous AI tasks in the generated range instead of appending duplicates.
+   - Create the plan with findOneAndUpdate upsert (unique-index race under StrictMode).
+   - Create ONE shared constants module (EDUCATION_STAGES, GOAL_TYPES, etc.) used by Student, PersonalCareerPlan, Opportunity and Role. Today Student uses "Intermediate / Class 11-12" and Plan uses "Class 11-12 / Intermediate", which will 500 plan creation once stage is saved.
+   - Dates: client uses toISOString (UTC), the server uses server-local date, so "today" is wrong 00:00–05:30 IST. Store the IANA timezone on the plan and compute YYYY-MM-DD in that zone on both sides.
+   - Week and Month tabs currently render the same list. Week = today..+6. Month = a real calendar grid.
+   - The deadline modal has state and a handler but no trigger or JSX. Render it, and feed deadlines into schedule generation (exam week lowers load).
+0.6 Google OAuth:
+   - Errors redirect to /?google_error= and Home ignores it. Redirect to /login?google_error= and show the message.
+   - The server treats any role except "guide" as student, so Login sending role=parent|institution creates a Student. Accept only student|guide server-side and hide the Google button for parent and institution.
+   - Remove access_type offline.
+   - The guide Google path issues tokens without checking status === "approved". Add the check.
+0.7 Guide.comparePassword: a Google-only guide has no password, so bcrypt.compare(x, undefined) throws and login 500s. Guard it like Student does and return 401.
+0.8 Env: add config/env.js that validates required variables at boot (MONGO_URI, JWT_SECRET, JWT_REFRESH_SECRET, CLIENT_URL, GROQ_API_KEY, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL, email provider vars) and exits with a clear message. Complete the empty README env block and add .env.example. Add "test": "node --test" to backend/package.json.
+0.9 autoIndex is off in production and there is no migration. Add scripts/syncIndexes.js (Model.syncIndexes() for every model, with a --dry-run flag) and run it on deploy. Add a test that GET /api/resources?q=x works.
+0.10 Email: registration awaits sendEmail after creating the user, so an SMTP failure leaves an orphan unverified user and a 500. Send after the response or via a queue, log failures, and make resend work. If hosting on Render free, outbound SMTP is blocked, so use an HTTPS email API.
+0.11 The refresh cookie is third-party (vercel.app -> onrender.com). Safari/iOS/Brave drop it and users are logged out every 15 min. Proxy /api through a Vercel rewrite to Render (or use same-site custom domains) and use "/api" as the API base. In api.js, skip the 401 auto-refresh for /login, /register, /refresh endpoints.
+
+PHASE 1 — SECURITY AND PRIVACY (blocks launch, especially for minors)
+1.1 Google linking pre-hijack: when Google signs in to an existing UNVERIFIED password account, wipe the stored password hash, bump refreshTokenVersion, then link. (Do the same in the guide path.)
+1.2 In profileService split toSetFields: share flags (shareContactWithGuides, shareProfileWithGuides) may only be set by the explicit PUT /students/profile/preferences. AI extraction and passive chat extraction must never set them. Add a test where the AI returns share flags and they are ignored.
+1.3 Parent linking: remove the auto-link by studentEmail in registerParent. Build ParentLink (parentId, studentId, status PENDING|ACTIVE|REVOKED, createdBy, permissions). A student approves or revokes in their settings. Parent endpoints return data only for ACTIVE links and only the permitted fields. Add email verification, validators and rate limits for parent endpoints. Test: parent cannot read an unlinked student.
+1.4 Institutions:
+   - Login and public directory only for status APPROVED. Add admin endpoints and UI to approve/reject/suspend.
+   - Association codes from crypto.randomBytes, rotatable, and stored hashed.
+   - A matching code creates a PENDING membership, not ACTIVE. Add institution-admin endpoints to list, approve and remove members, scoped with a scopeToInstitution middleware that derives institutionId from the DB.
+   - One ACTIVE membership per student. A REMOVED student may re-request.
+   - Test: Institution A admin cannot read or modify Institution B data.
+1.5 Parent and institution auth: move to tokenService (15m access + refresh cookie + refreshTokenVersion + logout invalidation). Add express-validator rules, authLimiter, email verification and forgot/reset password. Add the matching /auth/extended/*/refresh endpoints the frontend already calls.
+1.6 Defaults private: CareerOutcome.isPublic and StudentProject.isPublicOnPortfolio default false. Public outcomes require explicit opt-in plus admin moderation, never show names of under-18 users, and the heading must not say "Verified" unless a verification record exists. /development/portfolio/:studentId only returns items whose owner opted in, and never for minors.
+1.7 AI endpoints: put compare, switch-analysis, planner generate and every other Groq caller behind protect + aiLimiter. Add express-validator (type, length caps on currentCareer/targetCareer/constraints, ObjectId arrays, 2–5 ids, deduped). Treat user text as data in prompts.
+1.8 Create utils/escapeRegex.js and use it in discoverCareers, listOpportunities, adminController (getAllStudents, getAllChats, getAllMessages). Prefer text indexes.
+1.9 IDOR: markNotificationRead must filter by owner (student id or matching email). Accept and dismiss role requests must enforce the guide's branch (admin any). Validate acceptedRole exists. Create the role and accept the request atomically (or make accept idempotent).
+1.10 Whitelist fields on createResource and createBeyond. Drop views, bookmarks, isCurated, createdBy from client input. Make /resources/:id/view per-IP/user deduped and rate-limited, or stop ranking by views.
+1.11 Reports and blocks: report targets come from real context (a mentorship conversation's guide/student), validated to exist, with a reportedUserModel field and the correct reporterModel for all roles. Enforce UserBlock in mentorship start and send. Add admin endpoints and UI to review reports and close them. Remove the hardcoded "650000000000000000000001".
+1.12 Minors: add dateOfBirth or ageBand at registration. Under 18: parental consent flow (ParentLink ACTIVE required) before any guide messaging, guide contact limited to platform chat, no public outcomes or portfolio. Put a TODO for me to review DPDP Act parental-consent requirements with a lawyer.
+1.13 Admin transcript access: add an AuditLog (who, what, when, reason). Admin must give a reason (e.g. linked report) to open a chat or mentorship transcript. getAllMessages must paginate efficiently (no $unwind over all chats).
+1.14 loginStudent returns a Google-only-specific message before checking the password, which enumerates accounts. Return the generic 401 and email the Google hint instead.
+1.15 seedResources: require --force and print a warning (it deletes all resources including guide-created ones). seedDemoAccounts: also refuse unless NODE_ENV is explicitly "development".
+
+PHASE 2 — FABRICATED DATA
+2.1 Remove every default in careerRealitySchema (salary, demand, competition, timeToEmployability, costs). Replace with optional fields shaped {value, kind: VERIFIED|ESTIMATE|AI_GENERATED, source, verifiedBy, verifiedAt, updatedAt}. UI shows a badge per kind and "No verified data yet" when empty. Remove the UI fallbacks ("₹4 - ₹8 LPA", "48 months", demand "High"). compareCareers and the AI prompts must exclude unverified/empty fields.
+2.2 Extend roleController (create/update) and validators to accept domain, category, educationStages, reality, experiments and verification (admin only for verification). Update AdminRoles to edit them. Add admin endpoints and UI to review VerificationSubmission records and apply approved ones to Role/Exam data.
+2.3 GovernmentCareer: it is not routed, not imported in models/index.js and cannot insert (attemptsAllowed.general/obc are Number but the seed uses strings). Either delete it, or: change those fields to String/Mixed, add status DRAFT by default, remove "VERIFIED OFFICIAL" and the invented notification numbers/vacancies/dates from the seed, require admin verification with a real source URL, add routes and UI. Do not ship unverified figures as verified.
+2.4 Remove or label fake content: ParentPortal (static tuition/salary/payback and a fake "Invitation reminder sent" toast — wire to ParentLink or remove), InstitutionPortal (hardcoded 1,248 / 36 / 4 / 12 and static events/notices — wire to real endpoints or hide the page), the experiments toast "added to your planner" (actually create a PlanTask or change the message), the "Verified Alumni" heading.
+2.5 Copy audit: list every claim on Home, About, RolePreviewSection and GetStarted (verified portfolios, faculty validation, parent consent visibility, institution exports, Class 6–PhD) and mark each as implemented, partial or not implemented. Remove or soften the unimplemented ones.
+
+PHASE 3 — CONSOLIDATE OLD VS NEW
+3.1 Education profile: add educationStage, academicStream, degreeOrProgram, board, subjects, dateOfBirth/ageBand to preferencesRules and the service so they actually persist (today the validator and toSetFields ignore them, so onboarding drops educationStage/primaryCareerGoal/alternativeCareerGoal). Use the shared constants from 0.5.
+3.2 One goal model: StudentGoal (userId, careerId|text, type PRIMARY|ALTERNATIVE|EXPLORING|INTEREST, status, history). Replace the four sources (RoleInterest committed/exploring, preferences.targetRole/primaryCareerGoal/alternativeCareerGoal, plan.primaryCareer, plan.goals[]). Migrate existing data. Derive preferences.targetRole and plan fields from it. Profile, Login "Save & Continue", Roles commit and the Planner all read and write the same model. Exactly one active PRIMARY.
+3.3 Remove NBKRIST hardcoding: make NBKRIST Institution #1 and migrate branch/students/guides into InstitutionMembership. Student.branch becomes optional. The gmail/nbkrist EMAIL_REGEX on Student is removed (independent students use any email). Guide email domain applies only to INSTITUTION-type guides of that institution. Add Guide.guideType (PREYEAHH|INSTITUTION) and institutionId. Roles/Beyond branch-lock and mentorship branch-lock apply only to institution content.
+3.4 Careers: add CareerDomain. Role gets domainId, and "core/non-core" becomes optional (meaningless for Pilot/Chef). Connect the 12-domain wheel to the DB: wheel selection opens real Career detail and compare. Seed non-engineering careers with NO statistics (empty reality). Remove the duplicate-per-branch card problem in discovery (group by title).
+3.5 Opportunities: merge Beyond and Opportunity or define clearly. Add admin CRUD, eligibility matching (stage, location, deadline) and a student page. Right now /development/opportunities returns [] with no UI or create endpoint.
+3.6 Roadmaps: link PlanTask to AIRoadmap topics, experiments and deadlines (linkedType/linkedId). Completing a roadmap topic completes the linked task. Replace the static default milestones with generated ones from the primary goal. Replan on: new exam, hours change, goal change, missed tasks (reschedule, never penalise).
+3.7 Onboarding: remove prefilled goal defaults and the unused stream; every value must be an explicit user choice. Submit the institution code to the association endpoint. Send new Google users through this same onboarding (they currently only see the engineering-branch page). Guests: carry the choices through registration (Login ignores location.state.onboardingData today).
+3.8 Retention: Chat and Quiz TTL deletes history after 7 days and wipes the "learning record". Before deletion, write an aggregate QuizResult (score, topic, difficulty, date, no content) and use it for progress and performance.
+3.9 Delete dead code: Navbar, LoginModal, Dashboard, unused service functions (reschedulePlannerTask, submitPlannerReview if still unused), unused imports. Remove the fake scripts auditVerify.js and authAndNavVerify.js.
+
+PHASE 4 — ADVERTISED BUT MISSING UI
+- Render the career compare result (backend returns {roles, aiAnalysis}; the UI stores it and never shows it). Support 2–5.
+- Experiments: list started ones, complete form (evidence, reflection, rating), pull templates from Role.experiments instead of 3 hardcoded cards.
+- Projects/portfolio page, opportunities page, role-request-accepted notifications, learning progress and performance widgets, institution association status page.
+
+PHASE 5 — TESTS
+Real tests (supertest + mongodb-memory-server): auth flows per role, refresh rotation, Google linking, authorization matrix (role x endpoint), cross-institution isolation, parent-link access, planner enums, AI endpoints throttled and validated, consent flags unchanged by AI, regex-escape, IDOR cases. Frontend: route tests per role, auth setSession. Add CI running test + build + lint.
+
+FINAL REPORT: for each phase list what changed, tests added, migrations required, and any item you could not verify.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-23T18:08:27+05:30.
+
+The user's current state is as follows:
+Active Document: d:\preyeah-unified\frontend\src\pages\ParentPortal.jsx (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 1
+Other open documents:
+- d:\preyeah-unified\backend\controllers\careerIntelligenceController.js (LANGUAGE_UNSPECIFIED)
+- d:\preyeah-unified\frontend\src\layouts\PublicLayout.jsx (LANGUAGE_UNSPECIFIED)
+- d:\preyeah-unified\frontend\src\pages\Roles.jsx (LANGUAGE_UNSPECIFIED)
+- d:\preyeah-unified\frontend\src\pages\Home.jsx (LANGUAGE_UNSPECIFIED)
+- d:\preyeah-unified\frontend\src\pages\InstitutionPortal.jsx (LANGUAGE_UNSPECIFIED)
+</ADDITIONAL_METADATA>

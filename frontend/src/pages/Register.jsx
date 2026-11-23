@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash, FaArrowRight, FaXmark, FaCheck } from "react-icons/fa6";
@@ -16,7 +16,20 @@ const BRANCH_OPTIONS = ["CSE", "ECE", "EEE", "MECH", "CIVIL", "IT", "AI&DS", "OT
 export default function Register() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { registerStudent, registerGuide, registerParent, registerInstitution } = useAuth();
+  const { isAuthenticated, user, registerStudent, registerGuide, registerParent, registerInstitution } = useAuth();
+
+  // Redirect authenticated users to their workspace
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const dest =
+        user.role === "institution" ? "/institution-portal" :
+        user.role === "guide" ? "/guide-panel" :
+        user.role === "parent" ? "/parent-portal" :
+        user.role === "admin" ? "/admin" :
+        "/dashboard";
+      navigate(dest, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const [role, setRole] = useState(() => {
     const r = searchParams.get("role");

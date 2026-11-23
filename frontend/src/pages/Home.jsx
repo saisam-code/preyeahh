@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   FaCompass,
@@ -25,6 +26,7 @@ import {
   FaHandshakeAngle,
   FaLightbulb,
 } from "react-icons/fa6";
+import { useAuth } from "../context/AuthContext.jsx";
 import RolePreviewSection from "../components/RolePreviewSection.jsx";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 
@@ -62,6 +64,21 @@ const PROBLEMS_SOLVED = [
 ];
 
 export default function Home() {
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const dest =
+        user.role === "institution" ? "/institution-portal" :
+        user.role === "guide" ? "/guide-panel" :
+        user.role === "parent" ? "/parent-portal" :
+        user.role === "admin" ? "/admin" :
+        "/dashboard";
+      navigate(dest, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
+
   return (
     <div className="home-container" style={{ maxWidth: 1240, margin: "0 auto", padding: "0 1.5rem" }}>
       {/* ── EDITORIAL HERO ── */}
