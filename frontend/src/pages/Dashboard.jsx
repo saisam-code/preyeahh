@@ -14,7 +14,6 @@ import {
   FaXmark,
   FaBullhorn,
   FaCalendarCheck,
-  FaBuildingColumns,
 } from "react-icons/fa6";
 
 import { useAuth } from "../context/AuthContext.jsx";
@@ -172,12 +171,6 @@ export default function Dashboard() {
       highlight: true,
     },
     {
-      title: "Government Careers Intelligence",
-      description: "Explore 11 public sector categories, exam eligibility, syllabus, and 7th CPC salary structures.",
-      icon: FaBuildingColumns,
-      to: "/government-careers",
-    },
-    {
       title: "Adaptive AI Roadmaps",
       description: "Generate personalized plans and track the next milestones that move you closer to your target role.",
       icon: FaMap,
@@ -219,7 +212,7 @@ export default function Dashboard() {
           </h1>
         </div>
         <p>
-          Your central career development hub brings together verified roadmaps, adaptive daily planning, quiz telemetry, and government exam intelligence in one place.
+          Your central career development hub brings together verified roadmaps, adaptive daily planning, and quiz telemetry in one place.
         </p>
       </div>
 

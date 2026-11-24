@@ -41,7 +41,7 @@ export default function PublicLayout() {
             </span>
           </Link>
 
-          {/* Navigation Items (Home, About & Government Careers) */}
+          {/* Public Navigation */}
           <nav className="desktop-public-nav" style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
             <NavLink
               to="/"
@@ -71,23 +71,6 @@ export default function PublicLayout() {
               })}
             >
               About
-            </NavLink>
-            <NavLink
-              to="/government-careers"
-              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-              style={({ isActive }) => ({
-                textDecoration: "none",
-                fontSize: "var(--font-size-md)",
-                fontWeight: 600,
-                color: isActive ? "var(--primary)" : "var(--text)",
-                padding: "0.35rem 0.6rem",
-                borderRadius: "var(--radius)",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.3rem",
-              })}
-            >
-              Govt Careers
             </NavLink>
           </nav>
 
@@ -161,7 +144,7 @@ export default function PublicLayout() {
         </div>
       </header>
 
-      {/* ── MOBILE DRAWER: ONLY HOME, ABOUT, LOGIN, GET STARTED ── */}
+      {/* ── MOBILE DRAWER: HOME, ABOUT, LOGIN, GET STARTED ── */}
       {drawerOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex" }}>
           <div
@@ -207,14 +190,6 @@ export default function PublicLayout() {
             >
               About
             </NavLink>
-            <NavLink
-              to="/government-careers"
-              onClick={() => setDrawerOpen(false)}
-              style={{ textDecoration: "none", color: "var(--text)", fontSize: "var(--font-size-md)", fontWeight: 600, padding: "0.5rem 0" }}
-            >
-              Govt Careers
-            </NavLink>
-
             <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0.5rem 0" }} />
 
             {isAuthenticated ? (
@@ -269,7 +244,6 @@ export default function PublicLayout() {
           <div className="public-footer-links" style={{ display: "flex", alignItems: "center", gap: "1.5rem", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
             <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>Home</Link>
             <Link to="/about" style={{ textDecoration: "none", color: "inherit" }}>About</Link>
-            <Link to="/government-careers" style={{ textDecoration: "none", color: "inherit" }}>Govt Careers</Link>
             <Link to="/get-started" style={{ textDecoration: "none", color: "inherit" }}>Get Started</Link>
             <Link to="/login" style={{ textDecoration: "none", color: "inherit" }}>Sign In</Link>
           </div>

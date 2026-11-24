@@ -13,7 +13,6 @@ import {
   FaBullseye,
   FaAward,
   FaClock,
-  FaBuildingColumns,
 } from "react-icons/fa6";
 import {
   discoverCareers,

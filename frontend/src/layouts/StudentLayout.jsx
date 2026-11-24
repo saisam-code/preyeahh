@@ -14,7 +14,6 @@ import {
   FaRightFromBracket,
   FaBars,
   FaXmark,
-  FaBuildingColumns,
   FaHouse,
   FaBullseye,
 } from "react-icons/fa6";
@@ -25,7 +24,6 @@ import preyeahhLogo from "../assets/preyeahh-logo.png";
 const STUDENT_NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: FaHouse },
   { to: "/discovery", label: "Discovery", icon: FaCompass },
-  { to: "/government-careers", label: "Govt Careers", icon: FaBuildingColumns },
   { to: "/planner", label: "Career Planner", icon: FaCalendarCheck },
   { to: "/roadmaps", label: "Roadmaps", icon: FaMap },
   { to: "/quiz", label: "Quiz & Learn", icon: FaGraduationCap },
