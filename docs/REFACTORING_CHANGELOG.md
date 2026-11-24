@@ -128,7 +128,7 @@
 - **Migration impact:** Compatibility re-exports preserve old imports.
 - **Tests:** Frontend build and lint.
 - **Verification:** Passed.
-- **Follow-up:** The unused `careerPlannerService.js` compatibility facade was removed after all in-repository consumers used domain-specific services. See `REPOSITORY_OPTIMIZATION_REPORT.md`.
+- **Follow-up:** The unused `careerPlannerService.js` compatibility facade was removed after all in-repository consumers used domain-specific services.
 
 ### Removed empty placeholder and cleaned lint debt
 

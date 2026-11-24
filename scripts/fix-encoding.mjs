@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -156,6 +156,12 @@ async function main() {
 
   for (const filename of trackedFiles) {
     const filePath = path.join(repoRoot, filename);
+    try {
+      await stat(filePath);
+    } catch (error) {
+      if (error.code === "ENOENT") continue;
+      throw error;
+    }
     const buffer = await readFile(filePath);
     if (buffer.includes(0)) continue;
 
