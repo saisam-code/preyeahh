@@ -10,7 +10,7 @@
  *   - ID token verified (signature + iss + aud + exp + email_verified)
  *   - google sub used as stable external identity key (never email)
  *   - Client secret never leaves the server
- *   - Only students can use Google OAuth (guide/admin auth is unchanged)
+ *   - Students and guides can use Google OAuth
  */
 
 import crypto from "crypto";
@@ -18,7 +18,6 @@ import { OAuth2Client } from "google-auth-library";
 import Student from "../models/Student.js";
 import logger from "../utils/logger.js";
 import { issueTokens, signOnboardingToken } from "../services/tokenService.js";
-import { isInstitutionGuideEmail } from "../config/institutionDomains.js";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -56,7 +55,9 @@ function stateCookieOptions() {
 import Guide from "../models/Guide.js";
 
 export function isGoogleEmailAllowedForRole(role, email) {
-  return role !== "guide" || isInstitutionGuideEmail(email);
+  return ["student", "guide"].includes(role)
+    && typeof email === "string"
+    && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 // ── GET /api/auth/google ──────────────────────────────────────────────────────
@@ -151,7 +152,7 @@ export async function handleGoogleCallback(req, res) {
     }
 
     if (!isGoogleEmailAllowedForRole(role, email)) {
-      logger.warn("[google-auth] Disallowed email domain for guide:", email);
+      logger.warn("[google-auth] Invalid Google email for role:", role);
       return res.redirect(`${clientUrl}/login?google_error=domain_not_allowed`);
     }
 

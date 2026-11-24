@@ -97,7 +97,7 @@ const ROLE_PREVIEWS = [
       "Mentorship inbox: manage incoming 1-on-1 guidance requests and student inquiries",
       "Authorized student track records: inspect verified roadmap progress before giving advice",
       "Curate guidance & resources: share tested playlists, books, and common industry pitfalls",
-      "Verified badge: credential verification via institutional affiliation (@nbkrist.org)",
+      "Verified badge: credential verification via institutional affiliation",
       "Campus & alumni networks: connect high-performing students to industry openings",
     ],
     demoInterface: {

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import { isInstitutionGuideEmail } from "../config/institutionDomains.js";
 
 const guideSchema = new mongoose.Schema(
   {
@@ -13,11 +12,8 @@ const guideSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       validate: {
-        validator: function (v) {
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return false;
-          return this.guideType !== "INSTITUTION" || isInstitutionGuideEmail(v);
-        },
-        message: "Please enter a valid official email address",
+        validator: (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v),
+        message: "Please enter a valid email address",
       },
     },
     password: { type: String, required: function() { return !this.googleId; }, minlength: 6, select: false },

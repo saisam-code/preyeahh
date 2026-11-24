@@ -11,8 +11,8 @@ const institutionSchema = new mongoose.Schema(
     code: { type: String, required: true, uppercase: true, unique: true, trim: true },
     category: {
       type: String,
-      enum: ["School", "Junior College", "Engineering College", "University", "Polytechnic"],
-      default: "Engineering College",
+      enum: ["School", "Junior College", "Engineering College", "College / Institute", "University", "Polytechnic", "Other"],
+      default: "College / Institute",
     },
     location: { type: String, default: "" },
     website: { type: String, default: "" },

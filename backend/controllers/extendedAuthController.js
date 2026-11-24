@@ -211,7 +211,7 @@ export const registerInstitution = asyncHandler(async (req, res) => {
   const inst = new Institution({
     name: name.trim(),
     code: normalizedCode,
-    category: category || "Engineering College",
+    category: category || "College / Institute",
     location: location || "",
     website: website || "",
     contactEmail: normalizedEmail,

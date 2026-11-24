@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validationResult } from "express-validator";
 import { isGoogleEmailAllowedForRole } from "../controllers/googleAuthController.js";
-import { INSTITUTION_GUIDE_EMAIL_DOMAIN, isInstitutionGuideEmail } from "../config/institutionDomains.js";
 import { authLimiter, aiLimiter } from "../middleware/rateLimiters.js";
 import { protect } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -80,17 +79,16 @@ test("AI request validators cap comparison IDs, slugs, and career-switch input",
   assert.ok((await validateRules(calculateFinancialRoiRules, { startingSalary: -1 })).length > 0);
 });
 
-test("institution guide domain is configured once while Google student email domains remain unrestricted", async () => {
-  assert.equal(isInstitutionGuideEmail(`mentor@${INSTITUTION_GUIDE_EMAIL_DOMAIN}`), true);
-  assert.equal(isInstitutionGuideEmail("mentor@another-domain.example"), false);
+test("guide registration and Google sign-in accept any valid email domain", async () => {
   assert.equal(isGoogleEmailAllowedForRole("student", "learner@another-domain.example"), true);
-  assert.equal(isGoogleEmailAllowedForRole("guide", `mentor@${INSTITUTION_GUIDE_EMAIL_DOMAIN}`), true);
-  assert.equal(isGoogleEmailAllowedForRole("guide", "mentor@another-domain.example"), false);
+  assert.equal(isGoogleEmailAllowedForRole("guide", "mentor@another-domain.example"), true);
+  assert.equal(isGoogleEmailAllowedForRole("guide", "not-an-email"), false);
+  assert.equal(isGoogleEmailAllowedForRole("admin", "mentor@another-domain.example"), false);
 
   const guideRegistrationReq = {
     body: {
       name: "Guide",
-      email: `mentor@${INSTITUTION_GUIDE_EMAIL_DOMAIN}`,
+      email: "mentor@another-domain.example",
       password: "example-password",
       branch: "OTHER",
       roleNames: ["Mentor"],
@@ -101,19 +99,18 @@ test("institution guide domain is configured once while Google student email dom
   assert.deepEqual(validationResult(guideRegistrationReq).array(), []);
   const institutionGuide = new Guide({
     name: "Guide",
-    email: `mentor@${INSTITUTION_GUIDE_EMAIL_DOMAIN}`,
+    email: "mentor@another-domain.example",
     password: "example-password",
     branch: "OTHER",
     roleNames: ["Mentor"],
   });
   assert.equal(institutionGuide.validateSync()?.errors?.email, undefined);
 
-  const platformGuide = new Guide({
+  const invalidEmailGuide = new Guide({
     name: "Platform Guide",
-    email: "mentor@another-domain.example",
+    email: "not-an-email",
     password: "example-password",
     branch: "OTHER",
-    guideType: "PREYEAHH",
   });
-  assert.equal(platformGuide.validateSync()?.errors?.email, undefined);
+  assert.ok(invalidEmailGuide.validateSync()?.errors?.email);
 });

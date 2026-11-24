@@ -10,7 +10,7 @@ const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const GOOGLE_ERRORS = {
   access_denied: "Google sign-in was cancelled.",
-  domain_not_allowed: "This email domain is not allowed for this role.",
+  domain_not_allowed: "This Google account can't be used for the selected role.",
   email_not_verified: "Your Google email is not verified.",
   not_found: "No account found for that Google email. Register first.",
   state_mismatch: "Sign-in session expired. Please try again.",
@@ -116,10 +116,9 @@ export default function Login() {
               type="email"
               autoComplete="email"
               placeholder={
-                role === "guide" ? "you@nbkrist.org" :
                 role === "parent" ? "parent@example.com" :
                 role === "institution" ? "placement@college.edu" :
-                "you@gmail.com"
+                "you@example.com"
               }
               {...form.register("email", { required: "Email is required" })}
             />

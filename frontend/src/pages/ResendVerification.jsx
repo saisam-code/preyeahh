@@ -74,7 +74,7 @@ export default function ResendVerification() {
               cursor: "pointer",
             }}
           >
-            Guide Account (@nbkrist.org)
+            Guide Account
           </button>
         </div>
 
@@ -93,11 +93,11 @@ export default function ResendVerification() {
           <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div>
               <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>
-                {role === "guide" ? "Official NBKRIST Email" : "Registered Email"}
+                Registered Email
               </label>
               <input
                 type="email"
-                placeholder={role === "guide" ? "faculty@nbkrist.org" : "student@gmail.com"}
+                placeholder="you@example.com"
                 {...register("email", { required: "Email is required" })}
                 style={{ width: "100%", padding: "0.65rem 0.8rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
               />

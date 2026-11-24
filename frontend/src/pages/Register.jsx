@@ -53,6 +53,8 @@ export default function Register() {
       password: "",
       confirmPassword: "",
       educationStage: location.state?.onboardingData?.educationStage || "",
+      attendsInstitution: Boolean(location.state?.onboardingData?.schoolOrInstitution),
+      schoolOrInstitution: location.state?.onboardingData?.schoolOrInstitution || "",
       branch: "",
       roleNames: "Assistant Professor",
       bio: "",
@@ -60,7 +62,7 @@ export default function Register() {
       relationship: "Guardian",
       studentEmail: "",
       code: "",
-      category: "Engineering College",
+      category: "College / Institute",
       location: "",
       website: "",
       contactPerson: "",
@@ -69,6 +71,7 @@ export default function Register() {
   });
 
   const { register, handleSubmit, formState: { errors, isSubmitting }, setError, reset } = form;
+  const attendsInstitution = form.watch("attendsInstitution");
 
   const handleRoleChange = (newRole) => {
     setRole(newRole);
@@ -111,7 +114,7 @@ export default function Register() {
           name: values.name.trim(),
           email: values.email.trim().toLowerCase(),
           password: values.password,
-          branch: values.branch || "",
+          schoolOrInstitution: values.attendsInstitution ? values.schoolOrInstitution.trim() : "",
           interests: [...new Set([...onboardingInterests, ...selectedDomainInterests])],
           primaryCareerGoal,
           alternativeCareerGoal,
@@ -134,7 +137,7 @@ export default function Register() {
           roleNames: values.roleNames ? [values.roleNames] : ["Faculty Guide"],
           bio: values.bio,
         });
-        setSuccessMsg("Guide account submitted! Check your official @nbkrist.org email for verification.");
+        setSuccessMsg("Guide account submitted! Check your email for a verification link.");
       } else if (role === "parent") {
         await registerParent({
           name: values.name.trim(),
@@ -373,15 +376,12 @@ export default function Register() {
 
                 {/* Email Address */}
                 <div className="form-group">
-                  <label htmlFor="reg-email">
-                    {role === "guide" ? "Official College Email (@nbkrist.org)" : "Email Address"}
-                  </label>
+                  <label htmlFor="reg-email">Email Address</label>
                   <input
                     id="reg-email"
                     type="email"
                     autoComplete="email"
                     placeholder={
-                      role === "guide" ? "you@nbkrist.org" :
                       role === "institution" ? "placement@college.edu" :
                       role === "parent" ? "parent@example.com" :
                       "you@gmail.com"
@@ -389,8 +389,8 @@ export default function Register() {
                     {...register("email", {
                       required: "Email is required",
                       pattern: {
-                        value: role === "guide" ? /^[^\s@]+@nbkrist\.org$/i : /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: role === "guide" ? "Guides must register with an official @nbkrist.org email" : "Invalid email format",
+                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                        message: "Enter a valid email address",
                       },
                     })}
                   />
@@ -411,17 +411,48 @@ export default function Register() {
                   </div>
                 )}
 
-                {/* Student / Guide Branch Selector */}
-                {(role === "student" || role === "guide") && (
+                {/* Student Institution */}
+                {role === "student" && (
                   <div className="form-group">
-                    <label htmlFor="reg-branch">
-                      Engineering branch {role === "student" ? "(optional)" : ""}
+                    <label htmlFor="reg-attendsInstitution">
+                      <input
+                        id="reg-attendsInstitution"
+                        type="checkbox"
+                        style={{ width: "auto", padding: 0, marginRight: "0.5rem" }}
+                        {...register("attendsInstitution")}
+                      />
+                      I currently attend a school, college, or institute
                     </label>
+                    {attendsInstitution && (
+                      <>
+                        <input
+                          id="reg-schoolOrInstitution"
+                          type="text"
+                          placeholder="School, college, or institute name"
+                          {...register("schoolOrInstitution", {
+                            validate: (value) => (
+                              !form.getValues("attendsInstitution")
+                              || Boolean(value?.trim())
+                              || "Institution name is required"
+                            ),
+                            maxLength: { value: 150, message: "Institution name must be 150 characters or fewer" },
+                          })}
+                        />
+                        {errors.schoolOrInstitution && <small className="lp-err">{errors.schoolOrInstitution.message}</small>}
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Guide Department Selector */}
+                {role === "guide" && (
+                  <div className="form-group">
+                    <label htmlFor="reg-branch">Institution department / branch</label>
                     <select
                       id="reg-branch"
-                      {...register("branch", { required: role === "guide" ? "Branch is required for guides" : false })}
+                      {...register("branch", { required: "Department or branch is required for guides" })}
                     >
-                      <option value="">Not applicable / not selected</option>
+                      <option value="">Select a department / branch</option>
                       {BRANCH_OPTIONS.map((b) => (
                         <option key={b} value={b}>{b}</option>
                       ))}
@@ -476,7 +507,7 @@ export default function Register() {
                       <input
                         id="reg-studentEmail"
                         type="email"
-                        placeholder="ward@gmail.com or ward@nbkrist.org"
+                        placeholder="ward@example.com"
                         {...register("studentEmail")}
                       />
                     </div>
@@ -495,9 +526,12 @@ export default function Register() {
                       <div className="form-group">
                         <label htmlFor="reg-category">Category</label>
                         <select id="reg-category" {...register("category")}>
-                          <option value="Engineering College">Engineering College</option>
+                          <option value="School">School</option>
+                          <option value="Junior College">Junior College</option>
+                          <option value="College / Institute">College / Institute</option>
                           <option value="University">University</option>
                           <option value="Polytechnic">Polytechnic</option>
+                          <option value="Other">Other educational institution</option>
                         </select>
                       </div>
                     </div>

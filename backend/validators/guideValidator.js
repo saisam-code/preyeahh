@@ -1,10 +1,8 @@
 import { body, param } from "express-validator";
-import { isInstitutionGuideEmail } from "../config/institutionDomains.js";
 
 export const registerRules = [
   body("name").trim().notEmpty().withMessage("Name is required").isLength({ max: 100 }),
-  body("email").trim().notEmpty().withMessage("Email is required").isEmail().withMessage("Enter a valid email address")
-    .custom(isInstitutionGuideEmail).withMessage("Institution guides must register with their institution email"),
+  body("email").trim().notEmpty().withMessage("Email is required").isEmail().withMessage("Enter a valid email address"),
   body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
   body("branch").trim().notEmpty().withMessage("Branch is required").isLength({ max: 20 }),
   body("roleNames").isArray({ min: 1 }).withMessage("Select at least one role to guide"),

@@ -70,7 +70,7 @@ export default function CareerWheel({
           // Mid angle for text label and icon placement
           const midAngle = startAngle + segmentAngle / 2;
           const midRad = ((midAngle - 90) * Math.PI) / 180.0;
-          const textRadius = (innerRadius + outerRadius) / 2 + 6;
+          const textRadius = (innerRadius + outerRadius) / 2 + 18;
           const textX = center + textRadius * Math.cos(midRad);
           const textY = center + textRadius * Math.sin(midRad);
 
@@ -88,7 +88,7 @@ export default function CareerWheel({
               style={{ cursor: "pointer", transition: "all 0.25s ease" }}
               tabIndex={0}
               role="button"
-              aria-label={`${d.title} category`}
+              aria-label={`${d.title} category${isMultiSelected ? ", added to interests" : ""}`}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
@@ -108,9 +108,9 @@ export default function CareerWheel({
 
               {labelPresentation.background !== "transparent" && (
                 <rect
-                  x={textX - 44}
+                  x={textX - 40}
                   y={textY - 10}
-                  width="88"
+                  width="80"
                   height="20"
                   rx="6"
                   fill={labelPresentation.background}
@@ -133,7 +133,7 @@ export default function CareerWheel({
                 }}
                 transform={`rotate(${midAngle > 90 && midAngle < 270 ? midAngle + 180 : midAngle}, ${textX}, ${textY})`}
               >
-                {isMultiSelected ? `✓ ${d.shortTitle}` : d.shortTitle}
+                {d.shortTitle}
               </text>
               <foreignObject
                 x={center + (innerRadius + 18) * Math.cos(midRad) - 9}

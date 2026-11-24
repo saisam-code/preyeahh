@@ -14,10 +14,10 @@ import {
 } from "react-icons/fa6";
 
 export const WHEEL_DOMAIN_COLORS = Object.freeze({
-  "tech-eng": "#E4572E",
+  "tech-eng": "#E96840",
   "med-health": "#F3A712",
   "arts-media": "#17BEBB",
-  "business-ent": "#2E86AB",
+  "business-ent": "#287E9F",
   "science-res": "#3F5EFB",
   "law-public": "#7B4FD6",
   "edu-psych": "#C13CA4",
@@ -32,7 +32,7 @@ export const CAREER_DOMAINS = [
   {
     id: "tech-eng",
     title: "Technology & Engineering",
-    shortTitle: "Tech & Engineering",
+    shortTitle: "Tech",
     icon: FaLaptopCode,
     color: WHEEL_DOMAIN_COLORS["tech-eng"],
     description: "Build software, design intelligent systems, architecture, and shape the digital world.",
@@ -47,7 +47,7 @@ export const CAREER_DOMAINS = [
   {
     id: "med-health",
     title: "Medicine & Healthcare",
-    shortTitle: "Healthcare",
+    shortTitle: "Health",
     icon: FaHeartPulse,
     color: WHEEL_DOMAIN_COLORS["med-health"],
     description: "Heal lives, study disease mechanisms, and improve physical and mental human well-being.",
@@ -62,7 +62,7 @@ export const CAREER_DOMAINS = [
   {
     id: "arts-media",
     title: "Arts, Design & Media",
-    shortTitle: "Arts & Media",
+    shortTitle: "Arts",
     icon: FaPalette,
     color: WHEEL_DOMAIN_COLORS["arts-media"],
     description: "Express stories through visual design, cinema, sound, digital illustration, and media.",
@@ -92,7 +92,7 @@ export const CAREER_DOMAINS = [
   {
     id: "science-res",
     title: "Science & Research",
-    shortTitle: "Science & Research",
+    shortTitle: "Science",
     icon: FaMicroscope,
     color: WHEEL_DOMAIN_COLORS["science-res"],
     description: "Investigate cosmic mysteries, molecular physics, genetics, and fundamental scientific truths.",
@@ -107,7 +107,7 @@ export const CAREER_DOMAINS = [
   {
     id: "law-public",
     title: "Law & Public Services",
-    shortTitle: "Law & Public",
+    shortTitle: "Law",
     icon: FaScaleBalanced,
     color: WHEEL_DOMAIN_COLORS["law-public"],
     description: "Uphold justice, craft public policy, defend civil rights, and govern societal institutions.",
@@ -137,7 +137,7 @@ export const CAREER_DOMAINS = [
   {
     id: "sports-fit",
     title: "Sports & Fitness",
-    shortTitle: "Sports & Fitness",
+    shortTitle: "Sports",
     icon: FaDumbbell,
     color: WHEEL_DOMAIN_COLORS["sports-fit"],
     description: "Excel in athletic performance, sports analytics, biomechanics, and physical coaching.",
@@ -152,7 +152,7 @@ export const CAREER_DOMAINS = [
   {
     id: "agri-env",
     title: "Agriculture & Environment",
-    shortTitle: "Agriculture & Env",
+    shortTitle: "Agri",
     icon: FaSeedling,
     color: WHEEL_DOMAIN_COLORS["agri-env"],
     description: "Sustain planetary ecosystems, advance regenerative agriculture, and fight climate change.",
@@ -167,7 +167,7 @@ export const CAREER_DOMAINS = [
   {
     id: "trades-voc",
     title: "Skilled Trades & Vocational",
-    shortTitle: "Skilled Trades",
+    shortTitle: "Trades",
     icon: FaWrench,
     color: WHEEL_DOMAIN_COLORS["trades-voc"],
     description: "Master craft expertise, precision engineering, architectural builds, and technical mastery.",
@@ -182,7 +182,7 @@ export const CAREER_DOMAINS = [
   {
     id: "aviation-def",
     title: "Aviation & Defence",
-    shortTitle: "Aviation & Defence",
+    shortTitle: "Aviation",
     icon: FaPlaneDeparture,
     color: WHEEL_DOMAIN_COLORS["aviation-def"],
     description: "Pilot commercial aircraft, navigate flight operations, aerospace engineering, and national security.",
@@ -197,7 +197,7 @@ export const CAREER_DOMAINS = [
   {
     id: "emerging-unconv",
     title: "Emerging & Unconventional",
-    shortTitle: "Emerging & Creative",
+    shortTitle: "Emerging",
     icon: FaRocket,
     color: WHEEL_DOMAIN_COLORS["emerging-unconv"],
     description: "Pioneer new frontiers in content creation, esports, metaverse, culinary arts, and web3.",

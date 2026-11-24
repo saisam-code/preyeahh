@@ -167,9 +167,6 @@ export default function GoogleOnboarding() {
                 maxLength={20}
               />
             )}
-            <small style={{ fontSize: "var(--font-size-xs)", color: "var(--muted, var(--text-muted))", marginTop: "0.25rem", display: "block" }}>
-              Only @gmail.com and @nbkrist.org accounts are supported.
-            </small>
           </div>
 
           {error && (
