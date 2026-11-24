@@ -9,7 +9,7 @@
 
 The application is a React/Vite frontend and Express/Mongoose backend. The repository has a substantial existing Phase 1-3 refactor, including security/privacy models, new parent and institution workflows, government career data, career intelligence schemas, and a central model registry. It is presently buildable and the backend test suite passes.
 
-This takeover did not discard or reset existing work. It verified 34 backend tests, a frontend production build, and frontend lint. Three high-impact issues were addressed: portfolio projects now require explicit opt-in to public sharing, institution association requests no longer create an active membership, and career goals began being synchronized with `StudentGoal`.
+This takeover did not discard or reset existing work. The current foundation passes 39 backend tests, a frontend production build, and frontend lint. The earlier privacy and institution-approval fixes remain intact. This update adds a shared education-stage catalog, resumable student onboarding, optional non-engineering registration, and allowlisted profile persistence; it does not complete the broader PREYEAHH product specification.
 
 ## 2. Previous work reconstructed
 
@@ -27,9 +27,9 @@ Recent repository history also contains login and UI revisions, but no reliable 
 
 ## 3. Completed and verified
 
-- Backend test suite: 34 tests passed, 0 failed.
-- Frontend production build: passed, 803 modules transformed.
-- Frontend lint: 0 errors, 17 warnings.
+- Backend test suite: 39 tests passed, 0 failed.
+- Frontend production build: passed, 807 modules transformed; existing large-chunk warning remains.
+- Frontend lint: passed.
 - GovernmentCareer model registration and frontend/backend route usage.
 - Education-stage constants are duplicated exactly at backend and frontend constants.
 - Student portfolio and career outcomes default to private in Mongoose.
@@ -37,6 +37,10 @@ Recent repository history also contains login and UI revisions, but no reliable 
 - ParentLink defaults to PENDING and false consent.
 - `CareerIntelligence`, `Role`, `GovernmentCareer`, and `StudentDevelopment` have verification metadata reuse.
 - AI planner JSON is filtered against allowed categories, priorities, duration limits, and day offsets.
+- Education stages now come from `shared/educationStages.js`, with legacy labels normalized at the backend and frontend boundaries.
+- Student profiles support detailed school/program/location fields and retain an education-history snapshot when a completed learner changes education stage or program details.
+- Student onboarding can resume from a device draft and saves authenticated progress by step; guest onboarding data is sent through registration and persisted via explicit profile-field allowlists.
+- Student registration no longer assumes an engineering branch or career goal; guide branch requirements remain unchanged, and privacy-consent fields are not accepted from registration/onboarding payloads.
 - Uncommitted frontend institution, parent, and student-link service files are not imported and remain candidate utilities, not repository truth.
 
 ## 4. Implemented but not verified
@@ -54,6 +58,12 @@ These changes compile and pass tests, but require a real MongoDB migration/run t
 
 `StudentGoal` exists but legacy sources remain in `Student.preferences`, `PersonalCareerPlan.primaryCareer/alternativeCareer/goals`, and `RoleInterest`. Previous code used all of these. This work only begins the convergence; it does not remove or migrate legacy fields or add migration enforcement.
 
+Onboarding and manual profile updates now synchronize selected primary/alternative career goals, pausing replaced goals instead of leaving them active. Discovery, roadmaps, and planner consumers still need a canonical end-to-end read path.
+
+### Education and onboarding
+
+The current change provides a reusable education-stage vocabulary, additive profile fields/history, resumable drafts, and guest registration persistence. It is a foundation only: there is no verified live MongoDB migration, and broader age-adaptive learning, school/parent workflows, and personalized opportunity coverage remain outstanding.
+
 ### Institution association
 
 Both `/api/students/institution-associate` and `/api/development/institution/associate` now preserve PENDING approval semantics, and the development path validates an institution association code hash. Institution UI approval routes remain.
@@ -66,10 +76,9 @@ The planner owns scheduling, milestones, deadlines, reviews, and embedded goal c
 
 - Run `npm run migrate:career-goals` against production/staging data and verify records.
 - Remove or deprecate legacy career fields only after migration verification.
-- Wire `StudentGoal` explicitly into CareerDiscovery, onboarding, profile, and roadmap consumers rather than relying on compatibility fields.
+- Wire `StudentGoal` explicitly into CareerDiscovery and roadmap consumers rather than relying on compatibility fields.
 - `RoleInterest` remains live for role discovery, mentoring, and admin ranking, so it is not currently safe to delete.
 - Frontend imports `reschedulePlannerTask` and `submitPlannerReview` were unused and remain absent from page logic; the backend endpoints are present.
-- Several lint warnings remain, as detailed below.
 
 ## 7. Broken or questionable implementations
 
@@ -84,22 +93,6 @@ The development institution association endpoint previously created `ACTIVE` mem
 ### Fixed: opportunity URL field mismatch
 
 Opportunity creation accepted `url` while the model stores `officialUrl`. Creation/update now preserve `officialUrl` and accept legacy `url` input.
-
-### Remaining: frontend state and hooks
-
-Lint reports unused state/import candidates and missing hook dependencies in:
-
-- `CareerDiscovery.jsx`
-- `GovernmentCareers.jsx`
-- `InstitutionPortal.jsx`
-- `AdminInterest.jsx`
-- `AdminRequests.jsx`
-- `AdminStudentDrawer.jsx`
-- `RoadmapView.jsx`
-- `StudentOnboarding.jsx`
-- Context fast-refresh exports
-
-These are warnings, not build failures.
 
 ## 8. Updated architecture map
 
@@ -246,7 +239,7 @@ Institution membership status behavior changed at one live API: association code
 ### P1
 
 - Run and verify the career-goal migration in MongoDB.
-- Complete one canonical career-intent read/write path across onboarding, discovery, profile, roadmaps, and planner.
+- Complete one canonical career-intent read/write path across discovery, roadmaps, and planner.
 - Add concurrent-safe primary-goal enforcement if strong database-level guarantees are required.
 - Add live integration tests for protected profile fields and institution approval.
 

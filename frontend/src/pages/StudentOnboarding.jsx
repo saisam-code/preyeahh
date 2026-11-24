@@ -14,15 +14,16 @@ import {
 } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { updatePreferences } from "../services/studentService.js";
-import { EDUCATION_STAGES } from "../constants/educationStages.js";
+import { STUDENT_EDUCATION_STAGES, normalizeEducationStage } from "../constants/educationStages.js";
 
-const STAGES = EDUCATION_STAGES;
-const DRAFT_KEY = "preyeahh.student-onboarding";
+const STAGES = STUDENT_EDUCATION_STAGES;
+const DRAFT_PREFIX = "preyeahh.student-onboarding";
 
-function readOnboardingDraft() {
+function readOnboardingDraft(key) {
   try {
-    const saved = localStorage.getItem(DRAFT_KEY);
-    return saved ? JSON.parse(saved) : {};
+    const saved = localStorage.getItem(key);
+    const parsed = saved ? JSON.parse(saved) : {};
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
@@ -58,16 +59,22 @@ export default function StudentOnboarding() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [draft] = useState(readOnboardingDraft);
+  const draftKey = `${DRAFT_PREFIX}.${user?.id || "guest"}`;
+  const [draft] = useState(() => readOnboardingDraft(draftKey));
   const preferences = user?.preferences || {};
   const initialValue = (key, fallback) => draft[key] ?? preferences[key] ?? fallback;
+  const savedStage = initialValue("educationStage", "");
   const [step, setStep] = useState(() => Math.min(6, Math.max(1, Number(draft.step) || preferences.onboardingStep || 1)));
   const totalSteps = 6;
 
   // Onboarding Form State
-  const [stage, setStage] = useState(() => initialValue("educationStage", ""));
+  const [stage, setStage] = useState(() => typeof savedStage === "string" && savedStage ? normalizeEducationStage(savedStage) : "");
   const [schoolOrInstitution, setSchoolOrInstitution] = useState(() => initialValue("schoolOrInstitution", ""));
   const [board, setBoard] = useState(() => initialValue("board", ""));
+  const [subjects, setSubjects] = useState(() => {
+    const saved = initialValue("subjects", []);
+    return Array.isArray(saved) ? saved.filter((subject) => typeof subject === "string") : [];
+  });
   const [academicStream, setAcademicStream] = useState(() => initialValue("academicStream", ""));
   const [degreeOrProgram, setDegreeOrProgram] = useState(() => initialValue("degreeOrProgram", ""));
   const [specialization, setSpecialization] = useState(() => initialValue("specialization", ""));
@@ -77,23 +84,34 @@ export default function StudentOnboarding() {
   const [country, setCountry] = useState(() => initialValue("country", "India"));
   const [stateName, setStateName] = useState(() => initialValue("state", ""));
   const [city, setCity] = useState(() => initialValue("city", ""));
-  const [selectedInterests, setSelectedInterests] = useState(() => initialValue("interests", []));
+  const [currentRole, setCurrentRole] = useState(() => initialValue("currentRole", ""));
+  const [selectedInterests, setSelectedInterests] = useState(() => {
+    const saved = initialValue("interests", []);
+    return Array.isArray(saved) ? saved.filter((interest) => typeof interest === "string") : [];
+  });
   const [primaryGoal, setPrimaryGoal] = useState(() => initialValue("primaryCareerGoal", ""));
   const [alternativeGoal, setAlternativeGoal] = useState(() => initialValue("alternativeCareerGoal", ""));
   const [careerPreference, setCareerPreference] = useState(() => initialValue("careerPreference", "unsure"));
-  const [selectedSkills, setSelectedSkills] = useState(() => (draft.skills || preferences.skills || []).map((skill) => typeof skill === "string" ? skill : skill.name));
+  const [selectedSkills, setSelectedSkills] = useState(() => {
+    const saved = draft.skills || preferences.skills || [];
+    return Array.isArray(saved)
+      ? saved.map((skill) => typeof skill === "string" ? skill : skill?.name).filter((skill) => typeof skill === "string")
+      : [];
+  });
   const [dailyHours, setDailyHours] = useState(() => Math.max(1, Math.min(4, Math.round((draft.dailyHours ?? preferences.weeklyHoursAvailable / 7) || 2))));
+  const [learningStyle, setLearningStyle] = useState(() => initialValue("learningStyle", ""));
   const [connectionType, setConnectionType] = useState(() => draft.connectionType || "independent");
   const [institutionCode, setInstitutionCode] = useState(() => draft.institutionCode || "");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+      localStorage.setItem(draftKey, JSON.stringify({
         step,
         educationStage: stage,
         schoolOrInstitution,
         board,
+        subjects,
         academicStream,
         degreeOrProgram,
         specialization,
@@ -103,12 +121,14 @@ export default function StudentOnboarding() {
         country,
         state: stateName,
         city,
+        currentRole,
         interests: selectedInterests,
         primaryCareerGoal: primaryGoal,
         alternativeCareerGoal: alternativeGoal,
         careerPreference,
         skills: selectedSkills,
         dailyHours,
+        learningStyle,
         connectionType,
         institutionCode,
       }));
@@ -116,10 +136,10 @@ export default function StudentOnboarding() {
       toast.error("Your onboarding draft could not be saved on this device.");
     }
   }, [
-    step, stage, schoolOrInstitution, board, academicStream, degreeOrProgram,
+    draftKey, step, stage, schoolOrInstitution, board, subjects, academicStream, degreeOrProgram,
     specialization, yearOfStudy, semester, expectedGraduationYear, country,
-    stateName, city, selectedInterests, primaryGoal, alternativeGoal,
-    careerPreference, selectedSkills, dailyHours, connectionType, institutionCode,
+    stateName, city, currentRole, selectedInterests, primaryGoal, alternativeGoal,
+    careerPreference, selectedSkills, dailyHours, learningStyle, connectionType, institutionCode,
   ]);
 
   // Consume pre-selected interests from Career Wheel if coming from Login / entry
@@ -158,6 +178,7 @@ export default function StudentOnboarding() {
       educationStage: stage,
       schoolOrInstitution,
       board,
+      subjects,
       academicStream,
       degreeOrProgram,
       specialization,
@@ -167,19 +188,25 @@ export default function StudentOnboarding() {
       country,
       state: stateName,
       city,
+      currentRole,
       interests: selectedInterests,
       primaryCareerGoal: primaryGoal,
       alternativeCareerGoal: alternativeGoal,
       careerPreference,
       skills: selectedSkills.map((name) => ({ name, level: "beginner" })),
       weeklyHoursAvailable: dailyHours * 7,
+      learningStyle,
       onboardingStep: totalSteps,
       onboardingCompleted: true,
     };
     try {
       if (user) {
         await updatePreferences(onboardingData);
-        localStorage.removeItem(DRAFT_KEY);
+        try {
+          localStorage.removeItem(draftKey);
+        } catch {
+          toast.error("Your completed onboarding draft could not be removed from this device.");
+        }
         toast.success("Welcome aboard! Your career workspace is ready.");
         navigate("/planner");
       } else {
@@ -203,6 +230,7 @@ export default function StudentOnboarding() {
           educationStage: stage,
           schoolOrInstitution,
           board,
+          subjects,
           academicStream,
           degreeOrProgram,
           specialization,
@@ -212,12 +240,14 @@ export default function StudentOnboarding() {
           country,
           state: stateName,
           city,
+          currentRole,
           interests: selectedInterests,
           primaryCareerGoal: primaryGoal,
           alternativeCareerGoal: alternativeGoal,
           careerPreference,
           skills: selectedSkills.map((name) => ({ name, level: "beginner" })),
           weeklyHoursAvailable: dailyHours * 7,
+          learningStyle,
           onboardingStep: step + 1,
           onboardingCompleted: false,
         });
@@ -233,6 +263,7 @@ export default function StudentOnboarding() {
 
   const isSchoolStage = stage.startsWith("Class") || stage === "Intermediate";
   const isProgramStage = ["Diploma", "Undergraduate", "Postgraduate", "PhD", "Research Scholar", "Postdoctoral Research"].includes(stage);
+  const stageOptions = stage && !STAGES.includes(stage) ? [...STAGES, stage] : STAGES;
 
   return (
     <div style={{ maxWidth: 750, margin: "2rem auto", padding: "1.5rem" }}>
@@ -256,7 +287,7 @@ export default function StudentOnboarding() {
               Preyeahh tailors roadmaps, opportunities, and timelines specifically to your stage.
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
-              {STAGES.map((s) => (
+              {stageOptions.map((s) => (
                 <button
                   key={s}
                   type="button"
@@ -280,6 +311,16 @@ export default function StudentOnboarding() {
                 <label>
                   Board
                   <input value={board} onChange={(e) => setBoard(e.target.value)} maxLength={40} placeholder="e.g. CBSE, State Board" />
+                </label>
+              )}
+              {(isSchoolStage || isProgramStage) && (
+                <label>
+                  Subjects (comma-separated)
+                  <input
+                    value={subjects.join(", ")}
+                    onChange={(e) => setSubjects(e.target.value.split(",").map((subject) => subject.trim()).filter(Boolean))}
+                    maxLength={600}
+                  />
                 </label>
               )}
               {isSchoolStage && (
@@ -341,6 +382,12 @@ export default function StudentOnboarding() {
                 City
                 <input value={city} onChange={(e) => setCity(e.target.value)} maxLength={80} />
               </label>
+              {stage === "Working Professional" && (
+                <label>
+                  Current role
+                  <input value={currentRole} onChange={(e) => setCurrentRole(e.target.value)} maxLength={120} />
+                </label>
+              )}
             </div>
           </div>
         )}
@@ -484,6 +531,15 @@ export default function StudentOnboarding() {
                 </button>
               ))}
             </div>
+            <label style={{ display: "block", marginTop: "1.25rem" }}>
+              Preferred learning style
+              <select value={learningStyle} onChange={(e) => setLearningStyle(e.target.value)}>
+                <option value="">No preference</option>
+                <option value="visual">Visual</option>
+                <option value="hands-on">Hands-on</option>
+                <option value="reading">Reading</option>
+              </select>
+            </label>
           </div>
         )}
 

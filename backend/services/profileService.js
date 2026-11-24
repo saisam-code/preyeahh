@@ -8,6 +8,7 @@ import { normalizeEducationStage } from "../constants/educationStages.js";
 
 const LEVELS = ["beginner", "intermediate", "advanced"];
 const STYLES = ["visual", "hands-on", "reading"];
+const PUBLIC_SELECT = "-password -refreshTokenVersion";
 
 const str = (v, max = 120) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 const strList = (v, maxItems = 15) =>
@@ -147,12 +148,21 @@ async function saveProfileFields(studentId, fields) {
 
   const previousStage = student.preferences.educationStage;
   const nextStage = fields["preferences.educationStage"];
-  if (
-    student.preferences.onboardingCompleted &&
-    nextStage &&
-    previousStage &&
-    nextStage !== previousStage
-  ) {
+  const educationPaths = [
+    "preferences.educationStage",
+    "preferences.schoolOrInstitution",
+    "preferences.board",
+    "preferences.academicStream",
+    "preferences.degreeOrProgram",
+    "preferences.specialization",
+    "preferences.yearOfStudy",
+    "preferences.semester",
+    "preferences.expectedGraduationYear",
+  ];
+  const educationChanged = educationPaths.some(
+    (path) => Object.hasOwn(fields, path) && !Object.is(student.get(path), fields[path])
+  );
+  if (student.preferences.onboardingCompleted && previousStage && educationChanged) {
     student.educationHistory.push({
       educationStage: previousStage,
       schoolOrInstitution: student.preferences.schoolOrInstitution,

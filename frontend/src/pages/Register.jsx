@@ -103,17 +103,23 @@ export default function Register() {
       if (role === "student") {
         const primaryCareerGoal = selectedCareerRoles[0] || onboardingData.primaryCareerGoal || "";
         const alternativeCareerGoal = selectedCareerRoles[1] || onboardingData.alternativeCareerGoal || "";
+        const onboardingInterests = Array.isArray(onboardingData.interests) ? onboardingData.interests : [];
         await registerStudent({
           ...onboardingData,
           name: values.name.trim(),
           email: values.email.trim().toLowerCase(),
           password: values.password,
           branch: values.branch || "",
-          interests: [...new Set([...(onboardingData.interests || []), ...selectedDomainInterests])],
+          interests: [...new Set([...onboardingInterests, ...selectedDomainInterests])],
           primaryCareerGoal,
           alternativeCareerGoal,
           targetRole: primaryCareerGoal,
         });
+        try {
+          localStorage.removeItem("preyeahh.student-onboarding.guest");
+        } catch {
+          toast.error("Your saved onboarding draft could not be removed from this device.");
+        }
 
         setSuccessMsg("Registration successful! Please check your email to verify your student account before logging in.");
       } else if (role === "guide") {

@@ -34,6 +34,7 @@ export const registerStudent = asyncHandler(async (req, res) => {
     "country",
     "state",
     "city",
+    "currentRole",
     "primaryCareerGoal",
     "alternativeCareerGoal",
     "targetRole",

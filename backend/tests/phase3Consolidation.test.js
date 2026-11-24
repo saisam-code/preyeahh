@@ -12,6 +12,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { validationResult } from "express-validator";
 
 test("3.2: StudentGoal model schema enforces types and statuses", async () => {
   const StudentGoal = (await import("../models/StudentGoal.js")).default;
@@ -74,6 +75,49 @@ test("Student profile supports detailed education history and non-engineering le
   assert.ok(Student.schema.path("preferences.expectedGraduationYear"));
   assert.ok(Student.schema.path("preferences.careerPreference").enumValues.includes("unsure"));
   assert.equal(Student.schema.path("branch").defaultValue, "");
+});
+
+test("Student registration and onboarding accept optional branch and undecided profile fields", async () => {
+  const { registerRules, preferencesRules } = await import("../validators/studentValidator.js");
+  const req = {
+    body: {
+      name: "Learner",
+      email: "learner@example.com",
+      password: "password1",
+      branch: "",
+      educationStage: "",
+      primaryCareerGoal: "",
+      alternativeCareerGoal: "",
+      expectedGraduationYear: null,
+      learningStyle: "",
+    },
+  };
+  await Promise.all(registerRules.map((rule) => rule.run(req)));
+  assert.deepEqual(validationResult(req).array(), []);
+
+  const profileReq = {
+    body: {
+      educationStage: "",
+      primaryCareerGoal: "",
+      alternativeCareerGoal: "",
+      academicStream: "",
+      schoolOrInstitution: "",
+      expectedGraduationYear: null,
+      learningStyle: "",
+      careerPreference: "unsure",
+      interests: [],
+      skills: [],
+      weeklyHoursAvailable: 14,
+      onboardingCompleted: false,
+      onboardingStep: 2,
+    },
+  };
+  await Promise.all(preferencesRules.map((rule) => rule.run(profileReq)));
+  assert.deepEqual(validationResult(profileReq).array(), []);
+
+  const invalidReq = { body: { ...req.body, educationStage: "Unknown stage" } };
+  await Promise.all(registerRules.map((rule) => rule.run(invalidReq)));
+  assert.ok(validationResult(invalidReq).array().some((error) => error.path === "educationStage"));
 });
 
 test("Planner and development share canonical task categories", async () => {
