@@ -156,7 +156,7 @@ export default function RolePreviewSection() {
       <div style={{ textAlign: "center", marginBottom: "3rem" }}>
         <span
           style={{
-            fontSize: "0.82rem",
+            fontSize: "var(--font-size-sm)",
             textTransform: "uppercase",
             letterSpacing: 1.4,
             color: "var(--primary)",
@@ -168,7 +168,7 @@ export default function RolePreviewSection() {
         <h2
           style={{
             fontFamily: "var(--font-display)",
-            fontSize: "clamp(2rem, 4vw, 2.8rem)",
+            fontSize: "clamp(var(--font-size-2xl), 4vw, var(--font-size-4xl))",
             fontWeight: 800,
             margin: "0.4rem 0 0.75rem",
             letterSpacing: "-0.02em",
@@ -176,7 +176,7 @@ export default function RolePreviewSection() {
         >
           Four Roles. One Unified Career Ecosystem.
         </h2>
-        <p style={{ color: "var(--text-muted)", fontSize: "1.1rem", maxWidth: 680, margin: "0 auto" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-lg)", maxWidth: 680, margin: "0 auto" }}>
           Select a persona below to preview how PREYEAHH delivers tailored tools, safety boundaries,
           and real-world clarity for each stakeholder.
         </p>
@@ -205,7 +205,7 @@ export default function RolePreviewSection() {
                 alignItems: "center",
                 gap: "0.75rem",
                 padding: "1rem 1.25rem",
-                borderRadius: "1rem",
+                borderRadius: "var(--radius)",
                 border: isActive ? "2px solid var(--primary)" : "1px solid var(--border)",
                 background: isActive ? "var(--surface)" : "var(--surface-mid)",
                 boxShadow: isActive ? "0 8px 24px var(--primary-bg)" : "none",
@@ -218,23 +218,23 @@ export default function RolePreviewSection() {
                 style={{
                   width: 40,
                   height: 40,
-                  borderRadius: "0.6rem",
-                  background: isActive ? "var(--primary)" : "rgba(0,0,0,0.05)",
+                  borderRadius: "var(--radius)",
+                  background: isActive ? "var(--primary)" : "var(--surface-mid)",
                   color: isActive ? "var(--on-primary)" : "var(--text)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "1.15rem",
+                  fontSize: "var(--font-size-lg)",
                   flexShrink: 0,
                 }}
               >
                 <Icon />
               </div>
               <div>
-                <strong style={{ display: "block", fontSize: "0.95rem", color: "var(--text)" }}>
+                <strong style={{ display: "block", fontSize: "var(--font-size-sm)", color: "var(--text)" }}>
                   {role.title}
                 </strong>
-                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>
+                <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                   {role.subtitle}
                 </span>
               </div>
@@ -248,9 +248,9 @@ export default function RolePreviewSection() {
         style={{
           background: "var(--surface)",
           border: "1.5px solid var(--border)",
-          borderRadius: "1.5rem",
+          borderRadius: "var(--radius)",
           padding: "2.5rem",
-          boxShadow: "0 12px 40px rgba(0,0,0,0.04)",
+          boxShadow: "var(--shadow-float)",
           maxWidth: 1120,
           margin: "0 auto",
           display: "grid",
@@ -267,8 +267,8 @@ export default function RolePreviewSection() {
               background: "var(--primary-bg)",
               color: "var(--primary)",
               padding: "0.3rem 0.85rem",
-              borderRadius: "2rem",
-              fontSize: "0.8rem",
+              borderRadius: "var(--radius)",
+              fontSize: "var(--font-size-sm)",
               fontWeight: 700,
               marginBottom: "1rem",
             }}
@@ -278,7 +278,7 @@ export default function RolePreviewSection() {
           <h3
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: "1.75rem",
+              fontSize: "var(--font-size-2xl)",
               fontWeight: 800,
               margin: "0 0 1rem",
               lineHeight: 1.25,
@@ -286,13 +286,13 @@ export default function RolePreviewSection() {
           >
             {activeTab.headline}
           </h3>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.98rem", lineHeight: 1.6, marginBottom: "1.5rem" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", lineHeight: 1.6, marginBottom: "1.5rem" }}>
             {activeTab.description}
           </p>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", marginBottom: "2rem" }}>
             {activeTab.capabilities.map((cap, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", fontSize: "0.88rem" }}>
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", fontSize: "var(--font-size-sm)" }}>
                 <div style={{ color: "var(--primary)", marginTop: "0.15rem", flexShrink: 0 }}>
                   <FaCheck />
                 </div>
@@ -306,8 +306,8 @@ export default function RolePreviewSection() {
             className="btn btn-primary"
             style={{
               padding: "0.8rem 1.8rem",
-              fontSize: "0.96rem",
-              borderRadius: "0.6rem",
+              fontSize: "var(--font-size-md)",
+              borderRadius: "var(--radius)",
               display: "inline-flex",
               alignItems: "center",
               gap: "0.5rem",
@@ -324,7 +324,7 @@ export default function RolePreviewSection() {
           style={{
             background: "var(--surface-mid)",
             border: "1px solid var(--border)",
-            borderRadius: "1.25rem",
+            borderRadius: "var(--radius)",
             padding: "1.75rem",
             position: "relative",
             overflow: "hidden",
@@ -333,12 +333,12 @@ export default function RolePreviewSection() {
           {/* Demonstration Watermark Banner */}
           <div
             style={{
-              background: "rgba(245, 158, 11, 0.12)",
-              border: "1px solid rgba(245, 158, 11, 0.35)",
+              background: "var(--warning-soft)",
+              border: "1px solid var(--warning)",
               color: "var(--warning-text)",
-              borderRadius: "0.5rem",
+              borderRadius: "var(--radius)",
               padding: "0.4rem 0.75rem",
-              fontSize: "0.75rem",
+              fontSize: "var(--font-size-sm)",
               fontWeight: 700,
               display: "flex",
               alignItems: "center",
@@ -352,18 +352,18 @@ export default function RolePreviewSection() {
           {/* Mock Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.25rem" }}>
             <div>
-              <strong style={{ fontSize: "1.1rem", display: "block" }}>{activeTab.demoInterface.mockName}</strong>
-              <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+              <strong style={{ fontSize: "var(--font-size-lg)", display: "block" }}>{activeTab.demoInterface.mockName}</strong>
+              <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                 {activeTab.demoInterface.mockBranch}
               </span>
             </div>
             <span
               style={{
-                fontSize: "0.75rem",
+                fontSize: "var(--font-size-sm)",
                 background: "var(--primary-bg)",
                 color: "var(--primary)",
                 padding: "0.25rem 0.6rem",
-                borderRadius: "1rem",
+                borderRadius: "var(--radius)",
                 fontWeight: 700,
               }}
             >
@@ -375,9 +375,9 @@ export default function RolePreviewSection() {
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: "0.75rem",
+              borderRadius: "var(--radius)",
               padding: "0.85rem 1rem",
-              fontSize: "0.82rem",
+              fontSize: "var(--font-size-sm)",
               marginBottom: "1.25rem",
               fontWeight: 600,
               color: "var(--primary)",
@@ -395,15 +395,15 @@ export default function RolePreviewSection() {
                   style={{
                     background: "var(--surface)",
                     border: "1px solid var(--border)",
-                    borderRadius: "0.75rem",
+                    borderRadius: "var(--radius)",
                     padding: "0.75rem 0.6rem",
                     textAlign: "center",
                   }}
                 >
-                  <span style={{ fontSize: "0.7rem", color: "var(--text-muted)", display: "block", marginBottom: "0.2rem" }}>
+                  <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", display: "block", marginBottom: "0.2rem" }}>
                     {m.label}
                   </span>
-                  <strong style={{ fontSize: "0.95rem", color: "var(--text)" }}>{m.val}</strong>
+                  <strong style={{ fontSize: "var(--font-size-sm)", color: "var(--text)" }}>{m.val}</strong>
                 </div>
               )
             )}
@@ -414,7 +414,7 @@ export default function RolePreviewSection() {
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: "0.75rem",
+              borderRadius: "var(--radius)",
               padding: "1rem",
               display: "flex",
               alignItems: "flex-start",
@@ -425,13 +425,13 @@ export default function RolePreviewSection() {
               style={{
                 width: 34,
                 height: 34,
-                borderRadius: "0.5rem",
+                borderRadius: "var(--radius)",
                 background: "var(--primary-bg)",
                 color: "var(--primary)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "0.9rem",
+                fontSize: "var(--font-size-sm)",
                 flexShrink: 0,
                 marginTop: "0.15rem",
               }}
@@ -439,10 +439,10 @@ export default function RolePreviewSection() {
               <FaAward />
             </div>
             <div>
-              <strong style={{ fontSize: "0.88rem", display: "block", marginBottom: "0.2rem" }}>
+              <strong style={{ fontSize: "var(--font-size-sm)", display: "block", marginBottom: "0.2rem" }}>
                 {activeTab.demoInterface.sampleItemTitle}
               </strong>
-              <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
+              <p style={{ margin: 0, fontSize: "var(--font-size-sm)", color: "var(--text-muted)", lineHeight: 1.4 }}>
                 {activeTab.demoInterface.sampleItemSub}
               </p>
             </div>

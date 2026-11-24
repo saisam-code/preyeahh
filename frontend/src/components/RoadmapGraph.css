@@ -231,7 +231,7 @@
   right: 1rem;
   background: transparent;
   border: none;
-  font-size: 1.5rem;
+  font-size: var(--font-size-xl);
   cursor: pointer;
   color: var(--ink-900);
 }
@@ -260,7 +260,7 @@
 .drawer-resource-item:hover {
   background: var(--warning-soft);
   transform: translateY(-1px);
-  box-shadow: 2px 2px 0px rgba(0,0,0,1);
+  box-shadow: 2px 2px 0 var(--ink-900);
 }
 
 @media (max-width: 768px) {

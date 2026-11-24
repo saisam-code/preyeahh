@@ -84,15 +84,15 @@ export default function AdminGuides() {
             {guides.map((g) => (
               <tr key={g.id}>
                 <td><strong>{g.name}</strong></td>
-                <td style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{g.email}</td>
+                <td style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)" }}>{g.email}</td>
                 <td><span className="branch-tag">{g.branch}</span></td>
-                <td style={{ fontSize: "0.82rem" }}>
+                <td style={{ fontSize: "var(--font-size-sm)" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
                     {(g.roleNames || []).map((r) => <span className="detail-tag" key={r}>{r}</span>)}
                     {!g.roleNames?.length && "—"}
                   </div>
                 </td>
-                <td style={{ fontSize: "0.8rem", color: "var(--muted)", maxWidth: 180 }}>{g.bio || "—"}</td>
+                <td style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)", maxWidth: 180 }}>{g.bio || "—"}</td>
                 <td><span className={`guide-status-badge guide-status-${g.status}`}>{g.status}</span></td>
                 <td>
                   <div className="table-actions" style={{ flexWrap: "wrap", gap: "0.4rem" }}>
@@ -119,11 +119,11 @@ export default function AdminGuides() {
           </div>
           <div style={{ maxHeight: 280, overflowY: "auto", padding: "0.25rem 0" }}>
             {branchRoles.length ? branchRoles.map((r) => (
-              <label key={r._id} style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.45rem 0", fontSize: "0.88rem", cursor: "pointer" }}>
+              <label key={r._id} style={{ display: "flex", alignItems: "center", gap: "0.6rem", padding: "0.45rem 0", fontSize: "var(--font-size-sm)", cursor: "pointer" }}>
                 <input type="checkbox" checked={checked.has(r.title)} onChange={() => toggleRole(r.title)} style={{ width: 16, height: 16, accentColor: "var(--primary)" }} />
                 {r.title}
               </label>
-            )) : <p style={{ color: "var(--muted)", fontSize: "0.85rem" }}>No roles in this branch yet.</p>}
+            )) : <p style={{ color: "var(--muted)", fontSize: "var(--font-size-sm)" }}>No roles in this branch yet.</p>}
           </div>
           <div className="modal-actions">
             <button className="btn btn-outline" onClick={() => setAssignModal(null)}>Cancel</button>

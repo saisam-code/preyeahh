@@ -40,14 +40,14 @@ export default class ErrorBoundary extends Component {
               width: "100%",
               background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: "1rem",
+              borderRadius: "var(--radius)",
               padding: "2.5rem",
               textAlign: "center",
-              boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+              boxShadow: "var(--shadow-float)",
             }}
           >
-            <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>⚠️</div>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 800, margin: "0 0 0.5rem" }}>
+            <div style={{ fontSize: "var(--font-size-3xl)", marginBottom: "0.5rem" }}>⚠️</div>
+            <h2 style={{ fontSize: "var(--font-size-xl)", fontWeight: 800, margin: "0 0 0.5rem" }}>
               Something went wrong
             </h2>
             <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", lineHeight: 1.5, margin: "0 0 1.5rem" }}>
@@ -58,8 +58,8 @@ export default class ErrorBoundary extends Component {
                 style={{
                   background: "var(--surface-mid)",
                   padding: "0.75rem",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.8rem",
+                  borderRadius: "var(--radius)",
+                  fontSize: "var(--font-size-sm)",
                   textAlign: "left",
                   overflowX: "auto",
                   color: "var(--error)",

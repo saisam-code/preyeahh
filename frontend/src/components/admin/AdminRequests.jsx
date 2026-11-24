@@ -266,7 +266,7 @@ export default function AdminRequests({ onNavigate }) {
                     <tr key={r._id} className="table-row-hover">
                       {/* Role Name */}
                       <td>
-                        <strong className="cell-title" style={{ fontSize: "0.9rem" }}>
+                        <strong className="cell-title" style={{ fontSize: "var(--font-size-sm)" }}>
                           {r.roleName}
                         </strong>
                       </td>
@@ -295,13 +295,13 @@ export default function AdminRequests({ onNavigate }) {
                             <div>
                               <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
                                 <span className="student-cell-name">{student.name}</span>
-                                <span className="status-chip chip-verified" style={{ fontSize: "0.65rem", padding: "0.08rem 0.35rem" }}>
+                                <span className="status-chip chip-verified" style={{ fontSize: "var(--font-size-xs)", padding: "0.08rem 0.35rem" }}>
                                   Student
                                 </span>
                               </div>
                               <span className="student-cell-email">{student.email}</span>
                               {student.branch && (
-                                <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
+                                <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
                                   Branch: {student.branch}
                                 </span>
                               )}
@@ -310,13 +310,13 @@ export default function AdminRequests({ onNavigate }) {
                         ) : requesterEmail ? (
                           <div className="student-profile-cell">
                             <div className="avatar-mini" style={{ background: "var(--surface-mid)", color: "var(--text-muted)" }}>
-                              <FaUser style={{ fontSize: "0.68rem" }} />
+                              <FaUser style={{ fontSize: "var(--font-size-xs)" }} />
                             </div>
                             <div>
                               <span className="student-cell-name" style={{ color: "var(--text-dim)" }}>
                                 {requesterEmail}
                               </span>
-                              <span className="status-chip chip-neutral" style={{ fontSize: "0.65rem", padding: "0.08rem 0.35rem" }}>
+                              <span className="status-chip chip-neutral" style={{ fontSize: "var(--font-size-xs)", padding: "0.08rem 0.35rem" }}>
                                 Guest Request
                               </span>
                             </div>
@@ -324,13 +324,13 @@ export default function AdminRequests({ onNavigate }) {
                         ) : (
                           <div className="student-profile-cell">
                             <div className="avatar-mini" style={{ background: "var(--surface-mid)", color: "var(--text-muted)" }}>
-                              <FaUser style={{ fontSize: "0.68rem" }} />
+                              <FaUser style={{ fontSize: "var(--font-size-xs)" }} />
                             </div>
                             <div>
                               <span className="student-cell-name" style={{ color: "var(--text-muted)" }}>
                                 Anonymous Visitor
                               </span>
-                              <span style={{ fontSize: "0.7rem", color: "var(--text-muted)" }}>
+                              <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
                                 No email provided
                               </span>
                             </div>
@@ -340,7 +340,7 @@ export default function AdminRequests({ onNavigate }) {
 
                       {/* Summary */}
                       <td style={{ maxWidth: 320 }}>
-                        <p className="cell-message-text" style={{ fontSize: "0.82rem", WebkitLineClamp: 3 }}>
+                        <p className="cell-message-text" style={{ fontSize: "var(--font-size-sm)", WebkitLineClamp: 3 }}>
                           {r.summary}
                         </p>
                       </td>
@@ -368,7 +368,7 @@ export default function AdminRequests({ onNavigate }) {
                           </button>
                           <button
                             className="btn btn-outline btn-xs"
-                            style={{ color: "var(--error)", borderColor: "rgba(220, 38, 38, 0.3)" }}
+                            style={{ color: "var(--error)", borderColor: "var(--error)" }}
                             onClick={() => handleDismiss(r._id)}
                             title="Dismiss this request"
                           >
@@ -395,16 +395,16 @@ export default function AdminRequests({ onNavigate }) {
 
           {acceptingRequest && (
             <div style={{
-              background: "rgba(16, 185, 129, 0.08)",
-              border: "1px solid rgba(16, 185, 129, 0.25)",
-              borderRadius: "0.5rem",
+              background: "var(--primary-soft)",
+              border: "1px solid var(--primary)",
+              borderRadius: "var(--radius)",
               padding: "0.75rem 1rem",
               margin: "0 1.25rem",
-              fontSize: "0.82rem",
+              fontSize: "var(--font-size-sm)",
               lineHeight: 1.5,
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.35rem" }}>
-                <FaCircleCheck style={{ color: "var(--success)", fontSize: "0.9rem" }} />
+                <FaCircleCheck style={{ color: "var(--success)", fontSize: "var(--font-size-sm)" }} />
                 <strong>Accepting request from:</strong>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>

@@ -203,7 +203,7 @@ export default function AdminChats({ targetChatId = null }) {
                           <div className="chat-thread-title">
                             <FaCircle
                               style={{
-                                fontSize: "0.45rem",
+                                fontSize: "var(--font-size-micro)",
                                 color: chat.isArchived ? "var(--text-muted)" : "var(--success)",
                                 marginRight: "0.35rem",
                               }}

@@ -99,10 +99,10 @@ export default function AdminInterest() {
                   <td><span style={{ color: "var(--muted)", fontWeight: 600 }}>{r.exploring}</span></td>
                   <td><strong>{r.total}</strong></td>
                   <td style={{ minWidth: 140 }}>
-                    <div style={{ background: "var(--border)", borderRadius: 20, height: 8, overflow: "hidden" }}>
-                      <div style={{ width: `${barWidth}%`, height: "100%", background: "var(--primary)", borderRadius: 20 }} />
+                    <div style={{ background: "var(--border)", borderRadius: "var(--radius)", height: 8, overflow: "hidden" }}>
+                      <div style={{ width: `${barWidth}%`, height: "100%", background: "var(--primary)", borderRadius: "var(--radius)" }} />
                     </div>
-                    <span style={{ fontSize: "0.72rem", color: "var(--muted)", marginTop: 2, display: "block" }}>{pct}% committed</span>
+                    <span style={{ fontSize: "var(--font-size-xs)", color: "var(--muted)", marginTop: 2, display: "block" }}>{pct}% committed</span>
                   </td>
                 </tr>
               );

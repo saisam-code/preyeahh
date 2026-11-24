@@ -111,7 +111,7 @@ export default function AdminBeyond({ fixedBranch = null, currentUserId = null }
               <tr key={l._id}>
                 <td>
                   <strong>{l.title}</strong>
-                  <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.2rem" }}>{catLabel(l.category)}</div>
+                  <div style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)", marginTop: "0.2rem" }}>{catLabel(l.category)}</div>
                 </td>
                 <td><span className="branch-tag">{l.branch === "All" ? "All Branches" : l.branch}</span></td>
                 <td><ContributorLabel item={l} /></td>

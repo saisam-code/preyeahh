@@ -411,7 +411,7 @@ export default function AdminRoadmaps({ targetRoadmapId = null }) {
                     ))}
                   </ul>
                   {selectedRoadmap.fitSnapshot.basedOn?.length > 0 && (
-                    <div style={{ marginTop: "0.5rem", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                    <div style={{ marginTop: "0.5rem", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                       Derived from: {selectedRoadmap.fitSnapshot.basedOn.join(", ")}
                     </div>
                   )}

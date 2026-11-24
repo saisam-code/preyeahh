@@ -42,7 +42,7 @@ export default function AdminStudentChats({ student, onBack }) {
               <FaComments style={{ marginRight: "0.5rem", color: "var(--accent)" }} />
               Chats — {studentInfo?.name}
             </h2>
-            <p style={{ margin: "0.2rem 0 0", color: "var(--muted)", fontSize: "0.85rem" }}>
+            <p style={{ margin: "0.2rem 0 0", color: "var(--muted)", fontSize: "var(--font-size-sm)" }}>
               {studentInfo?.email} · {chats.length} conversation{chats.length !== 1 ? "s" : ""}
             </p>
           </div>
@@ -61,32 +61,32 @@ export default function AdminStudentChats({ student, onBack }) {
               <div className="chat-card-header" onClick={() => setOpenChat(openChat?._id === chat._id ? null : chat)}>
                 <div className="chat-card-info">
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <FaCircle style={{ fontSize: "0.45rem", color: chat.isArchived ? "var(--muted)" : "var(--success)" }} />
+                    <FaCircle style={{ fontSize: "var(--font-size-micro)", color: chat.isArchived ? "var(--muted)" : "var(--success)" }} />
                     <strong>{chat.title || "Untitled Chat"}</strong>
                     {chat.isArchived && (
-                      <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                      <span style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
                         <FaBoxArchive /> archived
                       </span>
                     )}
                   </div>
                   <div style={{ display: "flex", gap: "0.75rem", marginTop: "0.25rem", flexWrap: "wrap" }}>
-                    {chat.branch && <span className="branch-tag" style={{ fontSize: "0.72rem" }}>{chat.branch}</span>}
+                    {chat.branch && <span className="branch-tag" style={{ fontSize: "var(--font-size-xs)" }}>{chat.branch}</span>}
                     {chat.roleId && (
-                      <span className="type-badge badge-core" style={{ fontSize: "0.72rem" }}>
+                      <span className="type-badge badge-core" style={{ fontSize: "var(--font-size-xs)" }}>
                         {chat.roleId.title}
                       </span>
                     )}
-                    {chat.topic && <span style={{ color: "var(--muted)", fontSize: "0.78rem" }}>{chat.topic}</span>}
+                    {chat.topic && <span style={{ color: "var(--muted)", fontSize: "var(--font-size-sm)" }}>{chat.topic}</span>}
                   </div>
                 </div>
                 <div style={{ textAlign: "right", minWidth: 110 }}>
-                  <div style={{ fontSize: "0.8rem", color: "var(--muted)" }}>
+                  <div style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)" }}>
                     {chat.messages?.length || 0} message{(chat.messages?.length || 0) !== 1 ? "s" : ""}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--muted)", marginTop: "0.2rem" }}>
+                  <div style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)", marginTop: "0.2rem" }}>
                     {new Date(chat.updatedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                   </div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--accent)", marginTop: "0.2rem" }}>
+                  <div style={{ fontSize: "var(--font-size-sm)", color: "var(--accent)", marginTop: "0.2rem" }}>
                     {openChat?._id === chat._id ? "▲ collapse" : "▼ expand"}
                   </div>
                 </div>

@@ -128,7 +128,7 @@ const visibleEntries = entries.filter((g) => {
               <tr key={g._id}>
                 <td>{g.title}</td>
                 <td><span className="branch-tag">{g.branch === "All" ? "All Branches" : g.branch}</span></td>
-                <td style={{ fontSize: "0.8rem", color: "var(--muted)" }}>{g.role ? (rolesForFilter[g.role] || "—") : "All roles"}</td>
+                <td style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)" }}>{g.role ? (rolesForFilter[g.role] || "—") : "All roles"}</td>
                 <td><ContributorLabel item={g} /></td>
                 <td>
                   <div className="table-actions">

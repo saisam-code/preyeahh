@@ -246,10 +246,10 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
       {/* Fixed UI Overlays */}
       <div className="roadmap-overlay-ui">
         <div className="roadmap-info-card top-left">
-          <h3 style={{ fontSize: "1rem", fontWeight: 800, marginBottom: "8px" }}>
+          <h3 style={{ fontSize: "var(--font-size-md)", fontWeight: 800, marginBottom: "8px" }}>
             Other Roadmaps
           </h3>
-          <ul style={{ paddingLeft: "1rem", fontSize: "0.85rem" }}>
+          <ul style={{ paddingLeft: "1rem", fontSize: "var(--font-size-sm)" }}>
             {relatedRoadmaps
               .filter((r) => r._id !== roadmap._id)
               .slice(0, 3)
@@ -265,13 +265,13 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
         </div>
 
         <div className="roadmap-info-card top-right">
-          <h2 style={{ fontSize: "1.2rem", fontWeight: 900, marginBottom: "4px" }}>
+          <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 900, marginBottom: "4px" }}>
             {roadmap.title}
           </h2>
           <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "8px" }}>
             {roadmap.branch} • {roadmap.level} • {roadmap.estimatedWeeks}wks
           </p>
-          <div style={{ fontSize: "0.85rem", fontWeight: 700 }}>
+          <div style={{ fontSize: "var(--font-size-sm)", fontWeight: 700 }}>
             Progress: {completedTopics} / {totalTopics} ({progressPct}%)
           </div>
           <div className="roadmap-progress-bar-container">
@@ -297,14 +297,14 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
             <button className="drawer-close" onClick={() => setActiveDrawer(null)}>
               ×
             </button>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 900, marginBottom: "1rem" }}>
+            <h2 style={{ fontSize: "var(--font-size-xl)", fontWeight: 900, marginBottom: "1rem" }}>
               {activeDrawer.title}
             </h2>
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.5, marginBottom: "1.5rem" }}>
+            <p style={{ fontSize: "var(--font-size-sm)", lineHeight: 1.5, marginBottom: "1.5rem" }}>
               {activeDrawer.description}
             </p>
 
-            <h3 style={{ fontSize: "1.1rem", fontWeight: 800 }}>Resources</h3>
+            <h3 style={{ fontSize: "var(--font-size-lg)", fontWeight: 800 }}>Resources</h3>
             <div className="drawer-resource-list">
               {activeDrawer.resources && activeDrawer.resources.length > 0 ? (
                 activeDrawer.resources.map((r, i) =>

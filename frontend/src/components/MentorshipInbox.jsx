@@ -105,7 +105,7 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
       <div className="admin-header">
         <div>
           <h2>{mode === "guide" ? "Student conversations" : "Chat with a guide"}</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginTop: "0.25rem" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginTop: "0.25rem" }}>
             Private mentor messages, separate from Preyeahh AI chats.
           </p>
         </div>
@@ -113,12 +113,12 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
 
       {mode === "student" && roleIntent?.id && mentors.length > 0 && (
         <div style={{ borderBottom: "1px solid var(--border)", paddingBottom: "1rem", marginBottom: "1rem" }}>
-          <h3 style={{ fontSize: "0.95rem", marginBottom: "0.65rem" }}>Guides for {roleIntent.title}</h3>
+          <h3 style={{ fontSize: "var(--font-size-sm)", marginBottom: "0.65rem" }}>Guides for {roleIntent.title}</h3>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "0.65rem" }}>
             {mentors.map((guide) => (
-              <div key={guide.id} style={{ border: "1px solid var(--border)", borderRadius: 8, padding: "0.75rem", minWidth: 220, maxWidth: 360, background: "var(--surface)" }}>
+              <div key={guide.id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.75rem", minWidth: 220, maxWidth: 360, background: "var(--surface)" }}>
                 <strong>{guide.name}</strong>
-                {guide.bio && <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0.35rem 0" }}>{guide.bio}</p>}
+                {guide.bio && <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", margin: "0.35rem 0" }}>{guide.bio}</p>}
                 <button type="button" className="btn btn-primary btn-sm" disabled={startingGuideId === guide.id} onClick={() => beginConversation(guide)}>
                   {startingGuideId === guide.id ? "Opening..." : "Message guide"}
                 </button>
@@ -129,15 +129,15 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
       )}
 
       {mode === "student" && roleIntent?.id && !mentors.length && !loading && !hasRoleConversation && (
-        <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginBottom: "1rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "1rem" }}>
           No approved guide is currently assigned to {roleIntent.title}. Your commitment is saved; check back later.
         </p>
       )}
 
       <div className="mentorship-layout" style={{ display: "grid", gap: "1rem" }}>
         <aside className="mentorship-inbox-sidebar" style={{ borderRight: "1px solid var(--border)", paddingRight: "0.75rem" }}>
-          <h3 style={{ fontSize: "0.88rem", marginBottom: "0.5rem" }}>Your conversations</h3>
-          {loading ? <p style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>Loading...</p> : conversations.length ? conversations.map((conversation) => (
+          <h3 style={{ fontSize: "var(--font-size-sm)", marginBottom: "0.5rem" }}>Your conversations</h3>
+          {loading ? <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Loading...</p> : conversations.length ? conversations.map((conversation) => (
             <button
               type="button"
               key={conversation.id}
@@ -145,27 +145,27 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
               className="btn btn-outline"
               style={{ width: "100%", display: "block", textAlign: "left", marginBottom: "0.5rem", borderColor: selected?.id === conversation.id ? "var(--primary)" : undefined }}
             >
-              <strong style={{ display: "block", fontSize: "0.82rem" }}>{otherPerson(conversation)}</strong>
-              <span style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)" }}>{conversation.role.title}</span>
-              {conversation.messages.at(-1) && <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "0.75rem" }}>{conversation.messages.at(-1).content}</span>}
+              <strong style={{ display: "block", fontSize: "var(--font-size-sm)" }}>{otherPerson(conversation)}</strong>
+              <span style={{ display: "block", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>{conversation.role.title}</span>
+              {conversation.messages.at(-1) && <span style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "var(--font-size-sm)" }}>{conversation.messages.at(-1).content}</span>}
             </button>
-          )) : <p style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>No conversations yet.</p>}
+          )) : <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>No conversations yet.</p>}
         </aside>
 
         <div style={{ minWidth: 0 }}>
           {selected ? (
             <>
               <div style={{ borderBottom: "1px solid var(--border)", paddingBottom: "0.65rem", marginBottom: "0.75rem" }}>
-                <h3 style={{ fontSize: "0.95rem" }}>{otherPerson(selected)} · {selected.role.title}</h3>
+                <h3 style={{ fontSize: "var(--font-size-sm)" }}>{otherPerson(selected)} · {selected.role.title}</h3>
               </div>
               <div aria-live="polite" style={{ display: "flex", flexDirection: "column", gap: "0.6rem", maxHeight: 380, overflowY: "auto", padding: "0.25rem" }}>
                 {selected.messages.map((item) => (
-                  <div key={item.id} style={{ alignSelf: item.senderRole === mode ? "flex-end" : "flex-start", maxWidth: "85%", padding: "0.65rem 0.8rem", borderRadius: 8, background: item.senderRole === mode ? "var(--primary-bg)" : "var(--surface-mid)", color: "var(--text)" }}>
-                    <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontSize: "0.85rem" }}>{item.content}</p>
-                    <time style={{ display: "block", color: "var(--text-muted)", fontSize: "0.68rem", marginTop: "0.25rem" }}>{new Date(item.createdAt).toLocaleString()}</time>
+                  <div key={item.id} style={{ alignSelf: item.senderRole === mode ? "flex-end" : "flex-start", maxWidth: "85%", padding: "0.65rem 0.8rem", borderRadius: "var(--radius)", background: item.senderRole === mode ? "var(--primary-bg)" : "var(--surface-mid)", color: "var(--text)" }}>
+                    <p style={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontSize: "var(--font-size-sm)" }}>{item.content}</p>
+                    <time style={{ display: "block", color: "var(--text-muted)", fontSize: "var(--font-size-xs)", marginTop: "0.25rem" }}>{new Date(item.createdAt).toLocaleString()}</time>
                   </div>
                 ))}
-                {!selected.messages.length && <p style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>Say hello to start the conversation.</p>}
+                {!selected.messages.length && <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Say hello to start the conversation.</p>}
               </div>
               <form onSubmit={handleSend} style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem" }}>
                 <input className="search-input" aria-label="Message" maxLength={2000} value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Write a message..." />

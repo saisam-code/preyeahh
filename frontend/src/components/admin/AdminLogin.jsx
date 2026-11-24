@@ -48,10 +48,10 @@ export default function AdminLogin({ onSuccess }) {
             {formState.isSubmitting ? "Signing in..." : "Login"}
           </button>
         </form>
-        <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "1rem", textAlign: "center" }}>
+        <p style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)", marginTop: "1rem", textAlign: "center" }}>
           <Link to="/forgot-password?role=admin" style={{ color: "var(--primary)" }}>Forgot password?</Link>
         </p>
-        <p style={{ fontSize: "0.78rem", color: "var(--muted)", marginTop: "0.5rem", textAlign: "center" }}>
+        <p style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)", marginTop: "0.5rem", textAlign: "center" }}>
           Contact your administrator for access.
         </p>
       </div>
