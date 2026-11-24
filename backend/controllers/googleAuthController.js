@@ -18,6 +18,7 @@ import { OAuth2Client } from "google-auth-library";
 import Student from "../models/Student.js";
 import logger from "../utils/logger.js";
 import { issueTokens, signOnboardingToken } from "../services/tokenService.js";
+import { isInstitutionGuideEmail } from "../config/institutionDomains.js";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -52,9 +53,11 @@ function stateCookieOptions() {
   };
 }
 
-const EMAIL_REGEX = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
-
 import Guide from "../models/Guide.js";
+
+export function isGoogleEmailAllowedForRole(role, email) {
+  return role !== "guide" || isInstitutionGuideEmail(email);
+}
 
 // ── GET /api/auth/google ──────────────────────────────────────────────────────
 
@@ -147,12 +150,7 @@ export async function handleGoogleCallback(req, res) {
       return res.redirect(`${clientUrl}/login?google_error=email_not_verified`);
     }
 
-    if (!EMAIL_REGEX.test(email)) {
-      logger.warn("[google-auth] Disallowed email domain:", email);
-      return res.redirect(`${clientUrl}/login?google_error=domain_not_allowed`);
-    }
-    
-    if (role === "guide" && !email.toLowerCase().endsWith("@nbkrist.org")) {
+    if (!isGoogleEmailAllowedForRole(role, email)) {
       logger.warn("[google-auth] Disallowed email domain for guide:", email);
       return res.redirect(`${clientUrl}/login?google_error=domain_not_allowed`);
     }

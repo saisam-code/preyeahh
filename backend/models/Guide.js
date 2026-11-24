@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-
-const GUIDE_EMAIL_REGEX = /^[^\s@]+@nbkrist\.org$/i;
+import { isInstitutionGuideEmail } from "../config/institutionDomains.js";
 
 const guideSchema = new mongoose.Schema(
   {
@@ -14,13 +13,9 @@ const guideSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       validate: {
-        validator: function(v) {
-          // If guideType is PREYEAHH, allow any valid email
-          if (this.guideType === "PREYEAHH") {
-            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-          }
-          // Default institution guides fallback or specific domain validation
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        validator: function (v) {
+          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return false;
+          return this.guideType !== "INSTITUTION" || isInstitutionGuideEmail(v);
         },
         message: "Please enter a valid official email address",
       },

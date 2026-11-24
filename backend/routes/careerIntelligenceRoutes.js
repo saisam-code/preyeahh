@@ -16,15 +16,22 @@ import {
   submitReport,
   blockUser,
 } from "../controllers/advancedCapabilitiesController.js";
-import { protect, authorize, optionalAuth } from "../middleware/auth.js";
+import { protect, authorize } from "../middleware/auth.js";
+import { aiLimiter } from "../middleware/rateLimiters.js";
+import validate from "../middleware/validate.js";
+import {
+  analyzeCareerSwitchRules,
+  calculateFinancialRoiRules,
+  compareCareersRules,
+} from "../validators/aiRequestValidator.js";
 
 const router = express.Router();
 
 router.get("/roles", discoverCareers);
 router.get("/roles/:id/reality", getCareerReality);
-router.post("/compare", optionalAuth, compareCareers);
-router.post("/switch-analysis", optionalAuth, analyzeCareerSwitch);
-router.post("/financial-roi", optionalAuth, calculateFinancialRoi);
+router.post("/compare", protect, aiLimiter, compareCareersRules, validate, compareCareers);
+router.post("/switch-analysis", protect, aiLimiter, analyzeCareerSwitchRules, validate, analyzeCareerSwitch);
+router.post("/financial-roi", protect, aiLimiter, calculateFinancialRoiRules, validate, calculateFinancialRoi);
 
 // Public verified outcomes
 router.get("/outcomes", getPublicOutcomes);

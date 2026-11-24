@@ -12,7 +12,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import crypto from "node:crypto";
 import escapeRegex from "../utils/escapeRegex.js";
+import { Institution, InstitutionMembership } from "../models/Institution.js";
+import { requestMembershipByAssociationCode } from "../services/institutionService.js";
 
 // ── 1.8 escapeRegex ──────────────────────────────────────────────────────────
 
@@ -62,10 +65,34 @@ test("Student project API defaults public sharing to false", async () => {
   );
 });
 
-test("Institution association requests remain pending for approval", async () => {
-  const source = await readFile(new URL("../controllers/studentDevelopmentController.js", import.meta.url), "utf8");
-  assert.match(source, /status:\s*"PENDING"/, "Association requests must not bypass institution approval");
-  assert.doesNotMatch(source, /status:\s*associationCode\s*\?\s*"ACTIVE"/, "Association codes must not directly activate membership");
+test("Institution association hashes codes and creates only pending memberships", async () => {
+  const originalFindInstitution = Institution.findOne;
+  const originalFindMembership = InstitutionMembership.findOne;
+  const originalUpsertMembership = InstitutionMembership.findOneAndUpdate;
+  const rawCode = "TIT-ONE-TIME-SECRET";
+  const expectedHash = crypto.createHash("sha256").update(rawCode).digest("hex");
+  let membershipUpdate;
+
+  Institution.findOne = async (filter) => {
+    assert.deepEqual(filter, { associationCodeHash: expectedHash, status: "APPROVED" });
+    return { _id: "institution-id", name: "Test Institute" };
+  };
+  InstitutionMembership.findOne = async () => null;
+  InstitutionMembership.findOneAndUpdate = async (_filter, update) => {
+    membershipUpdate = update;
+    return { ...update };
+  };
+
+  try {
+    const result = await requestMembershipByAssociationCode({ studentId: "student-id", associationCode: rawCode });
+    assert.equal(result.membership.status, "PENDING");
+    assert.equal(membershipUpdate.status, "PENDING");
+    assert.equal(membershipUpdate.source, "ASSOCIATION_CODE");
+  } finally {
+    Institution.findOne = originalFindInstitution;
+    InstitutionMembership.findOne = originalFindMembership;
+    InstitutionMembership.findOneAndUpdate = originalUpsertMembership;
+  }
 });
 
 // ── 1.6 Privacy defaults (model schema level) ────────────────────────────────

@@ -16,8 +16,7 @@ const institutionSchema = new mongoose.Schema(
     },
     location: { type: String, default: "" },
     website: { type: String, default: "" },
-    associationCode: { type: String, unique: true, sparse: true, uppercase: true }, // Code students use to join
-    associationCodeHash: { type: String, select: false }, // Hashed storage of association code
+    associationCodeHash: { type: String, unique: true, sparse: true, select: false },
     contactEmail: { type: String, required: true, lowercase: true, trim: true },
     password: { type: String, select: false }, // For Placement Cell / Institution Admin login
     contactPerson: { type: String, default: "" },
@@ -41,9 +40,6 @@ institutionSchema.pre("save", async function (next) {
   if (this.isModified("password") && this.password) {
     this.password = await bcrypt.hash(this.password, 12);
   }
-  if (this.isModified("associationCode") && this.associationCode) {
-    this.associationCodeHash = crypto.createHash("sha256").update(this.associationCode).digest("hex");
-  }
   next();
 });
 
@@ -53,9 +49,8 @@ institutionSchema.methods.comparePassword = function (candidate) {
 };
 
 institutionSchema.methods.rotateAssociationCode = function () {
-  const randomSuffix = crypto.randomBytes(3).toString("hex").toUpperCase();
+  const randomSuffix = crypto.randomBytes(24).toString("hex").toUpperCase();
   const rawCode = `${this.code}-${randomSuffix}`;
-  this.associationCode = rawCode;
   this.associationCodeHash = crypto.createHash("sha256").update(rawCode).digest("hex");
   return rawCode;
 };
@@ -71,7 +66,6 @@ institutionSchema.methods.toSafeJSON = function () {
     contactEmail: this.contactEmail,
     contactPerson: this.contactPerson,
     designation: this.designation,
-    associationCode: this.associationCode,
     status: this.status,
     role: "institution",
     createdAt: this.createdAt,

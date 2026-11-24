@@ -11,6 +11,7 @@ import logger from "../utils/logger.js";
 import sendEmail, { assertEmailConfigured, getClientUrl } from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 import * as profileService from "../services/profileService.js";
+import { requestMembershipByAssociationCode } from "../services/institutionService.js";
 
 export const registerStudent = asyncHandler(async (req, res) => {
   const { name, email, password, branch } = req.body;
@@ -375,47 +376,16 @@ export const updateStudentParentLinkStatus = asyncHandler(async (req, res) => {
  * Uses association code to create a PENDING membership (never directly ACTIVE)
  */
 export const associateWithInstitution = asyncHandler(async (req, res) => {
-  const { associationCode } = req.body;
-  if (!associationCode || !associationCode.trim()) {
-    throw ApiError.badRequest("Association code is required");
-  }
-
-  const { Institution, InstitutionMembership } = await import("../models/Institution.js");
-  const crypto = (await import("crypto")).default;
-
-  const rawCode = associationCode.trim().toUpperCase();
-  const hash = crypto.createHash("sha256").update(rawCode).digest("hex");
-
-  const inst = await Institution.findOne({
-    $or: [{ associationCode: rawCode }, { associationCodeHash: hash }],
-    status: "APPROVED",
+  const { institution, membership } = await requestMembershipByAssociationCode({
+    studentId: req.user.id,
+    associationCode: req.body.associationCode,
   });
-
-  if (!inst) {
-    throw ApiError.notFound("No approved institution matches this association code");
-  }
-
-  const existing = await InstitutionMembership.findOne({ student: req.user.id, institution: inst._id });
-  if (existing && existing.status === "ACTIVE") {
-    throw ApiError.badRequest("You are already an active verified member of this institution");
-  }
-
-  const membership = await InstitutionMembership.findOneAndUpdate(
-    { student: req.user.id, institution: inst._id },
-    {
-      student: req.user.id,
-      institution: inst._id,
-      status: "PENDING",
-      source: "ASSOCIATION_CODE",
-    },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
-  );
 
   res.status(201).json(
     new ApiResponse(
       201,
       membership,
-      `Association request submitted for ${inst.name}. Pending campus coordinator approval.`
+      `Association request submitted for ${institution.name}. Pending campus coordinator approval.`
     )
   );
 });

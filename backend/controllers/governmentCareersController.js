@@ -149,21 +149,17 @@ export const compareGovernmentJobs = asyncHandler(async (req, res) => {
 
   // Optional AI analysis summarizing trade-offs without making fake guarantees
   let aiComparativeAnalysis = "";
-  try {
-    const prompt = `Compare these government career paths objectively for an Indian student:\n` +
-      jobs.map((j) => `- ${j.title} (${j.department}): Group: ${j.group}, Basic Pay: ₹${j.salary.basicPay}, Stages: ${j.examination.selectionStages.length}, Min Education: ${j.eligibility.minimumEducation}`).join("\n") +
-      `\nProvide an objective side-by-side comparison of work-life balance, posting flexibility, preparation timeline, and career progression. Do not promise selection or guarantee placement.`;
+  const prompt = `Compare these government career paths objectively for an Indian student:\n` +
+    jobs.map((j) => `- ${j.title} (${j.department}): Group: ${j.group}, Basic Pay: ₹${j.salary.basicPay}, Stages: ${j.examination.selectionStages.length}, Min Education: ${j.eligibility.minimumEducation}`).join("\n") +
+    `\nProvide an objective side-by-side comparison of work-life balance, posting flexibility, preparation timeline, and career progression. Do not promise selection or guarantee placement.`;
 
-    aiComparativeAnalysis = await chatCompletion(
-      [
-        { role: "system", content: "You are Preyeahh's Government Career Intelligence specialist. Never fabricate selection probabilities or guarantee vacancies." },
-        { role: "user", content: prompt },
-      ],
-      { temperature: 0.35, maxTokens: 800 }
-    );
-  } catch (err) {
-    aiComparativeAnalysis = "Comparative metrics compiled below. Examine pay scales, eligibility age criteria, and examination stages.";
-  }
+  aiComparativeAnalysis = await chatCompletion(
+    [
+      { role: "system", content: "You are Preyeahh's Government Career Intelligence specialist. Never fabricate selection probabilities or guarantee vacancies." },
+      { role: "user", content: prompt },
+    ],
+    { temperature: 0.35, maxTokens: 800 }
+  );
 
   res.status(200).json(
     new ApiResponse(200, { jobs, aiAnalysis: aiComparativeAnalysis }, "Government careers compared successfully")

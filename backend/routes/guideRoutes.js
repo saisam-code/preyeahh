@@ -37,13 +37,10 @@ import {
   resendVerificationRules,
 } from "../validators/authValidator.js";
 import { conversationIdRule, sendMentorshipMessageRules } from "../validators/mentorshipValidator.js";
+import { authLimiter } from "../middleware/rateLimiters.js";
 
 const router = express.Router();
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false,
-  message: { success: false, statusCode: 429, message: "Too many attempts, please try again later." },
-});
 const sensitiveLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false,
   message: { success: false, statusCode: 429, message: "Too many attempts. Please try again in an hour." },

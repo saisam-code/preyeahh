@@ -102,37 +102,6 @@ export const listInstitutions = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, list, "Active institutions list"));
 });
 
-export const requestInstitutionAssociation = asyncHandler(async (req, res) => {
-  const { institutionCode, associationCode, rollNumber } = req.body;
-  if (!institutionCode && !associationCode) {
-    throw ApiError.badRequest("Institution code or association code is required");
-  }
-
-  const crypto = (await import("crypto")).default;
-  const query = associationCode
-    ? { associationCodeHash: crypto.createHash("sha256").update(associationCode.trim().toUpperCase()).digest("hex"), status: "APPROVED" }
-    : { code: institutionCode.trim().toUpperCase(), status: "APPROVED" };
-  const inst = await Institution.findOne(query);
-  if (!inst) throw ApiError.notFound("Institution not found with provided code");
-
-  // Check existing membership
-  let membership = await InstitutionMembership.findOne({ student: req.user.id, institution: inst._id });
-  if (membership) {
-    return res.status(200).json(new ApiResponse(200, membership, `Current membership status: ${membership.status}`));
-  }
-
-  membership = await InstitutionMembership.create({
-    student: req.user.id,
-    institution: inst._id,
-    rollNumberOrStudentId: rollNumber || "",
-    status: "PENDING",
-    source: associationCode ? "ASSOCIATION_CODE" : "STUDENT_REQUEST",
-    joinedAt: null,
-  });
-
-  res.status(201).json(new ApiResponse(201, membership, "Institution association submitted"));
-});
-
 export const getStudentInstitutionStatus = asyncHandler(async (req, res) => {
   const membership = await InstitutionMembership.findOne({ student: req.user.id, status: "ACTIVE" })
     .populate("institution", "name code category location website")

@@ -4,14 +4,13 @@ import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
-import toast from "react-hot-toast";
 import "./Login.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 
 const GOOGLE_ERRORS = {
   access_denied: "Google sign-in was cancelled.",
-  domain_not_allowed: "Only @gmail.com and @nbkrist.org emails are supported.",
+  domain_not_allowed: "This email domain is not allowed for this role.",
   email_not_verified: "Your Google email is not verified.",
   not_found: "No account found for that Google email. Register first.",
   state_mismatch: "Sign-in session expired. Please try again.",
@@ -107,60 +106,6 @@ export default function Login() {
               {label}
             </button>
           ))}
-        </div>
-
-        {/* Quick Sample Demo Login Bar */}
-        <div
-          style={{
-            marginBottom: "1.25rem",
-            background: "var(--primary-bg)",
-            border: "1px dashed var(--primary)",
-            borderRadius: "var(--radius)",
-            padding: "0.75rem 1rem",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.25rem" }}>
-            <span style={{ fontSize: "var(--font-size-xs)", fontWeight: 700, color: "var(--primary)", textTransform: "uppercase", letterSpacing: 0.8 }}>
-              Sample Demo Account
-            </span>
-            <span style={{ fontSize: "var(--font-size-icon)", color: "var(--text-muted)" }}>Instant Evaluation</span>
-          </div>
-          <button
-            type="button"
-            className="btn btn-outline btn-sm"
-            style={{
-              width: "100%",
-              fontSize: "var(--font-size-xs)",
-              padding: "0.35rem 0.6rem",
-              borderColor: "var(--primary)",
-              color: "var(--primary)",
-              background: "var(--surface)",
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "0.4rem",
-              marginTop: "0.25rem",
-            }}
-            onClick={() => {
-              if (role === "parent") {
-                form.setValue("email", "parent.demo@preyeahh.com");
-                form.setValue("password", "DemoParent123!");
-              } else if (role === "institution") {
-                form.setValue("email", "placement@nbkrist.org");
-                form.setValue("password", "DemoInst123!");
-              } else if (role === "guide") {
-                form.setValue("email", "guide@nbkrist.org");
-                form.setValue("password", "GuidePass123!");
-              } else {
-                form.setValue("email", "demo@gmail.com");
-                form.setValue("password", "Student123!");
-              }
-              toast.success(`Demo ${role} credentials pre-filled!`);
-            }}
-          >
-            ⚡ Fill Sample {role.charAt(0).toUpperCase() + role.slice(1)} Login
-          </button>
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate>

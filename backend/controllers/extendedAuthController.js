@@ -65,20 +65,7 @@ export const loginParent = asyncHandler(async (req, res) => {
   if (!email || !password) throw ApiError.badRequest("Email and password are required");
 
   const normalizedEmail = email.trim().toLowerCase();
-  let parent = await Parent.findOne({ email: normalizedEmail }).select("+password");
-
-  // Auto-seed demo parent account if requested and missing
-  if (!parent && normalizedEmail === "parent.demo@preyeahh.com" && password === "DemoParent123!") {
-    parent = await Parent.create({
-      name: "Ramesh Sharma (Demo Guardian)",
-      email: "parent.demo@preyeahh.com",
-      password: "DemoParent123!",
-      phone: "+91 98765 43210",
-      relationship: "Father",
-      isVerified: true,
-      refreshTokenVersion: 0,
-    });
-  }
+  const parent = await Parent.findOne({ email: normalizedEmail }).select("+password");
 
   if (!parent || !(await parent.comparePassword(password))) {
     throw ApiError.unauthorized("Invalid email or password");
@@ -253,27 +240,7 @@ export const loginInstitution = asyncHandler(async (req, res) => {
   if (!email || !password) throw ApiError.badRequest("Email and password are required");
 
   const normalizedEmail = email.trim().toLowerCase();
-  let inst = await Institution.findOne({ contactEmail: normalizedEmail }).select("+password +associationCodeHash");
-
-  // Auto-seed demo institution account if requested and missing
-  if (!inst && normalizedEmail === "placement@nbkrist.org" && password === "DemoInst123!") {
-    inst = new Institution({
-      name: "N.B.K.R. Institute of Science & Technology",
-      code: "NBKRIST",
-      category: "Engineering College",
-      location: "Vidyanagar, Andhra Pradesh",
-      website: "https://www.nbkrist.co.in",
-      contactEmail: "placement@nbkrist.org",
-      password: "DemoInst123!",
-      contactPerson: "Dr. K. Sudhir",
-      designation: "Head of Training & Placement Cell",
-      status: "APPROVED",
-      studentCountApprox: 1850,
-      refreshTokenVersion: 0,
-    });
-    inst.rotateAssociationCode();
-    await inst.save();
-  }
+  const inst = await Institution.findOne({ contactEmail: normalizedEmail }).select("+password");
 
   if (!inst || !(await inst.comparePassword(password))) {
     throw ApiError.unauthorized("Invalid credentials for institution");

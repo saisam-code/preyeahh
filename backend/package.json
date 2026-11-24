@@ -14,7 +14,8 @@
     "create-admin": "node scripts/createAdmin.js",
     "seed:resources": "node scripts/seedResources.js",
     "seed:demo": "node scripts/seedDemoAccounts.js",
-    "migrate:career-goals": "node scripts/migrateCareerGoals.js"
+    "migrate:career-goals": "node scripts/migrateCareerGoals.js",
+    "migrate:institution-codes": "node scripts/migrateInstitutionAssociationCodes.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

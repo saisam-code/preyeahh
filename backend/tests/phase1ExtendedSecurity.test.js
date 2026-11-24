@@ -39,8 +39,16 @@ test("1.4: Institution rotateAssociationCode generates uppercase code and hash",
   const rawCode = inst.rotateAssociationCode();
   assert.ok(rawCode.startsWith("TIT-"), "Code should start with institution code prefix");
   assert.equal(rawCode, rawCode.toUpperCase(), "Association code must be uppercase");
+  assert.equal(inst.associationCode, undefined, "Plaintext association codes must not be stored on the model");
   assert.ok(inst.associationCodeHash, "associationCodeHash must be computed");
   assert.equal(inst.associationCodeHash.length, 64, "SHA-256 hash must be 64 characters");
+  assert.equal(inst.toSafeJSON().associationCode, undefined, "Safe JSON must not expose stored codes");
+  assert.ok(
+    Institution.schema.indexes().some(([keys, options]) =>
+      keys.associationCodeHash === 1 && options.unique && options.sparse
+    ),
+    "Association-code hashes must have a unique sparse index"
+  );
 });
 
 test("1.5: Parent and Institution have refreshTokenVersion defaulting to 0", async () => {

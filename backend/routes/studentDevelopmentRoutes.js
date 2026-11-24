@@ -8,7 +8,6 @@ import {
   updateOpportunity,
   deleteOpportunity,
   listInstitutions,
-  requestInstitutionAssociation,
   getStudentInstitutionStatus,
 } from "../controllers/studentDevelopmentController.js";
 import { protect, authorize, optionalAuth } from "../middleware/auth.js";
@@ -29,6 +28,5 @@ router.delete("/opportunities/:id", protect, authorize("admin"), deleteOpportuni
 // Institution
 router.get("/institutions", listInstitutions);
 router.get("/institution/status", protect, authorize("student"), getStudentInstitutionStatus);
-router.post("/institution/associate", protect, authorize("student"), requestInstitutionAssociation);
 
 export default router;

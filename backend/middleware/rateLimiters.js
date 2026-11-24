@@ -1,5 +1,13 @@
 import rateLimit from "express-rate-limit";
 
+export const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, statusCode: 429, message: "Too many attempts, please try again later." },
+});
+
 /**
  * Per-student cap on endpoints that call the LLM (each call costs quota).
  * Mount AFTER protect() so req.user is available; falls back to IP otherwise.

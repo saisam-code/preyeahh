@@ -50,6 +50,10 @@ export const interestRules = [
   body("committed").isBoolean().withMessage("committed must be true or false").toBoolean(),
 ];
 
+export const institutionAssociationRules = [
+  body("associationCode").isString().trim().notEmpty().isLength({ max: 120 }),
+];
+
 export const roleIdParamRule = [param("roleId").isMongoId().withMessage("Invalid role id")];
 
 // ── AI profile (onboarding) ──────────────────────────────────────

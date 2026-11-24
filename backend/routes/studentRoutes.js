@@ -30,7 +30,7 @@ import {
 
 import { protect, authorize, protectGoogleOnboarding } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
-import { aiLimiter } from "../middleware/rateLimiters.js";
+import { aiLimiter, authLimiter } from "../middleware/rateLimiters.js";
 import {
   registerRules,
   loginRules,
@@ -39,6 +39,7 @@ import {
   extractProfileRules,
   preferencesRules,
   googleOnboardingRules,
+  institutionAssociationRules,
 } from "../validators/studentValidator.js";
 import {
   forgotPasswordRules,
@@ -54,10 +55,6 @@ import {
 
 const router = express.Router();
 
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false,
-  message: { success: false, statusCode: 429, message: "Too many attempts, please try again later." },
-});
 const sensitiveLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false,
   message: { success: false, statusCode: 429, message: "Too many attempts. Please try again in an hour." },
@@ -99,6 +96,13 @@ router.get("/parent-links", protect, authorize("student"), getStudentParentLinks
 router.put("/parent-links/:id/status", protect, authorize("student"), updateStudentParentLinkStatus);
 
 // Institution Association (Phase 1.4)
-router.post("/institution-associate", protect, authorize("student"), associateWithInstitution);
+router.post(
+  "/institution-associate",
+  protect,
+  authorize("student"),
+  institutionAssociationRules,
+  validate,
+  associateWithInstitution
+);
 
 export default router;
