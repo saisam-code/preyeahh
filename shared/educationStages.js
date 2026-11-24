@@ -38,9 +38,10 @@ const EDUCATION_STAGE_ALIASES = new Map([
 ]);
 
 export function normalizeEducationStage(stage) {
-  if (!stage) return "Undergraduate";
-  const normalized = EDUCATION_STAGE_ALIASES.get(stage) || stage;
-  return EDUCATION_STAGES.includes(normalized) ? normalized : "Undergraduate";
+  if (typeof stage !== "string" || !stage.trim()) return "";
+  const value = stage.trim();
+  const normalized = EDUCATION_STAGE_ALIASES.get(value) || value;
+  return EDUCATION_STAGES.includes(normalized) ? normalized : "";
 }
 
 export function normalizeEducationStages(stages) {
@@ -51,6 +52,7 @@ export function normalizeEducationStages(stages) {
 
 export function getEducationMaturityStage(stage) {
   const normalized = normalizeEducationStage(stage);
+  if (!normalized) return null;
   if (normalized === "Class 6-8") return "junior";
   if (normalized === "Class 9-10") return "teen";
   const classMatch = /^Class (\d+)$/.exec(normalized);

@@ -7,6 +7,7 @@ import { CAREER_DOMAINS } from "../data/careerWheelData.js";
 import CareerWheel from "../components/wheel/CareerWheel.jsx";
 import CareerCategoryDetails from "../components/wheel/CareerCategoryDetails.jsx";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
+import { STUDENT_EDUCATION_STAGES } from "../constants/educationStages.js";
 import toast from "react-hot-toast";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
@@ -51,6 +52,7 @@ export default function Register() {
       email: "",
       password: "",
       confirmPassword: "",
+      educationStage: location.state?.onboardingData?.educationStage || "",
       branch: "",
       roleNames: "Assistant Professor",
       bio: "",
@@ -114,6 +116,7 @@ export default function Register() {
           primaryCareerGoal,
           alternativeCareerGoal,
           targetRole: primaryCareerGoal,
+          educationStage: values.educationStage || "",
         });
         try {
           localStorage.removeItem("preyeahh.student-onboarding.guest");
@@ -393,6 +396,20 @@ export default function Register() {
                   />
                   {errors.email && <small className="lp-err">{errors.email.message}</small>}
                 </div>
+
+                {/* Student Education Stage */}
+                {role === "student" && (
+                  <div className="form-group">
+                    <label htmlFor="reg-education-stage">Current education stage (optional)</label>
+                    <select id="reg-education-stage" {...register("educationStage")}>
+                      <option value="">I&apos;m still exploring / not sure yet</option>
+                      {STUDENT_EDUCATION_STAGES.map((stage) => (
+                        <option key={stage} value={stage}>{stage}</option>
+                      ))}
+                    </select>
+                    <small className="form-hint">You can update this anytime. Leaving it blank will not assign an education stage.</small>
+                  </div>
+                )}
 
                 {/* Student / Guide Branch Selector */}
                 {(role === "student" || role === "guide") && (

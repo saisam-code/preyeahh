@@ -62,6 +62,11 @@ test("Education stages normalize legacy Class 11-12 values", async () => {
   const { normalizeEducationStage, normalizeEducationStages } = await import("../constants/educationStages.js");
   assert.equal(normalizeEducationStage("Class 11-12"), "Intermediate");
   assert.equal(normalizeEducationStage("Intermediate / Class 11-12"), "Intermediate");
+  assert.equal(normalizeEducationStage(""), "");
+  assert.equal(normalizeEducationStage(undefined), "");
+  assert.equal(normalizeEducationStage("not a real stage"), "");
+  const { getEducationMaturityStage } = await import("../constants/educationStages.js");
+  assert.equal(getEducationMaturityStage(""), null);
   assert.deepEqual(
     normalizeEducationStages(["Class 11-12", "Undergraduate"]),
     ["Intermediate", "Undergraduate"]
@@ -75,6 +80,8 @@ test("Student profile supports detailed education history and non-engineering le
   assert.ok(Student.schema.path("preferences.expectedGraduationYear"));
   assert.ok(Student.schema.path("preferences.careerPreference").enumValues.includes("unsure"));
   assert.equal(Student.schema.path("branch").defaultValue, "");
+  const undecidedStudent = new Student({ name: "Learner", email: "learner@example.com" });
+  assert.equal(undecidedStudent.preferences.educationStage, "");
 });
 
 test("Student registration and onboarding accept optional branch and undecided profile fields", async () => {
