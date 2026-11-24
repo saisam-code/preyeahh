@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-theme="light"] {
   color-scheme: light;
   --ink-900: #12261e;
   --ink-600: #4a5a52;

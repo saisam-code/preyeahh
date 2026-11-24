@@ -20,7 +20,7 @@ function variable(source, name) {
   return match[1].trim();
 }
 
-const light = block(":root {");
+const light = block(":root,");
 const dark = block('[data-theme="dark"] {');
 const checks = [
   ["light primary on white", variable(light, "primary"), "#FFFFFF"],
