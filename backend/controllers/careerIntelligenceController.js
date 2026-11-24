@@ -26,7 +26,29 @@ export const discoverCareers = asyncHandler(async (req, res) => {
   }
 
   const roles = await Role.find(filter).sort({ title: 1 }).lean();
-  res.status(200).json(new ApiResponse(200, roles, "Careers discovered"));
+
+  // Phase 3.4: Group by title to eliminate duplicate-per-branch card clutter in discovery
+  let resultRoles = roles;
+  if (!branch || branch === "all") {
+    const groupedMap = new Map();
+    for (const r of roles) {
+      const key = r.title.trim().toLowerCase();
+      if (!groupedMap.has(key)) {
+        groupedMap.set(key, { ...r, branches: [r.branch] });
+      } else {
+        const existing = groupedMap.get(key);
+        if (r.branch && !existing.branches.includes(r.branch)) {
+          existing.branches.push(r.branch);
+        }
+        if (!existing.reality?.salary?.value && r.reality?.salary?.value) {
+          existing.reality = r.reality;
+        }
+      }
+    }
+    resultRoles = Array.from(groupedMap.values());
+  }
+
+  res.status(200).json(new ApiResponse(200, resultRoles, "Careers discovered"));
 });
 
 /**

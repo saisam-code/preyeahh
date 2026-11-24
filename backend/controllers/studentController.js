@@ -270,3 +270,92 @@ export const completeGoogleOnboarding = asyncHandler(async (req, res) => {
 
   res.status(200).json(new ApiResponse(200, { accessToken, user: student.toSafeJSON() }, "Onboarding completed"));
 });
+
+// ── ParentLink & Institution Association (Phase 1.3, 1.4) ──────────────────────
+
+/**
+ * GET /api/students/parent-links
+ */
+export const getStudentParentLinks = asyncHandler(async (req, res) => {
+  const ParentLink = (await import("../models/ParentLink.js")).default;
+  const links = await ParentLink.find({ student: req.user.id })
+    .populate("parent", "name email phone relationship")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json(new ApiResponse(200, links, "Parent links retrieved"));
+});
+
+/**
+ * PUT /api/students/parent-links/:id/status
+ */
+export const updateStudentParentLinkStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+  if (!["ACTIVE", "REVOKED"].includes(status)) {
+    throw ApiError.badRequest("Status must be ACTIVE or REVOKED");
+  }
+
+  const ParentLink = (await import("../models/ParentLink.js")).default;
+  const link = await ParentLink.findOne({ _id: req.params.id, student: req.user.id });
+  if (!link) throw ApiError.notFound("Parent link request not found");
+
+  link.status = status;
+  if (status === "ACTIVE") {
+    link.parentalConsentGranted = true;
+    link.consentGrantedAt = new Date();
+  } else if (status === "REVOKED") {
+    link.revokedAt = new Date();
+  }
+  await link.save();
+
+  res.status(200).json(new ApiResponse(200, link, `Parent link ${status.toLowerCase()} successfully`));
+});
+
+/**
+ * POST /api/students/institution-associate
+ * Uses association code to create a PENDING membership (never directly ACTIVE)
+ */
+export const associateWithInstitution = asyncHandler(async (req, res) => {
+  const { associationCode } = req.body;
+  if (!associationCode || !associationCode.trim()) {
+    throw ApiError.badRequest("Association code is required");
+  }
+
+  const { Institution, InstitutionMembership } = await import("../models/Institution.js");
+  const crypto = (await import("crypto")).default;
+
+  const rawCode = associationCode.trim().toUpperCase();
+  const hash = crypto.createHash("sha256").update(rawCode).digest("hex");
+
+  const inst = await Institution.findOne({
+    $or: [{ associationCode: rawCode }, { associationCodeHash: hash }],
+    status: "APPROVED",
+  });
+
+  if (!inst) {
+    throw ApiError.notFound("No approved institution matches this association code");
+  }
+
+  const existing = await InstitutionMembership.findOne({ student: req.user.id, institution: inst._id });
+  if (existing && existing.status === "ACTIVE") {
+    throw ApiError.badRequest("You are already an active verified member of this institution");
+  }
+
+  const membership = await InstitutionMembership.findOneAndUpdate(
+    { student: req.user.id, institution: inst._id },
+    {
+      student: req.user.id,
+      institution: inst._id,
+      status: "PENDING",
+      source: "ASSOCIATION_CODE",
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  res.status(201).json(
+    new ApiResponse(
+      201,
+      membership,
+      `Association request submitted for ${inst.name}. Pending campus coordinator approval.`
+    )
+  );
+});

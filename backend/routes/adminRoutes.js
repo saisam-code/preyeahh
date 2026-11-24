@@ -19,6 +19,8 @@ import {
   getAllRoadmaps,
   getAllMessages,
   getDashboardRecent,
+  getAllInstitutions,
+  updateInstitutionStatus,
 } from "../controllers/adminController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -63,5 +65,9 @@ router.get("/students/:studentId/roadmaps", protect, authorize("admin"), getStud
 router.get("/chats", protect, authorize("admin"), getAllChats);
 router.get("/roadmaps", protect, authorize("admin"), getAllRoadmaps);
 router.get("/messages", protect, authorize("admin"), getAllMessages);
+
+// ── Institution management (admin-only) (Phase 1.4) ─────────────────────────
+router.get("/institutions", protect, authorize("admin"), getAllInstitutions);
+router.put("/institutions/:id/status", protect, authorize("admin"), updateInstitutionStatus);
 
 export default router;

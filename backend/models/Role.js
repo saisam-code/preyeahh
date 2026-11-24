@@ -38,6 +38,7 @@ const roleSchema = new mongoose.Schema(
       index: true,
     },
     domain: { type: String, default: "Engineering & Technology", trim: true },
+    domainId: { type: mongoose.Schema.Types.ObjectId, ref: "CareerDomain", default: null, index: true },
     category: {
       type: String,
       enum: ["Conventional", "Unconventional", "Emerging", "Creative", "Sports & Performing Arts"],
@@ -46,11 +47,9 @@ const roleSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: {
-        values: ["core", "non-core"],
-        message: "Type must be either 'core' or 'non-core'",
-      },
-      required: true,
+      enum: ["core", "non-core", "general", ""],
+      default: "general",
+      required: false,
     },
     educationStages: {
       type: [String],

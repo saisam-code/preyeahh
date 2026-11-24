@@ -145,6 +145,25 @@ export async function submitQuiz(id, studentId, answers) {
   quiz.isCompleted = true;
   quiz.expiresAt = getRetentionExpiryDate(new Date());
   await quiz.save();
+
+  // Phase 3.8: Aggregate QuizResult learning record (persists after 7-day TTL cleanup)
+  try {
+    const QuizResult = (await import("../models/QuizResult.js")).default;
+    await QuizResult.create({
+      studentId: quiz.studentId,
+      quizId: quiz._id,
+      title: quiz.title,
+      topic: quiz.topic,
+      difficulty: quiz.difficulty,
+      score: quiz.score,
+      totalQuestions: quiz.questions.length,
+      branch: quiz.branch,
+      completedAt: new Date(),
+    });
+  } catch (err) {
+    /* non-blocking telemetry write */
+  }
+
   return toDto(quiz);
 }
 

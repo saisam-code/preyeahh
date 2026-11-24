@@ -8,6 +8,7 @@
  * throw MissingSchemaError.
  */
 import "./Branch.js";
+import "./CareerDomain.js";
 import "./Role.js";
 import "./Guidance.js";
 import "./Beyond.js";
@@ -20,11 +21,15 @@ import "./Chat.js";
 import "./Resource.js";
 import "./AIRoadmap.js";
 import "./Quiz.js";
+import "./QuizResult.js";
 import "./MentorshipConversation.js";
 import "./CareerIntelligence.js";
 import "./PersonalCareerPlan.js";
 import "./StudentDevelopment.js";
+import "./StudentGoal.js";
 import "./Institution.js";
 import "./Parent.js";
+import "./ParentLink.js";
+import "./AuditLog.js";
 import "./SafetyAndOutcomes.js";
 import "./GovernmentCareer.js";

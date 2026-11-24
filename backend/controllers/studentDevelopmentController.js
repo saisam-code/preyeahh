@@ -56,6 +56,39 @@ export const listOpportunities = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, list, "Opportunities fetched"));
 });
 
+export const createOpportunity = asyncHandler(async (req, res) => {
+  const { title, category, description, eligibility, educationLevels, deadline, url, location } = req.body;
+  if (!title || !category || !description) {
+    throw ApiError.badRequest("Title, category and description are required");
+  }
+
+  const opp = await Opportunity.create({
+    title: title.trim(),
+    category,
+    description: description.trim(),
+    eligibility: eligibility || "",
+    educationLevels: Array.isArray(educationLevels) ? educationLevels : ["Undergraduate"],
+    deadline: deadline ? new Date(deadline) : null,
+    url: url || "",
+    location: location || "All India",
+    isActive: true,
+  });
+
+  res.status(201).json(new ApiResponse(201, opp, "Opportunity created successfully"));
+});
+
+export const updateOpportunity = asyncHandler(async (req, res) => {
+  const opp = await Opportunity.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  if (!opp) throw ApiError.notFound("Opportunity not found");
+  res.status(200).json(new ApiResponse(200, opp, "Opportunity updated successfully"));
+});
+
+export const deleteOpportunity = asyncHandler(async (req, res) => {
+  const opp = await Opportunity.findByIdAndDelete(req.params.id);
+  if (!opp) throw ApiError.notFound("Opportunity not found");
+  res.status(200).json(new ApiResponse(200, null, "Opportunity deleted successfully"));
+});
+
 /**
  * INSTITUTION ECOSYSTEM
  */

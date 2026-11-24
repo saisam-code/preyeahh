@@ -250,7 +250,7 @@ export default function GovernmentCareers() {
                     padding: "0.5rem 0.9rem",
                     borderRadius: "2rem",
                     border: isSelected ? "1.5px solid var(--primary)" : "1px solid var(--border)",
-                    background: isSelected ? "rgba(21,128,61,0.12)" : "var(--surface)",
+                    background: isSelected ? "var(--primary-bg)" : "var(--surface)",
                     color: isSelected ? "var(--primary)" : "var(--text)",
                     fontSize: "0.85rem",
                     fontWeight: 600,
@@ -370,7 +370,7 @@ export default function GovernmentCareers() {
                     <div>
                       {/* Top Badges */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem", gap: "0.5rem" }}>
-                        <span style={{ fontSize: "0.75rem", background: "rgba(21,128,61,0.1)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                        <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
                           {job.category}
                         </span>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
@@ -468,7 +468,7 @@ export default function GovernmentCareers() {
               <div key={ex._id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
                   <div>
-                    <span style={{ fontSize: "0.75rem", background: "rgba(21,128,61,0.1)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                    <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
                       {ex.examination?.conductingBody}
                     </span>
                     <h3 style={{ fontSize: "1.3rem", margin: "0.3rem 0 0.2rem", fontWeight: 800 }}>{ex.examination?.examName}</h3>
@@ -537,7 +537,7 @@ export default function GovernmentCareers() {
             {notifications.map((notif) => (
               <div key={notif._id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-                  <span style={{ fontSize: "0.75rem", background: "rgba(21,128,61,0.1)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                  <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
                     {notif.conductingBody}
                   </span>
                   <span style={{ fontSize: "0.75rem", background: notif.status === "APPLICATIONS_OPEN" ? "#10b981" : "#f59e0b", color: "#fff", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
@@ -684,7 +684,7 @@ export default function GovernmentCareers() {
 
               {/* AI Comparative Insights */}
               {comparisonData.aiAnalysis && (
-                <div style={{ background: "rgba(21,128,61,0.06)", border: "1px solid rgba(21,128,61,0.2)", borderRadius: "1rem", padding: "1.5rem" }}>
+                <div style={{ background: "var(--primary-bg)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: "1rem", padding: "1.5rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem", color: "var(--primary)", fontWeight: 700 }}>
                     <FaScaleBalanced /> AI Career Trade-off Analysis
                   </div>
@@ -720,7 +720,7 @@ export default function GovernmentCareers() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
-                  <span style={{ fontSize: "0.75rem", background: "rgba(21,128,61,0.1)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                  <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
                     {selectedJob.category}
                   </span>
                   <span style={{ fontSize: "0.75rem", border: "1px solid var(--border)", borderRadius: "1rem", padding: "0.15rem 0.5rem" }}>

@@ -113,7 +113,7 @@ export default function Login() {
         <div
           style={{
             marginBottom: "1.25rem",
-            background: "rgba(21,128,61,0.06)",
+            background: "var(--primary-bg)",
             border: "1px dashed var(--primary)",
             borderRadius: "0.75rem",
             padding: "0.75rem 1rem",

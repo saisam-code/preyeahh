@@ -195,12 +195,29 @@ export const getStudentChats = asyncHandler(async (req, res) => {
 });
 
 export const getStudentChatDetail = asyncHandler(async (req, res) => {
+  const reason = (req.query.reason || req.headers["x-audit-reason"] || req.body?.reason || "").trim();
+  if (!reason || reason.length < 5) {
+    throw ApiError.badRequest("An audit reason of at least 5 characters is required to inspect student transcripts.");
+  }
+
   const chat = await Chat.findOne({
     _id: req.params.chatId,
     studentId: req.params.studentId,
   }).populate("roleId", "title branch");
 
   if (!chat) throw ApiError.notFound("Chat not found");
+
+  const AuditLog = (await import("../models/AuditLog.js")).default;
+  await AuditLog.create({
+    adminId: req.user.id,
+    adminEmail: req.user.doc?.email || "admin@system",
+    action: "VIEW_CHAT_TRANSCRIPT",
+    targetId: chat._id,
+    targetType: "Chat",
+    reason,
+    metadata: { studentId: req.params.studentId },
+  });
+
   res.status(200).json(new ApiResponse(200, chat, "Chat fetched"));
 });
 
@@ -318,7 +335,15 @@ export const getAllMessages = asyncHandler(async (req, res) => {
     matchQuery["messages.content"] = { $regex: escapeRegex(req.query.search.trim()), $options: "i" };
   }
 
+  const chatMatch = { "messages.0": { $exists: true } };
+  if (req.query.branch && req.query.branch !== "all") {
+    chatMatch.branch = req.query.branch.toUpperCase();
+  }
+
   const pipeline = [
+    { $match: chatMatch },
+    { $sort: { updatedAt: -1 } },
+    { $limit: Math.max(100, limit * 5) },
     { $unwind: "$messages" },
     ...(Object.keys(matchQuery).length ? [{ $match: matchQuery }] : []),
     { $sort: { "messages.createdAt": -1, updatedAt: -1 } },
@@ -419,4 +444,28 @@ export const getDashboardRecent = asyncHandler(async (req, res) => {
       },
     }, "Recent dashboard activity fetched")
   );
+});
+
+// ── Institution management (admin-only) (Phase 1.4) ─────────────────────────
+
+export const getAllInstitutions = asyncHandler(async (req, res) => {
+  const { Institution } = await import("../models/Institution.js");
+  const institutions = await Institution.find().sort({ createdAt: -1 });
+  res.status(200).json(new ApiResponse(200, institutions, "All institutions fetched"));
+});
+
+export const updateInstitutionStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+  if (!["PENDING", "APPROVED", "REJECTED", "SUSPENDED"].includes(status)) {
+    throw ApiError.badRequest("Invalid institution status");
+  }
+
+  const { Institution } = await import("../models/Institution.js");
+  const inst = await Institution.findById(req.params.id);
+  if (!inst) throw ApiError.notFound("Institution not found");
+
+  inst.status = status;
+  await inst.save();
+
+  res.status(200).json(new ApiResponse(200, inst, `Institution status updated to ${status}`));
 });

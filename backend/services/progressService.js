@@ -52,24 +52,47 @@ export async function getLearningProgress(studentId) {
   };
 }
 
-/** Quiz totals, average score and the 5 most recent attempts. */
+/** Quiz totals, average score and the 5 most recent attempts (Phase 3.8: combines TTL quizzes with permanent QuizResult records). */
 export async function getQuizProgress(studentId) {
-  const [completed, totalQuizzes] = await Promise.all([
+  let permanentResults = [];
+  try {
+    const QuizResult = (await import("../models/QuizResult.js")).default;
+    permanentResults = await QuizResult.find({ studentId }).sort({ completedAt: -1 });
+  } catch {
+    /* fallback to active quizzes only */
+  }
+
+  const [completedQuizzes, totalQuizzes] = await Promise.all([
     Quiz.find({ studentId, isCompleted: true })
       .select("title topic branch roleTitle difficulty score updatedAt")
       .sort({ updatedAt: -1 }),
     Quiz.countDocuments({ studentId }),
   ]);
 
-  const averageScore = completed.length
-    ? Math.round(completed.reduce((sum, q) => sum + q.score, 0) / completed.length)
+  const combined = [...completedQuizzes];
+  const existingIds = new Set(completedQuizzes.map((q) => q._id.toString()));
+  for (const r of permanentResults) {
+    if (!r.quizId || !existingIds.has(r.quizId.toString())) {
+      combined.push({
+        _id: r._id,
+        title: r.title,
+        topic: r.topic,
+        difficulty: r.difficulty,
+        score: r.score,
+        updatedAt: r.completedAt,
+      });
+    }
+  }
+
+  const averageScore = combined.length
+    ? Math.round(combined.reduce((sum, q) => sum + q.score, 0) / combined.length)
     : 0;
 
   return {
-    totalQuizzes,
-    completedQuizzes: completed.length,
+    totalQuizzes: Math.max(totalQuizzes, combined.length),
+    completedQuizzes: combined.length,
     averageScore,
-    recentQuizzes: completed.slice(0, 5).map((q) => ({
+    recentQuizzes: combined.slice(0, 5).map((q) => ({
       id: q._id.toString(),
       title: q.title,
       topic: q.topic,

@@ -255,7 +255,7 @@ export default function CareerDiscovery() {
 
           {/* Compare Prompt Bar */}
           {selectedForCompare.length > 0 && (
-            <div style={{ background: "rgba(26,86,219,0.06)", border: "1.5px solid var(--primary)", padding: "0.75rem 1.25rem", borderRadius: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+            <div style={{ background: "var(--primary-bg)", border: "1.5px solid var(--primary)", padding: "0.75rem 1.25rem", borderRadius: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div><strong>{selectedForCompare.length} careers selected</strong> (Compare side-by-side)</div>
               <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button className="btn btn-outline btn-sm" onClick={() => setSelectedForCompare([])}>Clear</button>
@@ -356,7 +356,7 @@ export default function CareerDiscovery() {
           </form>
 
           {switchAnalysis && (
-            <div style={{ padding: "1.25rem", background: "rgba(26,86,219,0.06)", borderRadius: "0.75rem", fontSize: "0.92rem", lineHeight: 1.6, whiteSpace: "pre-line" }}>
+            <div style={{ padding: "1.25rem", background: "var(--primary-bg)", borderRadius: "0.75rem", fontSize: "0.92rem", lineHeight: 1.6, whiteSpace: "pre-line" }}>
               {switchAnalysis}
             </div>
           )}
@@ -529,7 +529,7 @@ export default function CareerDiscovery() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ padding: "0.85rem", background: "rgba(26,86,219,0.06)", borderRadius: "0.5rem" }}>
+              <div style={{ padding: "0.85rem", background: "var(--primary-bg)", borderRadius: "0.5rem" }}>
                 <strong>Salary & Income Trajectory (Estimated INR):</strong>
                 <div style={{ marginTop: "0.35rem", fontSize: "0.88rem", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
                   <div>Entry: <strong>{formatRealityFact(selectedRole.reality?.salaryRange?.starting)}</strong></div>

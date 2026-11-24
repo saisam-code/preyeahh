@@ -63,6 +63,34 @@ export async function listRoleMentors(student, roleId) {
 }
 
 export async function startConversation(student, { roleId, guideId }) {
+  // 1.12: Check minor consent under DPDP Act
+  // TODO: Review DPDP Act parental-consent requirements with a lawyer
+  if (student.doc?.ageBand === "UNDER_18") {
+    const ParentLink = (await import("../models/ParentLink.js")).default;
+    const activeLink = await ParentLink.findOne({
+      student: student.id,
+      status: "ACTIVE",
+      parentalConsentGranted: true,
+    });
+    if (!activeLink) {
+      throw ApiError.forbidden(
+        "Parental consent is required before engaging with faculty mentors. Please link your parent/guardian in settings."
+      );
+    }
+  }
+
+  // 1.11: Enforce UserBlock in mentorship start
+  const { UserBlock } = await import("../models/SafetyAndOutcomes.js");
+  const isBlocked = await UserBlock.findOne({
+    $or: [
+      { blockerId: student.id, blockedUserId: guideId },
+      { blockerId: guideId, blockedUserId: student.id },
+    ],
+  });
+  if (isBlocked) {
+    throw ApiError.forbidden("Mentorship communication between these users is restricted.");
+  }
+
   const role = await getCommittedRole(student, roleId);
   const guide = await Guide.findOne({ _id: guideId, branch: role.branch, status: "approved" }).select("name roleNames");
   if (!guide || !guide.roleNames.some((name) => String(name).trim().toLowerCase() === role.title.toLowerCase())) {
@@ -125,6 +153,19 @@ export async function getConversation(conversationId, user) {
 
 export async function sendConversationMessage(conversationId, user, content) {
   const conversation = await findConversationForUser(conversationId, user);
+
+  // 1.11: Enforce UserBlock on message send
+  const { UserBlock } = await import("../models/SafetyAndOutcomes.js");
+  const isBlocked = await UserBlock.findOne({
+    $or: [
+      { blockerId: conversation.studentId, blockedUserId: conversation.guideId },
+      { blockerId: conversation.guideId, blockedUserId: conversation.studentId },
+    ],
+  });
+  if (isBlocked) {
+    throw ApiError.forbidden("Mentorship communication between these users is restricted.");
+  }
+
   conversation.messages.push({ senderId: user.id, senderRole: user.role, content: content.trim() });
   conversation.lastMessageAt = new Date();
   await conversation.save();

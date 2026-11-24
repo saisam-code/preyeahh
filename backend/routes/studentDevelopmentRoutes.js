@@ -4,6 +4,9 @@ import {
   addStudentProject,
   getPublicPortfolio,
   listOpportunities,
+  createOpportunity,
+  updateOpportunity,
+  deleteOpportunity,
   listInstitutions,
   requestInstitutionAssociation,
   getStudentInstitutionStatus,
@@ -19,6 +22,9 @@ router.get("/portfolio/:studentId", getPublicPortfolio);
 
 // Opportunities
 router.get("/opportunities", listOpportunities);
+router.post("/opportunities", protect, authorize("admin", "guide"), createOpportunity);
+router.put("/opportunities/:id", protect, authorize("admin", "guide"), updateOpportunity);
+router.delete("/opportunities/:id", protect, authorize("admin"), deleteOpportunity);
 
 // Institution
 router.get("/institutions", listInstitutions);

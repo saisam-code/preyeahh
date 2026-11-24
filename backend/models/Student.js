@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { EDUCATION_STAGES, normalizeEducationStage } from "../constants/educationStages.js";
 
-const EMAIL_REGEX = /^[^\s@]+@(gmail\.com|nbkrist\.org)$/i;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * AI learning profile. Filled by the onboarding form, by
@@ -28,6 +28,8 @@ const preferencesSchema = new mongoose.Schema(
     },
     academicStream: { type: String, default: "" }, // MPC, BiPC, CEC, MEC, etc.
     degreeOrProgram: { type: String, default: "" },
+    board: { type: String, default: "" },
+    subjects: { type: [String], default: [] },
     currentRole: { type: String, default: "", trim: true },
     targetRole: { type: String, default: "", trim: true },
     primaryCareerGoal: { type: String, default: "", trim: true },
@@ -64,13 +66,18 @@ const studentSchema = new mongoose.Schema(
       trim: true,
       validate: {
         validator: (v) => EMAIL_REGEX.test(v),
-        message: "Students must register with a Gmail (@gmail.com) or college (@nbkrist.org) email",
+        message: "Please enter a valid email address",
       },
     },
     // Optional for Google-only accounts. Email/password registration still requires it
     // (enforced in the controller, not the schema, so we can keep sparse Google accounts).
     password: { type: String, minlength: 6, select: false },
-    branch: { type: String, uppercase: true, trim: true, index: true },
+    branch: { type: String, uppercase: true, trim: true, default: "", index: true },
+
+    // DPDP Act compliance: date of birth and age category
+    // TODO: Review DPDP Act parental-consent requirements with a lawyer
+    dateOfBirth: { type: Date, default: null },
+    ageBand: { type: String, enum: ["UNDER_18", "18_PLUS"], default: "18_PLUS", index: true },
 
     // Google OAuth identity — stable sub claim from Google's ID token
     googleId: { type: String, unique: true, sparse: true, index: true },

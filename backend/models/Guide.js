@@ -14,12 +14,21 @@ const guideSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       validate: {
-        validator: (v) => GUIDE_EMAIL_REGEX.test(v),
-        message: "Guides must register with a @nbkrist.org email",
+        validator: function(v) {
+          // If guideType is PREYEAHH, allow any valid email
+          if (this.guideType === "PREYEAHH") {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+          }
+          // Default institution guides fallback or specific domain validation
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        },
+        message: "Please enter a valid official email address",
       },
     },
     password: { type: String, required: function() { return !this.googleId; }, minlength: 6, select: false },
     googleId: { type: String, unique: true, sparse: true },
+    guideType: { type: String, enum: ["PREYEAHH", "INSTITUTION"], default: "INSTITUTION", index: true },
+    institutionId: { type: mongoose.Schema.Types.ObjectId, ref: "Institution", default: null, index: true },
     branch: { type: String, required: [true, "Branch is required"], uppercase: true, trim: true, index: true },
     roleNames: { type: [String], default: [] },
     bio: { type: String, default: "", trim: true, maxlength: 1000 },

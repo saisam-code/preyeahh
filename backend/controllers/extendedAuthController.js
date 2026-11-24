@@ -1,81 +1,82 @@
-import jwt from "jsonwebtoken";
 import Parent from "../models/Parent.js";
 import Student from "../models/Student.js";
-import { Institution } from "../models/Institution.js";
+import ParentLink from "../models/ParentLink.js";
+import { Institution, InstitutionMembership } from "../models/Institution.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-
-const createToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || "7d",
-  });
-};
+import {
+  issueTokens,
+  verifyRefreshToken,
+  clearRefreshCookie,
+} from "../services/tokenService.js";
 
 /**
- * POST /api/auth/parent/register
+ * POST /api/auth/extended/parent/register
+ * Creates Parent account and optionally a PENDING ParentLink. No auto-link.
  */
 export const registerParent = asyncHandler(async (req, res) => {
   const { name, email, password, phone, relationship, studentEmail } = req.body;
   if (!name || !email || !password) throw ApiError.badRequest("Name, email and password are required");
 
-  const existing = await Parent.findOne({ email: email.toLowerCase() });
+  const normalizedEmail = email.trim().toLowerCase();
+  const existing = await Parent.findOne({ email: normalizedEmail });
   if (existing) throw ApiError.conflict("An account with this email already exists");
 
-  let associatedStudents = [];
-  if (studentEmail) {
-    const student = await Student.findOne({ email: studentEmail.toLowerCase() });
-    if (student) {
-      associatedStudents.push({
-        student: student._id,
-        studentEmail: student.email,
-        isVerified: true,
-        consentGranted: true,
-      });
-    }
-  }
-
   const parent = await Parent.create({
-    name,
-    email: email.toLowerCase(),
+    name: name.trim(),
+    email: normalizedEmail,
     password,
     phone: phone || "",
     relationship: relationship || "Guardian",
-    associatedStudents,
     isVerified: false,
+    refreshTokenVersion: 0,
   });
 
-  const token = createToken(parent._id, "parent");
+  // If a studentEmail was provided, initiate a PENDING link request (never auto-link as active)
+  if (studentEmail) {
+    const student = await Student.findOne({ email: studentEmail.trim().toLowerCase() });
+    if (student) {
+      await ParentLink.findOneAndUpdate(
+        { parent: parent._id, student: student._id },
+        {
+          parent: parent._id,
+          student: student._id,
+          status: "PENDING",
+          createdBy: "PARENT",
+          parentalConsentGranted: false,
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    }
+  }
+
+  const accessToken = issueTokens(res, parent, "parent");
   res.status(201).json(
-    new ApiResponse(201, { user: parent.toSafeJSON(), accessToken: token }, "Parent account registered successfully")
+    new ApiResponse(201, { user: parent.toSafeJSON(), accessToken }, "Parent registered successfully")
   );
 });
 
 /**
- * POST /api/auth/parent/login
+ * POST /api/auth/extended/parent/login
  */
 export const loginParent = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) throw ApiError.badRequest("Email and password are required");
 
-  let parent = await Parent.findOne({ email: email.toLowerCase() }).select("+password");
+  const normalizedEmail = email.trim().toLowerCase();
+  let parent = await Parent.findOne({ email: normalizedEmail }).select("+password");
 
   // Auto-seed demo parent account if requested and missing
-  if (!parent && email.toLowerCase() === "parent.demo@preyeahh.com" && password === "DemoParent123!") {
-    const student = await Student.findOne();
+  if (!parent && normalizedEmail === "parent.demo@preyeahh.com" && password === "DemoParent123!") {
     parent = await Parent.create({
       name: "Ramesh Sharma (Demo Guardian)",
       email: "parent.demo@preyeahh.com",
       password: "DemoParent123!",
       phone: "+91 98765 43210",
       relationship: "Father",
-      associatedStudents: student ? [{
-        student: student._id,
-        studentEmail: student.email,
-        isVerified: true,
-        consentGranted: true,
-      }] : [],
       isVerified: true,
+      refreshTokenVersion: 0,
     });
   }
 
@@ -83,14 +84,128 @@ export const loginParent = asyncHandler(async (req, res) => {
     throw ApiError.unauthorized("Invalid email or password");
   }
 
-  const token = createToken(parent._id, "parent");
+  const accessToken = issueTokens(res, parent, "parent");
   res.status(200).json(
-    new ApiResponse(200, { user: parent.toSafeJSON(), accessToken: token }, "Logged in as Parent")
+    new ApiResponse(200, { user: parent.toSafeJSON(), accessToken }, "Logged in as Parent")
   );
 });
 
 /**
- * POST /api/auth/institution/register
+ * POST /api/auth/extended/parent/refresh
+ * Refreshes access token and rotates refresh cookie for parents
+ */
+export const refreshParent = asyncHandler(async (req, res) => {
+  const token = req.cookies?.pp_rt_parent;
+  if (!token) throw ApiError.unauthorized("No refresh token provided");
+
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(token);
+  } catch {
+    throw ApiError.unauthorized("Invalid or expired refresh token");
+  }
+
+  if (decoded.role !== "parent") throw ApiError.unauthorized("Token role mismatch");
+
+  const parent = await Parent.findById(decoded.id);
+  if (!parent) throw ApiError.unauthorized("Parent account no longer exists");
+
+  if (decoded.version !== (parent.refreshTokenVersion || 0)) {
+    clearRefreshCookie(res, "parent");
+    throw ApiError.unauthorized("Refresh token version revoked. Please log in again.");
+  }
+
+  const accessToken = issueTokens(res, parent, "parent");
+  res.status(200).json(new ApiResponse(200, { accessToken }, "Token refreshed"));
+});
+
+/**
+ * GET /api/auth/extended/parent/wards
+ * Returns student data ONLY for ACTIVE parent-student links and only permitted fields
+ */
+export const getParentWards = asyncHandler(async (req, res) => {
+  const links = await ParentLink.find({ parent: req.user.id, status: "ACTIVE" })
+    .populate("student", "name email branch preferences.educationStage preferences.degreeOrProgram");
+
+  const wards = links.map((link) => ({
+    linkId: link._id,
+    permissions: link.permissions,
+    parentalConsentGranted: link.parentalConsentGranted,
+    student: link.student,
+  }));
+
+  res.status(200).json(new ApiResponse(200, wards, "Active wards retrieved"));
+});
+
+/**
+ * GET /api/auth/extended/parent/wards/:studentId
+ * Guarded: Parent cannot read an unlinked or non-ACTIVE student
+ */
+export const getParentWardDetail = asyncHandler(async (req, res) => {
+  const { studentId } = req.params;
+
+  const link = await ParentLink.findOne({
+    parent: req.user.id,
+    student: studentId,
+    status: "ACTIVE",
+  });
+
+  if (!link) {
+    throw ApiError.forbidden("Access denied: You do not have an active link with this student");
+  }
+
+  const student = await Student.findById(studentId).select(
+    "name email branch dateOfBirth ageBand preferences.educationStage preferences.degreeOrProgram preferences.targetRole preferences.primaryCareerGoal"
+  );
+
+  if (!student) throw ApiError.notFound("Student record not found");
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        student,
+        permissions: link.permissions,
+        parentalConsentGranted: link.parentalConsentGranted,
+      },
+      "Ward details fetched"
+    )
+  );
+});
+
+/**
+ * POST /api/auth/extended/parent/links/request
+ * Initiates a parent-student connection request
+ */
+export const requestParentLink = asyncHandler(async (req, res) => {
+  const { studentEmail } = req.body;
+  if (!studentEmail) throw ApiError.badRequest("Student email is required");
+
+  const student = await Student.findOne({ email: studentEmail.trim().toLowerCase() });
+  if (!student) throw ApiError.notFound("No student account found with this email");
+
+  const existing = await ParentLink.findOne({ parent: req.user.id, student: student._id });
+  if (existing && existing.status === "ACTIVE") {
+    throw ApiError.badRequest("You are already actively linked with this student");
+  }
+
+  const link = await ParentLink.findOneAndUpdate(
+    { parent: req.user.id, student: student._id },
+    {
+      parent: req.user.id,
+      student: student._id,
+      status: "PENDING",
+      createdBy: "PARENT",
+      parentalConsentGranted: false,
+    },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  res.status(201).json(new ApiResponse(201, link, "Link request sent to student for approval"));
+});
+
+/**
+ * POST /api/auth/extended/institution/register
  */
 export const registerInstitution = asyncHandler(async (req, res) => {
   const { name, code, category, location, website, contactEmail, password, contactPerson, designation } = req.body;
@@ -98,45 +213,51 @@ export const registerInstitution = asyncHandler(async (req, res) => {
     throw ApiError.badRequest("Institution name, code, official email and password are required");
   }
 
+  const normalizedEmail = contactEmail.trim().toLowerCase();
+  const normalizedCode = code.trim().toUpperCase();
+
   const existing = await Institution.findOne({
-    $or: [{ code: code.toUpperCase() }, { contactEmail: contactEmail.toLowerCase() }],
+    $or: [{ code: normalizedCode }, { contactEmail: normalizedEmail }],
   });
   if (existing) throw ApiError.conflict("An institution with this code or email already exists");
 
-  const associationCode = `${code.toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-
-  const inst = await Institution.create({
-    name,
-    code: code.toUpperCase(),
+  const inst = new Institution({
+    name: name.trim(),
+    code: normalizedCode,
     category: category || "Engineering College",
     location: location || "",
     website: website || "",
-    contactEmail: contactEmail.toLowerCase(),
+    contactEmail: normalizedEmail,
     password,
     contactPerson: contactPerson || "",
     designation: designation || "Placement Cell Head",
-    associationCode,
     status: "PENDING",
+    refreshTokenVersion: 0,
   });
 
-  const token = createToken(inst._id, "institution");
+  inst.rotateAssociationCode();
+  await inst.save();
+
+  const accessToken = issueTokens(res, inst, "institution");
   res.status(201).json(
-    new ApiResponse(201, { user: inst.toSafeJSON(), accessToken: token }, "Institution registered successfully")
+    new ApiResponse(201, { user: inst.toSafeJSON(), accessToken }, "Institution registered. Pending admin review.")
   );
 });
 
 /**
- * POST /api/auth/institution/login
+ * POST /api/auth/extended/institution/login
+ * Status MUST be APPROVED for login
  */
 export const loginInstitution = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) throw ApiError.badRequest("Email and password are required");
 
-  let inst = await Institution.findOne({ contactEmail: email.toLowerCase() }).select("+password");
+  const normalizedEmail = email.trim().toLowerCase();
+  let inst = await Institution.findOne({ contactEmail: normalizedEmail }).select("+password +associationCodeHash");
 
   // Auto-seed demo institution account if requested and missing
-  if (!inst && email.toLowerCase() === "placement@nbkrist.org" && password === "DemoInst123!") {
-    inst = await Institution.create({
+  if (!inst && normalizedEmail === "placement@nbkrist.org" && password === "DemoInst123!") {
+    inst = new Institution({
       name: "N.B.K.R. Institute of Science & Technology",
       code: "NBKRIST",
       category: "Engineering College",
@@ -146,19 +267,128 @@ export const loginInstitution = asyncHandler(async (req, res) => {
       password: "DemoInst123!",
       contactPerson: "Dr. K. Sudhir",
       designation: "Head of Training & Placement Cell",
-      associationCode: "NBKR-CAMPUS-2026",
       status: "APPROVED",
       studentCountApprox: 1850,
+      refreshTokenVersion: 0,
     });
+    inst.rotateAssociationCode();
+    await inst.save();
   }
 
   if (!inst || !(await inst.comparePassword(password))) {
     throw ApiError.unauthorized("Invalid credentials for institution");
   }
 
-  const token = createToken(inst._id, "institution");
+  // Enforce APPROVED status (item 1.4)
+  if (inst.status !== "APPROVED") {
+    throw ApiError.forbidden(`Institution access is ${inst.status}. Only APPROVED institutions may log in.`);
+  }
+
+  const accessToken = issueTokens(res, inst, "institution");
   res.status(200).json(
-    new ApiResponse(200, { user: inst.toSafeJSON(), accessToken: token }, "Logged in as Institution")
+    new ApiResponse(200, { user: inst.toSafeJSON(), accessToken }, "Logged in as Institution")
+  );
+});
+
+/**
+ * POST /api/auth/extended/institution/refresh
+ */
+export const refreshInstitution = asyncHandler(async (req, res) => {
+  const token = req.cookies?.pp_rt_institution;
+  if (!token) throw ApiError.unauthorized("No refresh token provided");
+
+  let decoded;
+  try {
+    decoded = verifyRefreshToken(token);
+  } catch {
+    throw ApiError.unauthorized("Invalid or expired refresh token");
+  }
+
+  if (decoded.role !== "institution") throw ApiError.unauthorized("Token role mismatch");
+
+  const inst = await Institution.findById(decoded.id);
+  if (!inst) throw ApiError.unauthorized("Institution no longer exists");
+
+  if (inst.status !== "APPROVED") {
+    clearRefreshCookie(res, "institution");
+    throw ApiError.forbidden("Institution is not approved");
+  }
+
+  if (decoded.version !== (inst.refreshTokenVersion || 0)) {
+    clearRefreshCookie(res, "institution");
+    throw ApiError.unauthorized("Refresh token version revoked. Please log in again.");
+  }
+
+  const accessToken = issueTokens(res, inst, "institution");
+  res.status(200).json(new ApiResponse(200, { accessToken }, "Token refreshed"));
+});
+
+/**
+ * GET /api/auth/extended/institution/members
+ * Scoped to authenticated institution
+ */
+export const getInstitutionMembers = asyncHandler(async (req, res) => {
+  const members = await InstitutionMembership.find({ institution: req.user.id })
+    .populate("student", "name email branch preferences.educationStage")
+    .sort({ createdAt: -1 });
+
+  res.status(200).json(new ApiResponse(200, members, "Institution members retrieved"));
+});
+
+/**
+ * PUT /api/auth/extended/institution/members/:id/approve
+ * Approves a pending student membership
+ */
+export const approveInstitutionMember = asyncHandler(async (req, res) => {
+  const membership = await InstitutionMembership.findOne({
+    _id: req.params.id,
+    institution: req.user.id,
+  });
+
+  if (!membership) throw ApiError.notFound("Membership record not found");
+
+  // One ACTIVE membership per student rule
+  await InstitutionMembership.updateMany(
+    { student: membership.student, status: "ACTIVE", _id: { $ne: membership._id } },
+    { $set: { status: "REMOVED" } }
+  );
+
+  membership.status = "ACTIVE";
+  membership.approvedAt = new Date();
+  await membership.save();
+
+  res.status(200).json(new ApiResponse(200, membership, "Student membership approved"));
+});
+
+/**
+ * PUT /api/auth/extended/institution/members/:id/remove
+ */
+export const removeInstitutionMember = asyncHandler(async (req, res) => {
+  const membership = await InstitutionMembership.findOne({
+    _id: req.params.id,
+    institution: req.user.id,
+  });
+
+  if (!membership) throw ApiError.notFound("Membership record not found");
+
+  membership.status = "REMOVED";
+  await membership.save();
+
+  res.status(200).json(new ApiResponse(200, membership, "Student removed from cohort"));
+});
+
+/**
+ * POST /api/auth/extended/institution/rotate-code
+ */
+export const rotateInstitutionCode = asyncHandler(async (req, res) => {
+  const inst = await Institution.findById(req.user.id);
+  if (!inst) throw ApiError.notFound("Institution not found");
+
+  const rawCode = inst.rotateAssociationCode();
+  await inst.save();
+
+  res.status(200).json(
+    new ApiResponse(200, { associationCode: rawCode }, "Association code rotated successfully")
   );
 });
 
@@ -171,7 +401,14 @@ export const getExtendedMe = asyncHandler(async (req, res) => {
 
 /**
  * POST /api/auth/extended/logout
+ * Invalidates refresh token version and clears refresh cookie
  */
 export const logoutExtended = asyncHandler(async (req, res) => {
+  const role = req.user?.role || "parent";
+  if (req.user?.doc) {
+    req.user.doc.refreshTokenVersion = (req.user.doc.refreshTokenVersion || 0) + 1;
+    await req.user.doc.save();
+  }
+  clearRefreshCookie(res, role);
   res.status(200).json(new ApiResponse(200, null, "Logged out successfully"));
 });

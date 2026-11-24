@@ -208,7 +208,7 @@ export default function RolePreviewSection() {
                 borderRadius: "1rem",
                 border: isActive ? "2px solid var(--primary)" : "1px solid var(--border)",
                 background: isActive ? "var(--surface)" : "var(--surface-mid)",
-                boxShadow: isActive ? "0 8px 24px rgba(21,128,61,0.12)" : "none",
+                boxShadow: isActive ? "0 8px 24px var(--primary-bg)" : "none",
                 cursor: "pointer",
                 textAlign: "left",
                 transition: "all 0.2s ease",
@@ -264,7 +264,7 @@ export default function RolePreviewSection() {
           <span
             style={{
               display: "inline-block",
-              background: "rgba(21,128,61,0.1)",
+              background: "var(--primary-bg)",
               color: "var(--primary)",
               padding: "0.3rem 0.85rem",
               borderRadius: "2rem",
@@ -360,7 +360,7 @@ export default function RolePreviewSection() {
             <span
               style={{
                 fontSize: "0.75rem",
-                background: "rgba(21,128,61,0.12)",
+                background: "var(--primary-bg)",
                 color: "var(--primary)",
                 padding: "0.25rem 0.6rem",
                 borderRadius: "1rem",
@@ -426,7 +426,7 @@ export default function RolePreviewSection() {
                 width: 34,
                 height: 34,
                 borderRadius: "0.5rem",
-                background: "rgba(21,128,61,0.1)",
+                background: "var(--primary-bg)",
                 color: "var(--primary)",
                 display: "flex",
                 alignItems: "center",

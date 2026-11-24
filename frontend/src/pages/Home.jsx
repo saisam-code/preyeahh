@@ -95,12 +95,12 @@ export default function Home() {
               gap: "0.5rem",
               padding: "0.4rem 1.15rem",
               borderRadius: "2rem",
-              background: "rgba(21,128,61,0.08)",
+              background: "var(--primary-bg)",
               color: "var(--primary)",
               fontSize: "0.86rem",
               fontWeight: 700,
               marginBottom: "1.5rem",
-              border: "1px solid rgba(21,128,61,0.18)",
+              border: "1px solid rgba(37,99,235,0.2)",
             }}
           >
             <FaBolt /> For Students from Class 6 to PhD, Independent Learners & Career Switchers

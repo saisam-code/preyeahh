@@ -23,6 +23,7 @@ const parentSchema = new mongoose.Schema(
     ],
     role: { type: String, default: "parent" },
     isVerified: { type: Boolean, default: false },
+    refreshTokenVersion: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

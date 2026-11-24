@@ -70,7 +70,7 @@ export default function ForgotPassword() {
         </div>
 
         {submitted ? (
-          <div style={{ background: "rgba(21,128,61,0.08)", border: "1px solid var(--primary)", borderRadius: "0.75rem", padding: "1.5rem", textAlign: "center" }}>
+          <div style={{ background: "var(--primary-bg)", border: "1px solid var(--primary)", borderRadius: "0.75rem", padding: "1.5rem", textAlign: "center" }}>
             <FaCheck style={{ fontSize: "2rem", color: "var(--primary)", marginBottom: "0.75rem" }} />
             <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.15rem" }}>Check Your Inbox</h3>
             <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", lineHeight: 1.5, margin: "0 0 1.25rem" }}>

@@ -87,7 +87,7 @@ export default function InstitutionPortal() {
             <span
               style={{
                 fontSize: "0.72rem",
-                background: "rgba(21,128,61,0.12)",
+                background: "var(--primary-bg)",
                 color: "var(--primary)",
                 padding: "0.15rem 0.5rem",
                 borderRadius: "1rem",

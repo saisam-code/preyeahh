@@ -16,6 +16,9 @@ import {
   updatePreferences,
   skipOnboarding,
   completeGoogleOnboarding,
+  getStudentParentLinks,
+  updateStudentParentLinkStatus,
+  associateWithInstitution,
 } from "../controllers/studentController.js";
 import {
   listRoleMentors,
@@ -90,5 +93,12 @@ router.post("/profile/skip-onboarding", protect, authorize("student"), skipOnboa
 
 // Google OAuth onboarding — accepts ONLY the short-lived onboarding token
 router.post("/google-onboarding", protectGoogleOnboarding, googleOnboardingRules, validate, completeGoogleOnboarding);
+
+// Parent links & Parental consent (Phase 1.3, 1.12)
+router.get("/parent-links", protect, authorize("student"), getStudentParentLinks);
+router.put("/parent-links/:id/status", protect, authorize("student"), updateStudentParentLinkStatus);
+
+// Institution Association (Phase 1.4)
+router.post("/institution-associate", protect, authorize("student"), associateWithInstitution);
 
 export default router;

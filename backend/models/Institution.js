@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
 /**
  * Institution Model (Schools, Colleges, Universities, Training & Placement Cells)
@@ -16,6 +17,7 @@ const institutionSchema = new mongoose.Schema(
     location: { type: String, default: "" },
     website: { type: String, default: "" },
     associationCode: { type: String, unique: true, sparse: true, uppercase: true }, // Code students use to join
+    associationCodeHash: { type: String, select: false }, // Hashed storage of association code
     contactEmail: { type: String, required: true, lowercase: true, trim: true },
     password: { type: String, select: false }, // For Placement Cell / Institution Admin login
     contactPerson: { type: String, default: "" },
@@ -30,19 +32,32 @@ const institutionSchema = new mongoose.Schema(
     },
     isActive: { type: Boolean, default: true },
     role: { type: String, default: "institution" },
+    refreshTokenVersion: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
 institutionSchema.pre("save", async function (next) {
-  if (!this.isModified("password") || !this.password) return next();
-  this.password = await bcrypt.hash(this.password, 12);
+  if (this.isModified("password") && this.password) {
+    this.password = await bcrypt.hash(this.password, 12);
+  }
+  if (this.isModified("associationCode") && this.associationCode) {
+    this.associationCodeHash = crypto.createHash("sha256").update(this.associationCode).digest("hex");
+  }
   next();
 });
 
 institutionSchema.methods.comparePassword = function (candidate) {
   if (!this.password) return Promise.resolve(false);
   return bcrypt.compare(candidate, this.password);
+};
+
+institutionSchema.methods.rotateAssociationCode = function () {
+  const randomSuffix = crypto.randomBytes(3).toString("hex").toUpperCase();
+  const rawCode = `${this.code}-${randomSuffix}`;
+  this.associationCode = rawCode;
+  this.associationCodeHash = crypto.createHash("sha256").update(rawCode).digest("hex");
+  return rawCode;
 };
 
 institutionSchema.methods.toSafeJSON = function () {

@@ -201,7 +201,7 @@ export default function Register() {
                 <span
                   key={d}
                   style={{
-                    background: "rgba(21,128,61,0.1)",
+                    background: "var(--primary-bg)",
                     color: "var(--primary)",
                     borderRadius: "2rem",
                     padding: "0.2rem 0.65rem",
@@ -331,7 +331,7 @@ export default function Register() {
             {successMsg ? (
               <div
                 style={{
-                  background: "rgba(21,128,61,0.08)",
+                  background: "var(--primary-bg)",
                   border: "1px solid var(--primary)",
                   borderRadius: "0.75rem",
                   padding: "1.25rem",

@@ -72,7 +72,7 @@ export default function StudentLayout() {
                 style={{
                   fontSize: "0.7rem",
                   marginLeft: "0.4rem",
-                  background: "rgba(21,128,61,0.1)",
+                  background: "var(--primary-bg)",
                   color: "var(--primary)",
                   padding: "0.15rem 0.45rem",
                   borderRadius: "1rem",

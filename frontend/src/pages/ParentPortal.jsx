@@ -73,7 +73,7 @@ export default function ParentPortal() {
           <span
             style={{
               fontSize: "0.72rem",
-              background: "rgba(21,128,61,0.12)",
+              background: "var(--primary-bg)",
               color: "var(--primary)",
               padding: "0.15rem 0.5rem",
               borderRadius: "1rem",
@@ -94,8 +94,8 @@ export default function ParentPortal() {
       {/* ── PRIVACY BANNER ── */}
       <div
         style={{
-          background: "rgba(21,128,61,0.06)",
-          border: "1px solid rgba(21,128,61,0.2)",
+          background: "var(--primary-bg)",
+          border: "1px solid rgba(37,99,235,0.2)",
           borderRadius: "1rem",
           padding: "1.25rem 1.5rem",
           display: "flex",
@@ -178,7 +178,7 @@ export default function ParentPortal() {
                   <span
                     style={{
                       fontSize: "0.75rem",
-                      background: "rgba(21,128,61,0.1)",
+                      background: "var(--primary-bg)",
                       color: "var(--primary)",
                       padding: "0.25rem 0.65rem",
                       borderRadius: "1rem",
@@ -399,7 +399,7 @@ export default function ParentPortal() {
 
         {/* Dynamic Calculations Bar */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.25rem", marginBottom: "1.25rem" }}>
-          <div style={{ background: "rgba(21,128,61,0.06)", border: "1px solid rgba(21,128,61,0.2)", borderRadius: "0.75rem", padding: "1.25rem" }}>
+          <div style={{ background: "var(--primary-bg)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: "0.75rem", padding: "1.25rem" }}>
             <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>
               Estimated Recovery Window
             </span>

@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import logger from "../utils/logger.js";
 import { jsonCompletion } from "./groqService.js";
 import { buildProfileExtractionPrompt, buildPassiveExtractionPrompt } from "../utils/aiPrompts.js";
+import { normalizeEducationStage } from "../constants/educationStages.js";
 
 const LEVELS = ["beginner", "intermediate", "advanced"];
 const STYLES = ["visual", "hands-on", "reading"];
@@ -36,6 +37,24 @@ function normalizeSkills(v) {
 function toSetFields(raw) {
   const set = {};
   // NOTE: share flags deliberately omitted — see security comment above.
+  if (raw.educationStage) set["preferences.educationStage"] = normalizeEducationStage(raw.educationStage);
+  if (str(raw.academicStream, 40)) set["preferences.academicStream"] = str(raw.academicStream, 40);
+  if (str(raw.degreeOrProgram, 60)) set["preferences.degreeOrProgram"] = str(raw.degreeOrProgram, 60);
+  if (str(raw.board, 40)) set["preferences.board"] = str(raw.board, 40);
+  const subjects = strList(raw.subjects);
+  if (subjects.length) set["preferences.subjects"] = subjects;
+  if (str(raw.primaryCareerGoal)) set["preferences.primaryCareerGoal"] = str(raw.primaryCareerGoal);
+  if (str(raw.alternativeCareerGoal)) set["preferences.alternativeCareerGoal"] = str(raw.alternativeCareerGoal);
+  const exploring = strList(raw.exploringCareers);
+  if (exploring.length) set["preferences.exploringCareers"] = exploring;
+  if (str(raw.budgetRange, 40)) set["preferences.budgetRange"] = str(raw.budgetRange, 40);
+  const strengths = strList(raw.strengths);
+  if (strengths.length) set["preferences.strengths"] = strengths;
+  const weaknesses = strList(raw.weaknesses);
+  if (weaknesses.length) set["preferences.weaknesses"] = weaknesses;
+  if (raw.dateOfBirth) set["dateOfBirth"] = new Date(raw.dateOfBirth);
+  if (["UNDER_18", "18_PLUS"].includes(raw.ageBand)) set["ageBand"] = raw.ageBand;
+
   if (str(raw.currentRole)) set["preferences.currentRole"] = str(raw.currentRole);
   if (str(raw.targetRole)) set["preferences.targetRole"] = str(raw.targetRole);
   if (LEVELS.includes(raw.experienceLevel)) set["preferences.experienceLevel"] = raw.experienceLevel;
