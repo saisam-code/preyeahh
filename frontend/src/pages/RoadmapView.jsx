@@ -20,7 +20,7 @@ export default function RoadmapView() {
       ]);
       setRoadmap(rm);
       setRelated(all.data || []);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load roadmap");
       navigate("/roadmaps");
     } finally {
@@ -45,7 +45,7 @@ export default function RoadmapView() {
 
     try {
       await setTopicCompleted(id, topicId, isCompleted);
-    } catch (err) {
+    } catch {
       toast.error("Failed to update status");
       // Revert optimism on error? For simplicity, we just leave it or reload.
       loadData();

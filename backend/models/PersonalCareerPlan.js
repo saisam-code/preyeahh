@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { EDUCATION_STAGES, TASK_STATUSES, normalizeEducationStage } from "../constants/educationStages.js";
+import { EDUCATION_STAGES, TASK_STATUSES, TASK_CATEGORIES, normalizeEducationStage } from "../constants/educationStages.js";
 
 const plannerTaskSchema = new mongoose.Schema(
   {
@@ -7,22 +7,7 @@ const plannerTaskSchema = new mongoose.Schema(
     description: { type: String, default: "", trim: true },
     category: {
       type: String,
-      enum: [
-        "Academic study",
-        "Skill development",
-        "Career research",
-        "Career experiment",
-        "Practical project",
-        "Portfolio development",
-        "Exam preparation",
-        "Competition preparation",
-        "Internship application",
-        "Scholarship application",
-        "Mentorship",
-        "Personal activity",
-        "Rest and breaks",
-        "Financial planning",
-      ],
+      enum: TASK_CATEGORIES,
       default: "Academic study",
     },
     priority: {
@@ -46,6 +31,7 @@ const plannerTaskSchema = new mongoose.Schema(
     relatedSkill: { type: String, default: "" },
     relatedProject: { type: String, default: "" },
     relatedMilestoneId: { type: String, default: null },
+    relatedExperimentId: { type: mongoose.Schema.Types.ObjectId, ref: "StudentExperiment", default: null, index: true },
     isRescheduled: { type: Boolean, default: false },
     aiGenerated: { type: Boolean, default: false },
     notes: { type: String, default: "" },

@@ -35,6 +35,7 @@ import {
   addExamToPlanner,
 } from "../services/governmentCareersService.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import { EDUCATION_STAGES as CANONICAL_EDUCATION_STAGES } from "../constants/educationStages.js";
 
 const CATEGORIES = [
   { id: "all", label: "All Sectors", icon: FaBuildingColumns },
@@ -61,16 +62,7 @@ const QUALIFICATIONS = [
   "Any Graduate",
 ];
 
-const EDUCATION_STAGES = [
-  "all",
-  "Class 6-8",
-  "Class 9-10",
-  "Class 11-12",
-  "Diploma",
-  "Undergraduate",
-  "Postgraduate",
-  "PhD",
-];
+const EDUCATION_STAGES = ["all", ...CANONICAL_EDUCATION_STAGES];
 
 export default function GovernmentCareers() {
   const { user } = useAuth();
@@ -93,7 +85,6 @@ export default function GovernmentCareers() {
 
   // Selected Job for Detailed Modal
   const [selectedJob, setSelectedJob] = useState(null);
-  const [modalLoading, setModalLoading] = useState(false);
   const [targetExamDate, setTargetExamDate] = useState("");
   const [addingToPlanner, setAddingToPlanner] = useState(false);
 
@@ -123,19 +114,16 @@ export default function GovernmentCareers() {
     } else if (activeTab === "notifications" && notifications.length === 0) {
       getGovernmentNotifications().then(setNotifications).catch(() => {});
     }
-  }, [activeTab]);
+  }, [activeTab, exams.length, notifications.length]);
 
   // Open Detailed Job Profile
   const handleOpenJobProfile = async (slug) => {
-    setModalLoading(true);
     try {
       const data = await getGovernmentJobBySlug(slug);
       setSelectedJob(data.job);
       setTargetExamDate("");
     } catch {
       toast.error("Failed to load details for this post");
-    } finally {
-      setModalLoading(false);
     }
   };
 

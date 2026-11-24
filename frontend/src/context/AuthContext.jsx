@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import api, { setAccessToken, getAccessToken, setActiveRole, getActiveRole } from "../services/api.js";
 

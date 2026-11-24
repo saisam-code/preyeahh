@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import {
   FaEnvelope,
@@ -261,7 +261,6 @@ export default function AdminRequests({ onNavigate }) {
                 {filteredRequests.map((r) => {
                   const student = r.student;
                   const requesterEmail = student?.email || r.email;
-                  const requesterName = student?.name;
 
                   return (
                     <tr key={r._id} className="table-row-hover">

@@ -1,6 +1,5 @@
-import AIRoadmap from "../models/AIRoadmap.js";
-import Quiz from "../models/Quiz.js";
 import { getProfileCompleteness } from "../utils/profileCompleteness.js";
+import { getLearningProgress, getQuizProgress } from "./progressService.js";
 
 const STALE_DAYS = 7;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -11,26 +10,13 @@ const DAY_MS = 24 * 60 * 60 * 1000;
  * ({ id, severity: high|medium|low|info, title, description, action? }).
  */
 export async function getPerformance(student) {
-  const [quizzes, roadmaps] = await Promise.all([
-    Quiz.find({ studentId: student.id, isCompleted: true }).select("topic score updatedAt"),
-    AIRoadmap.find({ studentId: student.id }).select("title isCompleted updatedAt sections"),
+  const [learning, quizProgress] = await Promise.all([
+    getLearningProgress(student.id),
+    getQuizProgress(student.id),
   ]);
-
-  // Average score per topic
-  const byTopic = new Map();
-  for (const q of quizzes) {
-    const key = q.topic.trim().toLowerCase();
-    const entry = byTopic.get(key) || { topic: q.topic.trim(), total: 0, attempts: 0 };
-    entry.total += q.score;
-    entry.attempts += 1;
-    byTopic.set(key, entry);
-  }
-  const topics = [...byTopic.values()]
-    .map((t) => ({ topic: t.topic, attempts: t.attempts, averageScore: Math.round(t.total / t.attempts) }))
-    .sort((a, b) => a.averageScore - b.averageScore);
-
-  const weakTopics = topics.filter((t) => t.averageScore < 70);
-  const strongTopics = topics.filter((t) => t.averageScore >= 80).reverse();
+  const roadmaps = learning.roadmapProgressList || [];
+  const weakTopics = quizProgress.weakTopics || [];
+  const strongTopics = quizProgress.strongTopics || [];
 
   const suggestions = [];
   const add = (severity, title, description) =>
@@ -44,7 +30,7 @@ export async function getPerformance(student) {
   if (roadmaps.length === 0) {
     add("info", "Generate your first roadmap", "Open any role and tap “Generate AI Roadmap”, or create one from My Roadmaps.");
   }
-  if (quizzes.length === 0) {
+  if (quizProgress.completedQuizzes === 0) {
     add("info", "Take your first quiz", "A short quiz shows which topics need work and unlocks personalised suggestions here.");
   }
 
@@ -59,7 +45,8 @@ export async function getPerformance(student) {
   const now = Date.now();
   for (const rm of roadmaps) {
     if (rm.isCompleted) continue;
-    const idleDays = Math.floor((now - rm.updatedAt.getTime()) / DAY_MS);
+    const updatedAt = rm.updatedAt ? new Date(rm.updatedAt).getTime() : now;
+    const idleDays = Math.floor((now - updatedAt) / DAY_MS);
     if (idleDays >= STALE_DAYS) {
       add("medium", `Resume “${rm.title}”`, `No progress for ${idleDays} days. Pick the next topic and tick it off when done.`);
     }
@@ -78,8 +65,8 @@ export async function getPerformance(student) {
   return {
     profileComplete: profileCompleteness.isComplete,
     missingProfileFields: profileCompleteness.missingFields,
-    quizzesTaken: quizzes.length,
-    averageScore: quizzes.length ? Math.round(quizzes.reduce((s, q) => s + q.score, 0) / quizzes.length) : 0,
+    quizzesTaken: quizProgress.completedQuizzes,
+    averageScore: quizProgress.averageScore,
     weakTopics,
     strongTopics,
     suggestions,

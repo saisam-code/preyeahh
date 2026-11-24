@@ -26,18 +26,10 @@ import {
   generateAdaptiveSchedule,
   addCareerGoal,
   addExamDeadline,
-} from "../services/careerPlannerService.js";
+} from "../services/plannerService.js";
+import { TASK_CATEGORIES } from "../constants/educationStages.js";
 
-const CATEGORIES = [
-  "Academic study",
-  "Skill development",
-  "Career research",
-  "Career experiment",
-  "Practical project",
-  "Portfolio development",
-  "Exam preparation",
-  "Rest and breaks",
-];
+const CATEGORIES = TASK_CATEGORIES;
 
 const VIEWS = [
   { id: "today", label: "Today" },

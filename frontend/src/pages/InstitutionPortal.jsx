@@ -13,7 +13,7 @@ import {
   FaPeopleGroup,
   FaBriefcase,
 } from "react-icons/fa6";
-import { listInstitutions } from "../services/careerPlannerService.js";
+import { listInstitutions } from "../services/studentDevelopmentService.js";
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function InstitutionPortal() {
@@ -29,7 +29,7 @@ export default function InstitutionPortal() {
   const [newNoticeTitle, setNewNoticeTitle] = useState("");
   const [newNoticeBranch, setNewNoticeBranch] = useState("All Engineering Branches");
   const [newNoticeContent, setNewNoticeContent] = useState("");
-  const [workshops, setWorkshops] = useState([]);
+  const workshops = [];
 
   useEffect(() => {
     listInstitutions()

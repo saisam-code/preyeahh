@@ -23,7 +23,7 @@ import {
   getPublicOutcomes,
   startExperiment,
   submitReport,
-} from "../services/careerPlannerService.js";
+} from "../services/careerIntelligenceService.js";
 
 function formatRealityFact(fact) {
   if (!fact) return "No verified data yet";
@@ -62,7 +62,6 @@ export default function CareerDiscovery() {
 
   // Compare mode
   const [selectedForCompare, setSelectedForCompare] = useState([]);
-  const [comparisonResult, setComparisonResult] = useState(null);
   const [comparing, setComparing] = useState(false);
 
   // Reality detail modal
@@ -100,6 +99,8 @@ export default function CareerDiscovery() {
 
   useEffect(() => {
     loadCareers();
+    // category is the only filter that should trigger this effect; search is submitted explicitly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [category]);
 
   useEffect(() => {
@@ -130,8 +131,7 @@ export default function CareerDiscovery() {
     }
     setComparing(true);
     try {
-      const result = await compareCareers(selectedForCompare);
-      setComparisonResult(result);
+      await compareCareers(selectedForCompare);
     } catch (err) {
       toast.error(err.response?.data?.message || "Comparison failed");
     } finally {

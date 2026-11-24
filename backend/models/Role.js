@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { contentAuditFields } from "./ContentAudit.js";
 import { careerRealitySchema, careerExperimentSchema, verificationMetadataSchema } from "./CareerIntelligence.js";
+import { normalizeEducationStages } from "../constants/educationStages.js";
 
 /**
  * Mirrors: CREATE TABLE roles (... guidance_overview, guidance_steps,
@@ -54,6 +55,7 @@ const roleSchema = new mongoose.Schema(
     educationStages: {
       type: [String],
       default: ["Undergraduate", "Postgraduate"], // e.g. Class 6-8, Class 9-10, Class 11-12, Diploma, Undergraduate, Postgraduate, PhD
+      set: normalizeEducationStages,
     },
     description: { type: String, default: "", trim: true, maxlength: 500 },
     guidance: { type: roleGuidanceSchema, default: () => ({}) },

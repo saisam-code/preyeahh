@@ -15,9 +15,15 @@ export const EDUCATION_STAGES = [
 export const normalizeEducationStage = (stage) => {
   if (!stage) return "Undergraduate";
   if (stage === "Intermediate / Class 11-12") return "Class 11-12 / Intermediate";
+  if (stage === "Class 11-12") return "Class 11-12 / Intermediate";
   if (EDUCATION_STAGES.includes(stage)) return stage;
   return "Undergraduate";
 };
+
+export const normalizeEducationStages = (stages) =>
+  Array.isArray(stages)
+    ? [...new Set(stages.map(normalizeEducationStage).filter(Boolean))]
+    : [];
 
 export const TASK_STATUSES = [
   "Not Started",
@@ -34,8 +40,15 @@ export const TASK_CATEGORIES = [
   "Career research",
   "Career experiment",
   "Practical project",
+  "Portfolio development",
   "Exam preparation",
+  "Competition preparation",
+  "Internship application",
+  "Scholarship application",
+  "Mentorship",
+  "Personal activity",
   "Rest and breaks",
+  "Financial planning",
 ];
 
 export const TASK_PRIORITIES = ["Critical", "High", "Medium", "Low"];

@@ -1,11 +1,13 @@
 import { GovernmentJob, GovernmentNotification } from "../models/GovernmentCareer.js";
 import PersonalCareerPlan from "../models/PersonalCareerPlan.js";
+import StudentGoal from "../models/StudentGoal.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { chatCompletion } from "../services/groqService.js";
 import { SAMPLE_GOVERNMENT_JOBS, SAMPLE_GOVERNMENT_NOTIFICATIONS } from "../data/seedGovernmentCareers.js";
 import escapeRegex from "../utils/escapeRegex.js";
+import { normalizeEducationStage } from "../constants/educationStages.js";
 
 /**
  * Ensures baseline verified government careers exist in DB.
@@ -44,7 +46,7 @@ export const getGovernmentJobs = asyncHandler(async (req, res) => {
     filter.stateName = new RegExp(escapeRegex(state.trim()), "i");
   }
   if (stage && stage !== "all") {
-    filter.educationStages = stage;
+    filter.educationStages = normalizeEducationStage(stage);
   }
   if (minPay && Number(minPay) > 0) {
     filter["salary.basicPay"] = { $gte: Number(minPay) };
@@ -224,6 +226,23 @@ export const addGovernmentExamToPlanner = asyncHandler(async (req, res) => {
       status: "Active",
     });
     plan.primaryCareer = job.title;
+  }
+
+  const canonicalGoal = await StudentGoal.findOne({
+    student: studentId,
+    goalTitle: job.title,
+    status: "ACTIVE",
+  });
+  if (canonicalGoal) {
+    canonicalGoal.type = "PRIMARY";
+    await canonicalGoal.save();
+  } else {
+    await StudentGoal.create({
+      student: studentId,
+      goalTitle: job.title,
+      type: "PRIMARY",
+      status: "ACTIVE",
+    });
   }
 
   // 2. Add Milestones tailored to the exam stages

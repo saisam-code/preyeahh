@@ -56,3 +56,26 @@ test("3.8: QuizResult model retains score telemetry without question text", asyn
   assert.ok(!QuizResult.schema.path("questions"), "QuizResult must NOT store ephemeral question text");
   assert.ok(!QuizResult.schema.path("userAnswers"), "QuizResult must NOT store user answers");
 });
+
+test("Education stages normalize legacy Class 11-12 values", async () => {
+  const { normalizeEducationStage, normalizeEducationStages } = await import("../constants/educationStages.js");
+  assert.equal(normalizeEducationStage("Class 11-12"), "Class 11-12 / Intermediate");
+  assert.equal(normalizeEducationStage("Intermediate / Class 11-12"), "Class 11-12 / Intermediate");
+  assert.deepEqual(
+    normalizeEducationStages(["Class 11-12", "Undergraduate"]),
+    ["Class 11-12 / Intermediate", "Undergraduate"]
+  );
+});
+
+test("Planner and development share canonical task categories", async () => {
+  const { TASK_CATEGORIES } = await import("../constants/educationStages.js");
+  const PersonalCareerPlan = (await import("../models/PersonalCareerPlan.js")).default;
+  const categoryEnum = PersonalCareerPlan.schema.path("tasks").schema.path("category").enumValues;
+  assert.deepEqual(categoryEnum, TASK_CATEGORIES);
+});
+
+test("Student experiments retain an explicit planner task reference", async () => {
+  const { StudentExperiment, StudentProject } = await import("../models/StudentDevelopment.js");
+  assert.ok(StudentExperiment.schema.path("plannerTaskId"), "Experiment must reference its planner task");
+  assert.ok(StudentProject.schema.path("isPublicOnPortfolio"), "Project privacy field must remain");
+});

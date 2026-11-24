@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { fetchRoleInterest } from "../../services/adminService.js";
 import { fetchBranches } from "../../services/branchService.js";
 
@@ -11,7 +11,7 @@ export default function AdminInterest() {
 
   useEffect(() => { fetchBranches().then(setBranches); }, []);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const params = {};
@@ -21,9 +21,9 @@ export default function AdminInterest() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [branchFilter, typeFilter]);
 
-  useEffect(() => { load(); }, [branchFilter, typeFilter]);
+  useEffect(() => { load(); }, [load]);
 
   // Aggregate by role, mirrors renderInterest()'s client-side grouping.
   const map = {};

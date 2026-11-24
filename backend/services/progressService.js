@@ -87,11 +87,30 @@ export async function getQuizProgress(studentId) {
   const averageScore = combined.length
     ? Math.round(combined.reduce((sum, q) => sum + q.score, 0) / combined.length)
     : 0;
+  const byTopic = new Map();
+  for (const quiz of combined) {
+    const topic = typeof quiz.topic === "string" ? quiz.topic.trim() : "";
+    if (!topic) continue;
+    const key = topic.toLowerCase();
+    const entry = byTopic.get(key) || { topic, total: 0, attempts: 0 };
+    entry.total += Number(quiz.score) || 0;
+    entry.attempts += 1;
+    byTopic.set(key, entry);
+  }
+  const topics = [...byTopic.values()]
+    .map((entry) => ({
+      topic: entry.topic,
+      attempts: entry.attempts,
+      averageScore: Math.round(entry.total / entry.attempts),
+    }))
+    .sort((a, b) => a.averageScore - b.averageScore);
 
   return {
     totalQuizzes: Math.max(totalQuizzes, combined.length),
     completedQuizzes: combined.length,
     averageScore,
+    weakTopics: topics.filter((topic) => topic.averageScore < 70),
+    strongTopics: topics.filter((topic) => topic.averageScore >= 80).reverse(),
     recentQuizzes: combined.slice(0, 5).map((q) => ({
       id: q._id.toString(),
       title: q.title,

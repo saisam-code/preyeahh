@@ -3,6 +3,7 @@ import Student from "../models/Student.js";
 import Role from "../models/Role.js";
 import Branch from "../models/Branch.js";
 import RoleInterest from "../models/RoleInterest.js";
+import StudentGoal from "../models/StudentGoal.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -109,6 +110,31 @@ export const recordInterest = asyncHandler(async (req, res) => {
     { student: req.user.id, role: role._id, roleName: role.title, branch: role.branch, committed, recordedAt: new Date() },
     { upsert: true, new: true, runValidators: true }
   );
+  if (committed) {
+    const existingGoal = await StudentGoal.findOne({
+      student: req.user.id,
+      roleId: role._id,
+      status: "ACTIVE",
+    });
+    if (existingGoal) {
+      existingGoal.type = "INTEREST";
+      existingGoal.goalTitle = role.title;
+      await existingGoal.save();
+    } else {
+      await StudentGoal.create({
+        student: req.user.id,
+        roleId: role._id,
+        goalTitle: role.title,
+        type: "INTEREST",
+        status: "ACTIVE",
+      });
+    }
+  } else {
+    await StudentGoal.updateMany(
+      { student: req.user.id, roleId: role._id, type: "INTEREST", status: "ACTIVE" },
+      { $set: { status: "ABANDONED" } }
+    );
+  }
   res.status(200).json(new ApiResponse(200, interest, "Interest recorded"));
 });
 

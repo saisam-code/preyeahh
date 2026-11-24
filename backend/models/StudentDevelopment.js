@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { verificationMetadataSchema } from "./CareerIntelligence.js";
+import { normalizeEducationStages } from "../constants/educationStages.js";
 
 /**
  * Student Career Experiment Attempt
@@ -8,6 +9,7 @@ const studentExperimentSchema = new mongoose.Schema(
   {
     student: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true, index: true },
     role: { type: mongoose.Schema.Types.ObjectId, ref: "Role", default: null },
+    plannerTaskId: { type: mongoose.Schema.Types.ObjectId, default: null, index: true },
     experimentTitle: { type: String, required: true },
     careerDomain: { type: String, default: "" },
     status: {
@@ -80,6 +82,7 @@ const opportunitySchema = new mongoose.Schema(
     educationLevels: {
       type: [String],
       default: ["Undergraduate"], // e.g. Class 6-8, Class 9-10, Class 11-12, Undergraduate, Postgraduate, PhD
+      set: normalizeEducationStages,
     },
     domainsOrBranches: { type: [String], default: ["ALL"] },
     location: { type: String, default: "India / Online" },

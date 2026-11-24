@@ -1,10 +1,95 @@
 import PersonalCareerPlan from "../models/PersonalCareerPlan.js";
 import Student from "../models/Student.js";
 import StudentGoal from "../models/StudentGoal.js";
+import { StudentExperiment } from "../models/StudentDevelopment.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { chatCompletion } from "../services/groqService.js";
+import { TASK_CATEGORIES, TASK_PRIORITIES } from "../constants/educationStages.js";
+
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+const GOAL_TYPES = new Set(["Primary", "Alternative", "Exploring", "Temporary", "Long-term"]);
+const ALLOWED_CATEGORIES = new Set(TASK_CATEGORIES);
+const ALLOWED_PRIORITIES = new Set(TASK_PRIORITIES);
+
+const clamp = (value, min, max, fallback) => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.min(Math.max(numeric, min), max);
+};
+
+const isValidDateString = (value) => {
+  if (!DATE_PATTERN.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day;
+};
+
+const findOrCreatePlan = async (studentId) =>
+  await PersonalCareerPlan.findOneAndUpdate(
+    { student: studentId },
+    { $setOnInsert: { student: studentId, tasks: [] } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+const findPlanForStudent = async (studentId) => {
+  const plan = await PersonalCareerPlan.findOne({ student: studentId });
+  if (!plan) throw ApiError.notFound("Plan not found");
+  return plan;
+};
+
+const normalizeCanonicalGoalType = (goalType) =>
+  ({
+    Primary: "PRIMARY",
+    Alternative: "ALTERNATIVE",
+    Exploring: "EXPLORING",
+    Temporary: "EXPLORING",
+    "Long-term": "EXPLORING",
+  }[goalType] || null);
+
+const parseScheduleArray = (raw) => {
+  if (typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  try {
+    const parsed = JSON.parse(trimmed);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch {
+    const match = trimmed.match(/\[[\s\S]*\]/);
+    if (!match) return null;
+    try {
+      const parsed = JSON.parse(match[0]);
+      return Array.isArray(parsed) ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+};
+
+const getDateList = (timezone) => {
+  let formatter;
+  try {
+    formatter = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
+  } catch {
+    throw ApiError.badRequest("timezone must be a valid IANA timezone");
+  }
+  const todayStr = formatter.format(new Date());
+  if (!isValidDateString(todayStr)) throw ApiError.badRequest("Could not calculate dates for timezone");
+  const baseDate = new Date(`${todayStr}T00:00:00Z`);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(baseDate);
+    date.setUTCDate(baseDate.getUTCDate() + index);
+    return date.toISOString().slice(0, 10);
+  });
+};
 
 /**
  * GET /api/planner
@@ -15,8 +100,16 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
 
   if (!plan) {
     const student = await Student.findById(studentId);
-    const primary = student?.preferences?.targetRole || student?.preferences?.primaryCareerGoal || "";
-    const alt = student?.preferences?.alternativeCareerGoal || "";
+    const canonicalGoals = await StudentGoal.find({ student: studentId, status: "ACTIVE" })
+      .sort({ type: 1, updatedAt: -1 })
+      .lean();
+    const primary = canonicalGoals.find((goal) => goal.type === "PRIMARY")?.goalTitle ||
+      student?.preferences?.targetRole ||
+      student?.preferences?.primaryCareerGoal ||
+      "";
+    const alt = canonicalGoals.find((goal) => goal.type === "ALTERNATIVE")?.goalTitle ||
+      student?.preferences?.alternativeCareerGoal ||
+      "";
 
     plan = await PersonalCareerPlan.findOneAndUpdate(
       { student: studentId },
@@ -79,24 +172,26 @@ export const addTask = asyncHandler(async (req, res) => {
   if (!title || !scheduledDate) {
     throw ApiError.badRequest("Task title and scheduledDate (YYYY-MM-DD) are required");
   }
+  const trimmedTitle = title.trim();
+  if (trimmedTitle.length > 120) throw ApiError.badRequest("Task title must be 120 characters or fewer");
+  if (!isValidDateString(scheduledDate)) throw ApiError.badRequest("scheduledDate must be a valid YYYY-MM-DD date");
+  if (startTime && !TIME_PATTERN.test(startTime)) throw ApiError.badRequest("startTime must use 24-hour HH:mm format");
+  if (endTime && !TIME_PATTERN.test(endTime)) throw ApiError.badRequest("endTime must use 24-hour HH:mm format");
 
-  let plan = await PersonalCareerPlan.findOne({ student: studentId });
-  if (!plan) {
-    plan = await PersonalCareerPlan.create({ student: studentId, tasks: [] });
-  }
+  const plan = await findOrCreatePlan(studentId);
 
   const newTask = {
-    title: title.trim(),
-    description: description || "",
-    category: category || "Academic study",
-    priority: priority || "Medium",
-    careerRelevance: careerRelevance || "",
+    title: trimmedTitle,
+    description: String(description || "").slice(0, 500),
+    category: ALLOWED_CATEGORIES.has(category) ? category : "Academic study",
+    priority: ALLOWED_PRIORITIES.has(priority) ? priority : "Medium",
+    careerRelevance: String(careerRelevance || "").slice(0, 500),
     scheduledDate,
     startTime: startTime || "",
     endTime: endTime || "",
-    durationMinutes: Number(durationMinutes) || 45,
-    relatedCareerGoal: relatedCareerGoal || plan.primaryCareer || "",
-    relatedSkill: relatedSkill || "",
+    durationMinutes: clamp(durationMinutes, 15, 180, 45),
+    relatedCareerGoal: String(relatedCareerGoal || plan.primaryCareer || "").slice(0, 120),
+    relatedSkill: String(relatedSkill || "").slice(0, 120),
     isCompleted: false,
     status: "Not Started", // must match enum in PersonalCareerPlan.js
     aiGenerated: false,
@@ -115,17 +210,26 @@ export const addTask = asyncHandler(async (req, res) => {
 export const toggleTaskCompletion = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
   const { taskId } = req.params;
-
-  const plan = await PersonalCareerPlan.findOne({ student: studentId });
-  if (!plan) throw ApiError.notFound("Plan not found");
+  const plan = await findPlanForStudent(studentId);
 
   const task = plan.tasks.id(taskId);
   if (!task) throw ApiError.notFound("Task not found");
 
   task.isCompleted = !task.isCompleted;
-  task.status = task.isCompleted ? "Completed" : "In Progress";
+  task.status = task.isCompleted ? "Completed" : "Not Started";
   task.completedAt = task.isCompleted ? new Date() : null;
   await plan.save();
+
+  if (task.relatedExperimentId) {
+    await StudentExperiment.updateOne(
+      { _id: task.relatedExperimentId, student: studentId },
+      {
+        $set: task.isCompleted
+          ? { status: "completed", completedAt: new Date() }
+          : { status: "in_progress", completedAt: null },
+      }
+    );
+  }
 
   res.status(200).json(new ApiResponse(200, task, "Task updated"));
 });
@@ -139,9 +243,11 @@ export const rescheduleTask = asyncHandler(async (req, res) => {
   const { newDate, startTime, endTime } = req.body;
 
   if (!newDate) throw ApiError.badRequest("newDate is required");
+  if (!isValidDateString(newDate)) throw ApiError.badRequest("newDate must be a valid YYYY-MM-DD date");
+  if (startTime && !TIME_PATTERN.test(startTime)) throw ApiError.badRequest("startTime must use 24-hour HH:mm format");
+  if (endTime && !TIME_PATTERN.test(endTime)) throw ApiError.badRequest("endTime must use 24-hour HH:mm format");
 
-  const plan = await PersonalCareerPlan.findOne({ student: studentId });
-  if (!plan) throw ApiError.notFound("Plan not found");
+  const plan = await findPlanForStudent(studentId);
 
   const task = plan.tasks.id(taskId);
   if (!task) throw ApiError.notFound("Task not found");
@@ -163,9 +269,16 @@ export const deleteTask = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
   const { taskId } = req.params;
 
-  const plan = await PersonalCareerPlan.findOne({ student: studentId });
-  if (!plan) throw ApiError.notFound("Plan not found");
+  const plan = await findPlanForStudent(studentId);
 
+  const task = plan.tasks.id(taskId);
+  if (!task) throw ApiError.notFound("Task not found");
+  if (task.relatedExperimentId) {
+    await StudentExperiment.updateOne(
+      { _id: task.relatedExperimentId, student: studentId },
+      { $set: { plannerTaskId: null } }
+    );
+  }
   plan.tasks.pull(taskId);
   await plan.save();
 
@@ -178,34 +291,46 @@ export const deleteTask = asyncHandler(async (req, res) => {
 export const addCareerGoal = asyncHandler(async (req, res) => {
   const { title, goalType, description, targetTimeline } = req.body;
   if (!title) throw ApiError.badRequest("Goal title is required");
+  const trimmedTitle = title.trim();
+  if (!trimmedTitle) throw ApiError.badRequest("Goal title is required");
+  if (trimmedTitle.length > 120) throw ApiError.badRequest("Goal title must be 120 characters or fewer");
+  if (goalType && !GOAL_TYPES.has(goalType)) throw ApiError.badRequest("Invalid career goal type");
 
-  const plan = await PersonalCareerPlan.findOne({ student: req.user.id });
-  if (!plan) throw ApiError.notFound("Plan not found");
+  const plan = await findOrCreatePlan(req.user.id);
+  const resolvedGoalType = goalType || "Alternative";
 
-  if (goalType === "Primary") {
-    plan.primaryCareer = title.trim();
-  } else if (goalType === "Alternative") {
-    plan.alternativeCareer = title.trim();
+  if (resolvedGoalType === "Primary") {
+    plan.primaryCareer = trimmedTitle;
+    for (const goal of plan.goals) {
+      if (goal.goalType === "Primary" && goal.title.toLowerCase() !== trimmedTitle.toLowerCase()) {
+        goal.goalType = "Alternative";
+      }
+    }
+  } else if (resolvedGoalType === "Alternative") {
+    plan.alternativeCareer = trimmedTitle;
   }
 
-  plan.goals.push({
-    title: title.trim(),
-    goalType: goalType || "Alternative",
-    description: description || "",
-    targetTimeline: targetTimeline || "3 years",
-    status: "Active",
-  });
+  const existingPlanGoal = plan.goals.find((goal) => goal.title.toLowerCase() === trimmedTitle.toLowerCase());
+  if (existingPlanGoal) {
+    existingPlanGoal.goalType = resolvedGoalType;
+    existingPlanGoal.description = String(description || existingPlanGoal.description || "").slice(0, 500);
+    existingPlanGoal.targetTimeline = String(targetTimeline || existingPlanGoal.targetTimeline || "3 years").slice(0, 120);
+  } else {
+    plan.goals.push({
+      title: trimmedTitle,
+      goalType: resolvedGoalType,
+      description: String(description || "").slice(0, 500),
+      targetTimeline: String(targetTimeline || "3 years").slice(0, 120),
+      status: "Active",
+    });
+  }
 
   await plan.save();
 
-  const canonicalType = {
-    Primary: "PRIMARY",
-    Alternative: "ALTERNATIVE",
-    Exploring: "EXPLORING",
-  }[goalType] || "EXPLORING";
+  const canonicalType = normalizeCanonicalGoalType(resolvedGoalType);
   const existing = await StudentGoal.findOne({
     student: req.user.id,
-    goalTitle: title.trim(),
+    goalTitle: trimmedTitle,
     status: "ACTIVE",
   });
   if (existing) {
@@ -214,12 +339,13 @@ export const addCareerGoal = asyncHandler(async (req, res) => {
   } else {
     await StudentGoal.create({
       student: req.user.id,
-      goalTitle: title.trim(),
+      goalTitle: trimmedTitle,
       type: canonicalType,
       status: "ACTIVE",
     });
   }
-  res.status(201).json(new ApiResponse(201, plan.goals[plan.goals.length - 1], "Career goal added"));
+  const savedGoal = plan.goals.find((goal) => goal.title.toLowerCase() === trimmedTitle.toLowerCase());
+  res.status(201).json(new ApiResponse(201, savedGoal, "Career goal added"));
 });
 
 /**
@@ -228,16 +354,18 @@ export const addCareerGoal = asyncHandler(async (req, res) => {
 export const addExamDeadline = asyncHandler(async (req, res) => {
   const { title, category, date, priority, notes } = req.body;
   if (!title || !date) throw ApiError.badRequest("Title and date are required");
+  const trimmedTitle = title.trim();
+  if (!trimmedTitle) throw ApiError.badRequest("Title is required");
+  if (!isValidDateString(date)) throw ApiError.badRequest("date must be a valid YYYY-MM-DD date");
 
-  const plan = await PersonalCareerPlan.findOne({ student: req.user.id });
-  if (!plan) throw ApiError.notFound("Plan not found");
+  const plan = await findPlanForStudent(req.user.id);
 
   plan.deadlines.push({
-    title: title.trim(),
+    title: trimmedTitle.slice(0, 120),
     category: category || "University Exam",
-    date: new Date(date),
-    priority: priority || "High",
-    notes: notes || "",
+    date: new Date(`${date}T00:00:00.000Z`),
+    priority: ALLOWED_PRIORITIES.has(priority) ? priority : "High",
+    notes: String(notes || "").slice(0, 500),
   });
 
   await plan.save();
@@ -249,17 +377,17 @@ export const addExamDeadline = asyncHandler(async (req, res) => {
  */
 export const submitReview = asyncHandler(async (req, res) => {
   const { periodType, tasksCompleted, tasksPostponed, learningHours, reflectionNotes } = req.body;
+  if (periodType && !["Weekly", "Monthly"].includes(periodType)) throw ApiError.badRequest("Invalid review period");
 
-  const plan = await PersonalCareerPlan.findOne({ student: req.user.id });
-  if (!plan) throw ApiError.notFound("Plan not found");
+  const plan = await findPlanForStudent(req.user.id);
 
   const review = {
     periodType: periodType || "Weekly",
     periodDate: new Date(),
-    tasksCompleted: Number(tasksCompleted) || 0,
-    tasksPostponed: Number(tasksPostponed) || 0,
-    learningHours: Number(learningHours) || 0,
-    reflectionNotes: reflectionNotes || "",
+    tasksCompleted: clamp(tasksCompleted, 0, 100000, 0),
+    tasksPostponed: clamp(tasksPostponed, 0, 100000, 0),
+    learningHours: clamp(learningHours, 0, 10000, 0),
+    reflectionNotes: String(reflectionNotes || "").slice(0, 2000),
     aiFeedback: "Keep up the steady, consistent momentum! Prioritize depth in your practical builds.",
   };
 
@@ -275,12 +403,15 @@ export const submitReview = asyncHandler(async (req, res) => {
 export const generateAdaptiveSchedule = asyncHandler(async (req, res) => {
   const studentId = req.user.id;
   const { constraints = "", availableHoursPerDay = 2, timezone = "Asia/Kolkata" } = req.body;
+  if (typeof constraints !== "string") throw ApiError.badRequest("constraints must be a string");
+  if (constraints.length > 500) throw ApiError.badRequest("constraints must be 500 characters or fewer");
 
-  const plan = await PersonalCareerPlan.findOne({ student: studentId });
-  if (!plan) throw ApiError.notFound("Personal career plan not found. Please initialize plan first.");
+  const plan = await findPlanForStudent(studentId);
   const student = await Student.findById(studentId);
 
   const careerGoal = plan.primaryCareer || student?.preferences?.targetRole || "General career development";
+  const dailyHours = clamp(availableHoursPerDay, 1, 8, 2);
+  const dateList = getDateList(timezone || "Asia/Kolkata");
 
   // Check upcoming exam deadlines in the next 14 days to adapt study load
   const upcomingDeadlines = (plan.deadlines || []).filter((d) => {
@@ -294,11 +425,11 @@ export const generateAdaptiveSchedule = asyncHandler(async (req, res) => {
 
   const prompt = `Generate a 7-day balanced career study plan for a student pursuing: "${careerGoal}".
 Academic stage: ${plan.academicStage || "Undergraduate"}.
-Available daily hours: ${Math.min(Math.max(Number(availableHoursPerDay) || 2, 1), 8)} hrs/day.
+Available daily hours: ${dailyHours} hrs/day.
 Deadlines: ${deadlineContext}
 Student constraints: "${constraints || "Standard daily study routine"}".
 
-Categories MUST be one of: "Academic study", "Skill development", "Career research", "Career experiment", "Practical project", "Exam preparation", "Rest and breaks".
+Categories MUST be one of: ${TASK_CATEGORIES.join(", ")}.
 Priority MUST be one of: "Critical", "High", "Medium", "Low".
 Format strictly as a valid JSON array of 7 to 14 task objects:
 [{"title":"...", "category":"...", "priority":"...", "durationMinutes":45, "dayOffset":0, "startTime":"18:00", "endTime":"18:45", "careerRelevance":"..."}]
@@ -313,60 +444,39 @@ dayOffset is integer 0 to 6.`;
       { temperature: 0.3, maxTokens: 1400 },
     );
 
-    const jsonMatch = rawAi.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) throw new Error("Invalid format received from AI");
-    const scheduleItems = JSON.parse(jsonMatch[0]);
+    const scheduleItems = parseScheduleArray(rawAi);
+    if (!scheduleItems) throw new ApiError(502, "AI returned invalid schedule data. Please try again.");
 
-    const ALLOWED_CATEGORIES = new Set([
-      "Academic study",
-      "Skill development",
-      "Career research",
-      "Career experiment",
-      "Practical project",
-      "Exam preparation",
-      "Rest and breaks",
-    ]);
-    const ALLOWED_PRIORITIES = new Set(["Critical", "High", "Medium", "Low"]);
-
-    // Calculate dates in user's timezone (default IST)
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat("en-CA", { timeZone: timezone, year: "numeric", month: "2-digit", day: "2-digit" });
-    const todayStr = formatter.format(now); // YYYY-MM-DD
-
-    const dateList = [];
-    const baseDate = new Date(`${todayStr}T00:00:00Z`);
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(baseDate);
-      d.setUTCDate(baseDate.getUTCDate() + i);
-      dateList.push(d.toISOString().slice(0, 10));
-    }
-
-    const maxDailyMinutes = (Number(availableHoursPerDay) || 2) * 60;
+    const maxDailyMinutes = dailyHours * 60;
     const dailyMinutesAccumulator = {};
 
     const newTasks = [];
     for (const item of scheduleItems.slice(0, 14)) {
-      const offset = Math.min(Math.max(Number(item.dayOffset) || 0, 0), 6);
+      if (!item || typeof item !== "object") continue;
+      const title = typeof item.title === "string" ? item.title.trim().slice(0, 120) : "";
+      if (!title) continue;
+
+      const offset = clamp(item.dayOffset, 0, 6, 0);
       const scheduledDate = dateList[offset];
 
-      const duration = Math.min(Math.max(Number(item.durationMinutes) || 45, 15), 180);
+      const duration = clamp(item.durationMinutes, 15, 180, 45);
       const currentDayTotal = dailyMinutesAccumulator[scheduledDate] || 0;
-      if (currentDayTotal + duration > maxDailyMinutes * 1.25) {
-        continue; // Prevent overloading the day past 125% of allocated hours
+      if (currentDayTotal + duration > maxDailyMinutes) {
+        continue;
       }
       dailyMinutesAccumulator[scheduledDate] = currentDayTotal + duration;
 
       const category = ALLOWED_CATEGORIES.has(item.category) ? item.category : "Skill development";
       const priority = ALLOWED_PRIORITIES.has(item.priority) ? item.priority : "Medium";
-      const startTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(item.startTime) ? item.startTime : "18:00";
-      const endTime = /^([01]\d|2[0-3]):[0-5]\d$/.test(item.endTime) ? item.endTime : "18:45";
+      const startTime = TIME_PATTERN.test(item.startTime) ? item.startTime : "18:00";
+      const endTime = TIME_PATTERN.test(item.endTime) ? item.endTime : "18:45";
 
       newTasks.push({
-        title: String(item.title || "Career Preparation Session").slice(0, 120),
-        description: `Career activity aligned with ${careerGoal}`,
+        title,
+        description: `Career activity aligned with ${String(careerGoal).slice(0, 120)}`,
         category,
         priority,
-        careerRelevance: item.careerRelevance || `Builds competence in ${careerGoal}`,
+        careerRelevance: String(item.careerRelevance || `Builds competence in ${careerGoal}`).slice(0, 500),
         scheduledDate,
         startTime,
         endTime,
@@ -386,6 +496,7 @@ dayOffset is integer 0 to 6.`;
 
     res.status(200).json(new ApiResponse(200, { addedCount: newTasks.length, plan }, "AI Schedule generated"));
   } catch (err) {
-    throw ApiError.internal(`Could not generate adaptive schedule: ${err.message}`);
+    if (err instanceof ApiError) throw err;
+    throw ApiError.internal("Could not generate adaptive schedule");
   }
 });

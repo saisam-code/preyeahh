@@ -169,7 +169,7 @@ export const startExperiment = asyncHandler(async (req, res) => {
   // Wire to student's PersonalCareerPlan so it appears in their active daily/weekly schedule
   try {
     const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(new Date());
-    await PersonalCareerPlan.findOneAndUpdate(
+    const plan = await PersonalCareerPlan.findOneAndUpdate(
       { student: req.user.id },
       {
         $push: {
@@ -180,12 +180,18 @@ export const startExperiment = asyncHandler(async (req, res) => {
             status: "Not Started",
             scheduledDate: todayStr,
             durationMinutes: 60,
+            relatedExperimentId: experiment._id,
             notes: `Domain: ${careerDomain || "General"} · Experiment ID: ${experiment._id}`,
           },
         },
       },
-      { upsert: true }
+      { upsert: true, new: true }
     );
+    const linkedTask = plan?.tasks?.find((task) => String(task.relatedExperimentId) === String(experiment._id));
+    if (linkedTask) {
+      experiment.plannerTaskId = linkedTask._id;
+      await experiment.save();
+    }
   } catch {
     // Non-fatal: experiment record was created
   }
@@ -210,6 +216,19 @@ export const completeExperiment = asyncHandler(async (req, res) => {
   if (skillsGained.length) exp.skillsGained = skillsGained;
   if (rating) exp.rating = rating;
   await exp.save();
+
+  if (exp.plannerTaskId) {
+    await PersonalCareerPlan.updateOne(
+      { student: req.user.id, "tasks._id": exp.plannerTaskId },
+      {
+        $set: {
+          "tasks.$.isCompleted": true,
+          "tasks.$.status": "Completed",
+          "tasks.$.completedAt": new Date(),
+        },
+      }
+    );
+  }
 
   res.status(200).json(new ApiResponse(200, exp, "Experiment marked as completed"));
 });

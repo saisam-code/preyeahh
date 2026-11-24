@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { verificationMetadataSchema } from "./CareerIntelligence.js";
+import { normalizeEducationStages } from "../constants/educationStages.js";
 
 /**
  * Government Job Syllabus Paper Schema
@@ -206,6 +207,7 @@ const governmentJobSchema = new mongoose.Schema(
     educationStages: {
       type: [String],
       default: ["Undergraduate", "Postgraduate"], // "Class 6-8", "Class 9-10", "Class 11-12", "Diploma", "Undergraduate", "Postgraduate", "PhD"
+      set: normalizeEducationStages,
       index: true,
     },
 

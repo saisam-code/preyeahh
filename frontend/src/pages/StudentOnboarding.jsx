@@ -14,17 +14,9 @@ import {
 } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { updatePreferences } from "../services/studentService.js";
+import { EDUCATION_STAGES } from "../constants/educationStages.js";
 
-const STAGES = [
-  "Class 6-8",
-  "Class 9-10",
-  "Intermediate / Class 11-12",
-  "Diploma",
-  "Undergraduate",
-  "Postgraduate",
-  "PhD",
-  "Independent Learner / Career Switcher",
-];
+const STAGES = EDUCATION_STAGES;
 
 const INTERESTS_LIST = [
   "Technology & Engineering",
@@ -61,9 +53,7 @@ export default function StudentOnboarding() {
 
   // Onboarding Form State
   const [stage, setStage] = useState("Undergraduate");
-  const [stream, setStream] = useState("CSE");
   const [selectedInterests, setSelectedInterests] = useState([]);
-  const [careerState, setCareerState] = useState("know"); // know, multiple, explore
   const [primaryGoal, setPrimaryGoal] = useState("Software Engineer");
   const [alternativeGoal, setAlternativeGoal] = useState("UI/UX Designer");
   const [selectedSkills, setSelectedSkills] = useState([]);
@@ -107,7 +97,7 @@ export default function StudentOnboarding() {
       if (user) {
         await updatePreferences({
           educationStage: stage,
-          academicStream: stream,
+          academicStream: "CSE",
           interests: selectedInterests,
           primaryCareerGoal: primaryGoal,
           alternativeCareerGoal: alternativeGoal,
@@ -124,7 +114,7 @@ export default function StudentOnboarding() {
           state: {
             onboardingData: {
               educationStage: stage,
-              academicStream: stream,
+              academicStream: "CSE",
               interests: selectedInterests,
               primaryCareerGoal: primaryGoal,
               alternativeCareerGoal: alternativeGoal,
@@ -134,7 +124,7 @@ export default function StudentOnboarding() {
           },
         });
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to save preferences. Please try again.");
     } finally {
       setSaving(false);
