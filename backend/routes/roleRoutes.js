@@ -1,5 +1,5 @@
 import express from "express";
-import { getRoles, getRoleById, createRole, updateRole, deleteRole } from "../controllers/roleController.js";
+import { getRoles, getManagedRoles, getRoleById, createRole, updateRole, deleteRole } from "../controllers/roleController.js";
 
 import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -8,19 +8,21 @@ import {
   updateRoleRules,
   idParamRule,
   listQueryRules,
+  managedRoleQueryRules,
 } from "../validators/roleValidator.js";
 
 const router = express.Router();
 
 // Public — role browsing needs no login (matches roles.html being viewable pre-auth)
 router.get("/", listQueryRules, validate, getRoles);
+router.get("/manage", protect, authorize("admin", "institution"), managedRoleQueryRules, validate, getManagedRoles);
 router.get("/:id", idParamRule, validate, getRoleById);
 
 // Admin + approved Guide (branch-scoped inside the controller)
-router.post("/", protect, authorize("admin", "guide"), createRoleRules, validate, createRole);
-router.put("/:id", protect, authorize("admin", "guide"), updateRoleRules, validate, updateRole);
+router.post("/", protect, authorize("admin", "guide", "institution"), createRoleRules, validate, createRole);
+router.put("/:id", protect, authorize("admin", "guide", "institution"), updateRoleRules, validate, updateRole);
 
 // Admin or branch guide
-router.delete("/:id", protect, authorize("admin", "guide"), idParamRule, validate, deleteRole);
+router.delete("/:id", protect, authorize("admin", "guide", "institution"), idParamRule, validate, deleteRole);
 
 export default router;

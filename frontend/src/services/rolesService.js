@@ -7,6 +7,10 @@ export function fetchRoles(params = {}) {
   return api.get("/roles", { params }).then((r) => r.data);
 }
 
+export function fetchManagedRoles(params = {}) {
+  return api.get("/roles/manage", { params }).then((r) => r.data);
+}
+
 export function fetchRoleById(id) {
   return api.get(`/roles/${id}`).then((r) => r.data);
 }

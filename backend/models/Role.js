@@ -38,8 +38,9 @@ const roleSchema = new mongoose.Schema(
       trim: true,
       index: true,
     },
-    domain: { type: String, default: "Engineering & Technology", trim: true },
+    domain: { type: String, default: "Technology & Engineering", trim: true },
     domainId: { type: mongoose.Schema.Types.ObjectId, ref: "CareerDomain", default: null, index: true },
+    institution: { type: mongoose.Schema.Types.ObjectId, ref: "Institution", default: null, index: true },
     category: {
       type: String,
       enum: ["Conventional", "Unconventional", "Emerging", "Creative", "Sports & Performing Arts"],
@@ -70,7 +71,7 @@ const roleSchema = new mongoose.Schema(
 // Same role title shouldn't be duplicated within a branch (admin UX safety net —
 // not present as a DB constraint in the original schema, but prevents accidental
 // double-adds from the admin/guide "Add Role" modals).
-roleSchema.index({ title: 1, branch: 1 }, { unique: true });
+roleSchema.index({ title: 1, branch: 1, institution: 1 }, { unique: true });
 
 // Cascade delete: mirrors deleteRole() in supabase.js
 // ("await _sb.from('guidance').delete().eq('role_id', id)").

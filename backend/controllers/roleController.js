@@ -4,6 +4,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { assertGuideOwnsContent, contributorSnapshot, recordContentEdit } from "../utils/contentAuthorization.js";
 import escapeRegex from "../utils/escapeRegex.js";
+import { Institution } from "../models/Institution.js";
+import mongoose from "mongoose";
 
 /**
  * GET /api/roles?branch=CSE&type=core&search=engineer&page=1&limit=20
@@ -16,6 +18,7 @@ export const getRoles = asyncHandler(async (req, res) => {
   const limit = req.query.limit || 20;
 
   const filter = {};
+  filter.institution = null;
   if (branch) filter.branch = branch.toUpperCase();
   if (type) filter.type = type;
   if (search) {
@@ -41,6 +44,24 @@ export const getRoles = asyncHandler(async (req, res) => {
   );
 });
 
+export const getManagedRoles = asyncHandler(async (req, res) => {
+  const filter = {};
+  if (req.user.role === "institution") {
+    filter.institution = req.user.id;
+  } else if (req.query.institutionId === "platform") {
+    filter.institution = null;
+  } else if (req.query.institutionId) {
+    if (!mongoose.isValidObjectId(req.query.institutionId)) {
+      throw ApiError.badRequest("Institution id must be valid");
+    }
+    filter.institution = req.query.institutionId;
+  }
+  if (req.query.branch) filter.branch = req.query.branch.toUpperCase();
+
+  const roles = await Role.find(filter).sort({ domain: 1, title: 1 }).limit(100);
+  res.status(200).json(new ApiResponse(200, roles, "Roles fetched"));
+});
+
 /**
  * GET /api/roles/:id — public, powers the role detail modal.
  */
@@ -56,16 +77,26 @@ export const getRoleById = asyncHandler(async (req, res) => {
  * role.branch = _guide.branch and never lets the guide type a different one.
  */
 export const createRole = asyncHandler(async (req, res) => {
-  const { title, type, description, guidance, reality, experiments, verification } = req.body;
+  const { title, type, description, guidance, reality, experiments, verification, domain } = req.body;
   let branch = req.body.branch;
+  let institution = null;
 
   if (req.user.role === "guide") {
     branch = req.user.branch; // guide cannot choose — forced to their own branch
+  } else if (req.user.role === "institution") {
+    institution = req.user.id;
+  } else if (req.body.institutionId) {
+    institution = req.body.institutionId;
+    if (!(await Institution.exists({ _id: institution }))) {
+      throw ApiError.notFound("Institution not found");
+    }
   }
 
   const role = await Role.create({
     title,
     branch,
+    domain,
+    institution,
     type,
     description,
     guidance: guidance || {},
@@ -95,11 +126,21 @@ export const updateRole = asyncHandler(async (req, res) => {
     assertGuideOwnsContent(role, req.user);
     delete req.body.branch;
   }
+  if (req.user.role === "institution" && String(role.institution || "") !== req.user.id) {
+    throw ApiError.forbidden("You can only edit roles owned by your institution");
+  }
 
-  const editableFields = ["title", "branch", "type", "description"];
+  const editableFields = ["title", "branch", "type", "description", "domain"];
   editableFields.forEach((field) => {
     if (req.body[field] !== undefined) role[field] = req.body[field];
   });
+
+  if (req.user.role === "admin" && req.body.institutionId !== undefined) {
+    if (req.body.institutionId && !(await Institution.exists({ _id: req.body.institutionId }))) {
+      throw ApiError.notFound("Institution not found");
+    }
+    role.institution = req.body.institutionId || null;
+  }
 
   if (req.body.guidance) {
     role.guidance = { ...role.guidance.toObject(), ...req.body.guidance };
@@ -131,6 +172,9 @@ export const deleteRole = asyncHandler(async (req, res) => {
 
   if (req.user.role === "guide" && role.branch !== req.user.branch) {
     throw ApiError.forbidden("You can only delete roles in your own branch");
+  }
+  if (req.user.role === "institution" && String(role.institution || "") !== req.user.id) {
+    throw ApiError.forbidden("You can only delete roles owned by your institution");
   }
   assertGuideOwnsContent(role, req.user);
 

@@ -15,6 +15,7 @@ import {
 } from "react-icons/fa6";
 import { listInstitutions } from "../services/studentDevelopmentService.js";
 import { useAuth } from "../context/AuthContext.jsx";
+import AdminRoles from "../components/admin/AdminRoles.jsx";
 
 export default function InstitutionPortal() {
   const { user } = useAuth();
@@ -129,7 +130,14 @@ export default function InstitutionPortal() {
         <button className={`tab ${activeTab === "announcements" ? "active" : ""}`} onClick={() => setActiveTab("announcements")}>
           Campus Notices ({notices.length})
         </button>
+        <button className={`tab ${activeTab === "roles" ? "active" : ""}`} onClick={() => setActiveTab("roles")}>
+          Career Roles
+        </button>
       </div>
+
+      {activeTab === "roles" && (
+        <AdminRoles institutionMode />
+      )}
 
       {/* ── OVERVIEW TAB ── */}
       {activeTab === "overview" && (

@@ -34,6 +34,27 @@ test("3.4: Role schema has optional type and domainId reference", async () => {
 
   const domainIdPath = Role.schema.path("domainId");
   assert.ok(domainIdPath, "Role must have domainId path");
+  assert.equal(Role.schema.path("institution").options.ref, "Institution");
+  assert.ok(
+    Role.schema.indexes().some(([fields]) => fields.title === 1 && fields.branch === 1 && fields.institution === 1),
+    "Role uniqueness must be scoped by institution"
+  );
+});
+
+test("Role create validation accepts platform scope and selected career domain", async () => {
+  const { createRoleRules } = await import("../validators/roleValidator.js");
+  const req = {
+    body: {
+      title: "Climate Data Analyst",
+      branch: "SCI",
+      type: "core",
+      domain: "Agriculture & Environment",
+      institutionId: "",
+    },
+    params: {},
+  };
+  await Promise.all(createRoleRules.map((rule) => rule.run(req)));
+  assert.deepEqual(validationResult(req).array(), []);
 });
 
 test("3.4: CareerDomain model is registered in mongoose", async () => {

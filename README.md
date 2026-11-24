@@ -1,6 +1,6 @@
 # PREYEAHH
 
-Career guidance and mentorship platform for engineering students. Pick a branch, explore career roles, get an AI-built roadmap, study from curated resources, test yourself with quizzes, and talk to mentors.
+Career guidance and mentorship platform for students. Explore career roles across 12 domains, get an AI-built roadmap, study from curated resources, test yourself with quizzes, and talk to mentors.
 
 Live: https://preyeahh.vercel.app
 
@@ -66,6 +66,12 @@ NODE_ENV=production
 CLIENT_URL=https://preyeahh.vercel.app
 GOOGLE_CALLBACK_URL=https://preyeahh.onrender.com/api/auth/google/callback
 ```
+
+After deploying institution-scoped career roles for the first time, run
+`npm run migrate:role-institution-scope` once from `backend/` to update the
+role uniqueness index. Admins can manage platform and institution roles;
+approved institutions can add and maintain roles from the Career Roles tab
+in their portal.
 
 ## Testing
 

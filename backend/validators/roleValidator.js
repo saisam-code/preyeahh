@@ -20,6 +20,8 @@ export const createRoleRules = [
   body("branch").trim().notEmpty().withMessage("Branch is required").isLength({ max: 20 }),
   body("type").isIn(VALID_TYPES).withMessage("Type must be 'core' or 'non-core'"),
   body("description").optional().trim().isLength({ max: 500 }),
+  body("domain").optional().trim().isLength({ max: 100 }),
+  body("institutionId").optional({ values: "falsy" }).isMongoId().withMessage("Institution id must be valid"),
   ...guidanceRules,
 ];
 
@@ -29,6 +31,8 @@ export const updateRoleRules = [
   body("branch").optional().trim().isLength({ max: 20 }),
   body("type").optional().isIn(VALID_TYPES).withMessage("Type must be 'core' or 'non-core'"),
   body("description").optional().trim().isLength({ max: 500 }),
+  body("domain").optional().trim().isLength({ max: 100 }),
+  body("institutionId").optional({ values: "falsy" }).isMongoId().withMessage("Institution id must be valid"),
   ...guidanceRules,
 ];
 
@@ -40,4 +44,12 @@ export const listQueryRules = [
   query("type").optional().isIn(VALID_TYPES).withMessage("type must be 'core' or 'non-core'"),
   query("branch").optional().trim().isLength({ max: 20 }),
   query("search").optional().trim().isLength({ max: 100 }),
+];
+
+export const managedRoleQueryRules = [
+  query("institutionId")
+    .optional()
+    .custom((value) => value === "platform" || /^[a-f\d]{24}$/i.test(value))
+    .withMessage("Institution id must be valid"),
+  query("branch").optional().trim().isLength({ max: 20 }),
 ];
