@@ -29,38 +29,46 @@ function normalizeSkills(v) {
 }
 
 async function syncCareerGoals(studentId, raw) {
-  const operations = [];
+  const selections = [
+    ["primaryCareerGoal", "PRIMARY"],
+    ["alternativeCareerGoal", "ALTERNATIVE"],
+  ];
 
-  if (str(raw.primaryCareerGoal)) {
-    operations.push({
-      type: "PRIMARY",
-      goalTitle: str(raw.primaryCareerGoal),
-      status: "ACTIVE",
-    });
-  }
-  if (str(raw.alternativeCareerGoal)) {
-    operations.push({
-      type: "ALTERNATIVE",
-      goalTitle: str(raw.alternativeCareerGoal),
-      status: "ACTIVE",
-    });
-  }
-  for (const goalTitle of strList(raw.exploringCareers)) {
-    operations.push({ type: "EXPLORING", goalTitle, status: "ACTIVE" });
+  for (const [field, type] of selections) {
+    if (!Object.hasOwn(raw, field)) continue;
+    const goalTitle = str(raw[field]);
+    const activeGoals = await StudentGoal.find({ student: studentId, type, status: "ACTIVE" });
+    for (const activeGoal of activeGoals) {
+      if (activeGoal.goalTitle !== goalTitle) {
+        activeGoal.status = "PAUSED";
+        await activeGoal.save();
+      }
+    }
+    if (goalTitle) {
+      const existing = await StudentGoal.findOne({ student: studentId, goalTitle, status: "ACTIVE" });
+      if (existing) {
+        existing.type = type;
+        await existing.save();
+      } else {
+        await StudentGoal.create({ student: studentId, goalTitle, type, status: "ACTIVE" });
+      }
+    }
   }
 
-  for (const goal of operations) {
-    const existing = await StudentGoal.findOne({
-      student: studentId,
-      goalTitle: goal.goalTitle,
-      status: "ACTIVE",
-    });
-    if (existing) {
-      existing.type = goal.type;
-      existing.status = "ACTIVE";
-      await existing.save();
-    } else {
-      await StudentGoal.create({ student: studentId, ...goal });
+  if (Object.hasOwn(raw, "exploringCareers")) {
+    const goalTitles = strList(raw.exploringCareers);
+    await StudentGoal.updateMany(
+      { student: studentId, type: "EXPLORING", status: "ACTIVE", goalTitle: { $nin: goalTitles } },
+      { $set: { status: "PAUSED" } }
+    );
+    for (const goalTitle of goalTitles) {
+      const existing = await StudentGoal.findOne({ student: studentId, goalTitle, status: "ACTIVE" });
+      if (existing) {
+        existing.type = "EXPLORING";
+        await existing.save();
+      } else {
+        await StudentGoal.create({ student: studentId, goalTitle, type: "EXPLORING", status: "ACTIVE" });
+      }
     }
   }
 }
@@ -78,7 +86,24 @@ function toSetFields(raw) {
   if (raw.educationStage) set["preferences.educationStage"] = normalizeEducationStage(raw.educationStage);
   if (str(raw.academicStream, 40)) set["preferences.academicStream"] = str(raw.academicStream, 40);
   if (str(raw.degreeOrProgram, 60)) set["preferences.degreeOrProgram"] = str(raw.degreeOrProgram, 60);
+  if (str(raw.specialization, 60)) set["preferences.specialization"] = str(raw.specialization, 60);
+  if (str(raw.yearOfStudy, 20)) set["preferences.yearOfStudy"] = str(raw.yearOfStudy, 20);
+  if (str(raw.semester, 20)) set["preferences.semester"] = str(raw.semester, 20);
+  if (str(raw.schoolOrInstitution, 120)) set["preferences.schoolOrInstitution"] = str(raw.schoolOrInstitution, 120);
   if (str(raw.board, 40)) set["preferences.board"] = str(raw.board, 40);
+  for (const field of ["country", "state", "city"]) {
+    if (str(raw[field], field === "country" ? 60 : 80)) {
+      set[`preferences.${field}`] = str(raw[field], field === "country" ? 60 : 80);
+    }
+  }
+  if (raw.expectedGraduationYear === null) {
+    set["preferences.expectedGraduationYear"] = null;
+  } else {
+    const graduationYear = Number(raw.expectedGraduationYear);
+    if (Number.isInteger(graduationYear) && graduationYear >= 1900 && graduationYear <= 2200) {
+      set["preferences.expectedGraduationYear"] = graduationYear;
+    }
+  }
   const subjects = strList(raw.subjects);
   if (subjects.length) set["preferences.subjects"] = subjects;
   if (str(raw.primaryCareerGoal)) set["preferences.primaryCareerGoal"] = str(raw.primaryCareerGoal);
@@ -100,6 +125,12 @@ function toSetFields(raw) {
   const hours = Number(raw.weeklyHoursAvailable);
   if (Number.isFinite(hours) && hours > 0) set["preferences.weeklyHoursAvailable"] = Math.min(hours, 168);
   if (str(raw.preferredLanguage, 40)) set["preferences.preferredLanguage"] = str(raw.preferredLanguage, 40);
+  if (["traditional", "unconventional", "both", "unsure"].includes(raw.careerPreference)) {
+    set["preferences.careerPreference"] = raw.careerPreference;
+  }
+  if (Number.isInteger(raw.onboardingStep) && raw.onboardingStep >= 1 && raw.onboardingStep <= 6) {
+    set["preferences.onboardingStep"] = raw.onboardingStep;
+  }
   if (str(raw.aiProfileSummary, 600)) set["preferences.aiProfileSummary"] = str(raw.aiProfileSummary, 600);
   const goals = strList(raw.goals);
   if (goals.length) set["preferences.goals"] = goals;
@@ -110,7 +141,35 @@ function toSetFields(raw) {
   return set;
 }
 
-const PUBLIC_SELECT = "-password -refreshTokenVersion";
+async function saveProfileFields(studentId, fields) {
+  const student = await Student.findById(studentId);
+  if (!student) throw ApiError.notFound("Student not found");
+
+  const previousStage = student.preferences.educationStage;
+  const nextStage = fields["preferences.educationStage"];
+  if (
+    student.preferences.onboardingCompleted &&
+    nextStage &&
+    previousStage &&
+    nextStage !== previousStage
+  ) {
+    student.educationHistory.push({
+      educationStage: previousStage,
+      schoolOrInstitution: student.preferences.schoolOrInstitution,
+      board: student.preferences.board,
+      academicStream: student.preferences.academicStream,
+      degreeOrProgram: student.preferences.degreeOrProgram,
+      specialization: student.preferences.specialization,
+      yearOfStudy: student.preferences.yearOfStudy,
+      semester: student.preferences.semester,
+      expectedGraduationYear: student.preferences.expectedGraduationYear,
+    });
+  }
+
+  for (const [path, value] of Object.entries(fields)) student.set(path, value);
+  await student.save();
+  return student;
+}
 
 /** POST /students/profile/extract — free text -> structured preferences (replaces provided fields). */
 export async function extractAndSaveProfile(studentId, branch, text) {
@@ -126,8 +185,7 @@ export async function extractAndSaveProfile(studentId, branch, text) {
     "preferences.lastExtractedAt": new Date(),
   };
 
-  const student = await Student.findByIdAndUpdate(studentId, { $set }, { new: true }).select(PUBLIC_SELECT);
-  if (!student) throw ApiError.notFound("Student not found");
+  const student = await saveProfileFields(studentId, $set);
   await syncCareerGoals(studentId, extracted);
   return { preferences: student.preferences, extracted };
 }
@@ -136,19 +194,34 @@ export async function extractAndSaveProfile(studentId, branch, text) {
 export async function updatePreferences(studentId, body) {
   const $set = {
     ...toSetFields(body),
-    "preferences.onboardingCompleted": true,
+    "preferences.onboardingCompleted":
+      typeof body.onboardingCompleted === "boolean" ? body.onboardingCompleted : true,
     "preferences.onboardingSkipped": false,
   };
   // Allow explicitly clearing text/array fields that toSetFields skips when empty
-  for (const key of ["currentRole", "targetRole"]) {
+  for (const key of [
+    "currentRole",
+    "targetRole",
+    "primaryCareerGoal",
+    "alternativeCareerGoal",
+    "academicStream",
+    "degreeOrProgram",
+    "specialization",
+    "yearOfStudy",
+    "semester",
+    "schoolOrInstitution",
+    "board",
+    "country",
+    "state",
+    "city",
+  ]) {
     if (body[key] === "") $set[`preferences.${key}`] = "";
   }
-  for (const key of ["goals", "interests", "skills"]) {
+  for (const key of ["goals", "interests", "skills", "subjects", "exploringCareers"]) {
     if (Array.isArray(body[key]) && body[key].length === 0) $set[`preferences.${key}`] = [];
   }
 
-  const student = await Student.findByIdAndUpdate(studentId, { $set }, { new: true }).select(PUBLIC_SELECT);
-  if (!student) throw ApiError.notFound("Student not found");
+  const student = await saveProfileFields(studentId, $set);
   await syncCareerGoals(studentId, body);
   return student.preferences;
 }

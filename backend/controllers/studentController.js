@@ -19,7 +19,39 @@ export const registerStudent = asyncHandler(async (req, res) => {
   if (existing) throw ApiError.conflict("An account with this email already exists. Try logging in instead.");
   assertEmailConfigured();
 
-  const student = await Student.create({ name, email, password, branch });
+  const student = await Student.create({ name, email, password, branch: branch || "" });
+  const profileFields = [
+    "educationStage",
+    "academicStream",
+    "degreeOrProgram",
+    "specialization",
+    "yearOfStudy",
+    "semester",
+    "expectedGraduationYear",
+    "schoolOrInstitution",
+    "board",
+    "subjects",
+    "country",
+    "state",
+    "city",
+    "primaryCareerGoal",
+    "alternativeCareerGoal",
+    "targetRole",
+    "interests",
+    "skills",
+    "weeklyHoursAvailable",
+    "careerPreference",
+    "learningStyle",
+    "preferredLanguage",
+    "onboardingCompleted",
+    "onboardingStep",
+  ];
+  const onboardingProfile = Object.fromEntries(
+    profileFields.filter((field) => Object.hasOwn(req.body, field)).map((field) => [field, req.body[field]])
+  );
+  if (Object.keys(onboardingProfile).length) {
+    await profileService.updatePreferences(student.id, onboardingProfile);
+  }
 
   const rawToken = student.createEmailVerificationToken();
   await student.save({ validateBeforeSave: false });

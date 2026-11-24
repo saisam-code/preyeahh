@@ -59,12 +59,21 @@ test("3.8: QuizResult model retains score telemetry without question text", asyn
 
 test("Education stages normalize legacy Class 11-12 values", async () => {
   const { normalizeEducationStage, normalizeEducationStages } = await import("../constants/educationStages.js");
-  assert.equal(normalizeEducationStage("Class 11-12"), "Class 11-12 / Intermediate");
-  assert.equal(normalizeEducationStage("Intermediate / Class 11-12"), "Class 11-12 / Intermediate");
+  assert.equal(normalizeEducationStage("Class 11-12"), "Intermediate");
+  assert.equal(normalizeEducationStage("Intermediate / Class 11-12"), "Intermediate");
   assert.deepEqual(
     normalizeEducationStages(["Class 11-12", "Undergraduate"]),
-    ["Class 11-12 / Intermediate", "Undergraduate"]
+    ["Intermediate", "Undergraduate"]
   );
+});
+
+test("Student profile supports detailed education history and non-engineering learners", async () => {
+  const Student = (await import("../models/Student.js")).default;
+  assert.ok(Student.schema.path("educationHistory"));
+  assert.ok(Student.schema.path("preferences.schoolOrInstitution"));
+  assert.ok(Student.schema.path("preferences.expectedGraduationYear"));
+  assert.ok(Student.schema.path("preferences.careerPreference").enumValues.includes("unsure"));
+  assert.equal(Student.schema.path("branch").defaultValue, "");
 });
 
 test("Planner and development share canonical task categories", async () => {

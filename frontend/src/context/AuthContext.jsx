@@ -79,10 +79,10 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const registerStudent = useCallback(async ({ name, email, password, branch }) => {
+  const registerStudent = useCallback(async (studentData) => {
     setLoading(true);
     try {
-      const { data } = await api.post("/students/register", { name, email, password, branch });
+      const { data } = await api.post("/students/register", studentData);
       return data;
     } finally {
       setLoading(false);

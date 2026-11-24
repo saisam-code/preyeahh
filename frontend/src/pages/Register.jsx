@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { FaEye, FaEyeSlash, FaArrowRight, FaXmark, FaCheck } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { CAREER_DOMAINS } from "../data/careerWheelData.js";
 import CareerWheel from "../components/wheel/CareerWheel.jsx";
 import CareerCategoryDetails from "../components/wheel/CareerCategoryDetails.jsx";
-import { updatePreferences } from "../services/studentService.js";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 import toast from "react-hot-toast";
 
@@ -15,6 +14,7 @@ const BRANCH_OPTIONS = ["CSE", "ECE", "EEE", "MECH", "CIVIL", "IT", "AI&DS", "OT
 
 export default function Register() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, user, registerStudent, registerGuide, registerParent, registerInstitution } = useAuth();
 
@@ -43,6 +43,7 @@ export default function Register() {
   const [selectedDomain, setSelectedDomain] = useState(CAREER_DOMAINS[0]);
   const [selectedDomainInterests, setSelectedDomainInterests] = useState([]);
   const [selectedCareerRoles, setSelectedCareerRoles] = useState([]);
+  const onboardingData = location.state?.onboardingData || {};
 
   const form = useForm({
     defaultValues: {
@@ -50,7 +51,7 @@ export default function Register() {
       email: "",
       password: "",
       confirmPassword: "",
-      branch: "CSE",
+      branch: "",
       roleNames: "Assistant Professor",
       bio: "",
       phone: "",
@@ -100,25 +101,19 @@ export default function Register() {
 
     try {
       if (role === "student") {
+        const primaryCareerGoal = selectedCareerRoles[0] || onboardingData.primaryCareerGoal || "";
+        const alternativeCareerGoal = selectedCareerRoles[1] || onboardingData.alternativeCareerGoal || "";
         await registerStudent({
+          ...onboardingData,
           name: values.name.trim(),
           email: values.email.trim().toLowerCase(),
           password: values.password,
-          branch: values.branch,
+          branch: values.branch || "",
+          interests: [...new Set([...(onboardingData.interests || []), ...selectedDomainInterests])],
+          primaryCareerGoal,
+          alternativeCareerGoal,
+          targetRole: primaryCareerGoal,
         });
-
-        // If student preselected career interests from the orbit, save them
-        if (selectedDomainInterests.length || selectedCareerRoles.length) {
-          try {
-            await updatePreferences({
-              interests: selectedDomainInterests,
-              primaryCareerGoal: selectedCareerRoles[0] || selectedDomain.careers[0]?.name || "",
-              targetRole: selectedCareerRoles[0] || selectedDomain.careers[0]?.name || "",
-            });
-          } catch {
-            // Non-fatal if session not yet verified
-          }
-        }
 
         setSuccessMsg("Registration successful! Please check your email to verify your student account before logging in.");
       } else if (role === "guide") {
@@ -396,8 +391,14 @@ export default function Register() {
                 {/* Student / Guide Branch Selector */}
                 {(role === "student" || role === "guide") && (
                   <div className="form-group">
-                    <label htmlFor="reg-branch">Engineering Branch</label>
-                    <select id="reg-branch" {...register("branch", { required: "Branch is required" })}>
+                    <label htmlFor="reg-branch">
+                      Engineering branch {role === "student" ? "(optional)" : ""}
+                    </label>
+                    <select
+                      id="reg-branch"
+                      {...register("branch", { required: role === "guide" ? "Branch is required for guides" : false })}
+                    >
+                      <option value="">Not applicable / not selected</option>
                       {BRANCH_OPTIONS.map((b) => (
                         <option key={b} value={b}>{b}</option>
                       ))}

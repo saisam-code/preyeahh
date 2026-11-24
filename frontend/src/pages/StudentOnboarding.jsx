@@ -17,6 +17,16 @@ import { updatePreferences } from "../services/studentService.js";
 import { EDUCATION_STAGES } from "../constants/educationStages.js";
 
 const STAGES = EDUCATION_STAGES;
+const DRAFT_KEY = "preyeahh.student-onboarding";
+
+function readOnboardingDraft() {
+  try {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch {
+    return {};
+  }
+}
 
 const INTERESTS_LIST = [
   "Technology & Engineering",
@@ -48,22 +58,73 @@ export default function StudentOnboarding() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const [step, setStep] = useState(1);
+  const [draft] = useState(readOnboardingDraft);
+  const preferences = user?.preferences || {};
+  const initialValue = (key, fallback) => draft[key] ?? preferences[key] ?? fallback;
+  const [step, setStep] = useState(() => Math.min(6, Math.max(1, Number(draft.step) || preferences.onboardingStep || 1)));
   const totalSteps = 6;
 
   // Onboarding Form State
-  const [stage, setStage] = useState("Undergraduate");
-  const [selectedInterests, setSelectedInterests] = useState([]);
-  const [primaryGoal, setPrimaryGoal] = useState("Software Engineer");
-  const [alternativeGoal, setAlternativeGoal] = useState("UI/UX Designer");
-  const [selectedSkills, setSelectedSkills] = useState([]);
-  const [dailyHours, setDailyHours] = useState(2);
-  const [connectionType, setConnectionType] = useState("independent"); // independent, institution
-  const [institutionCode, setInstitutionCode] = useState("");
+  const [stage, setStage] = useState(() => initialValue("educationStage", ""));
+  const [schoolOrInstitution, setSchoolOrInstitution] = useState(() => initialValue("schoolOrInstitution", ""));
+  const [board, setBoard] = useState(() => initialValue("board", ""));
+  const [academicStream, setAcademicStream] = useState(() => initialValue("academicStream", ""));
+  const [degreeOrProgram, setDegreeOrProgram] = useState(() => initialValue("degreeOrProgram", ""));
+  const [specialization, setSpecialization] = useState(() => initialValue("specialization", ""));
+  const [yearOfStudy, setYearOfStudy] = useState(() => initialValue("yearOfStudy", ""));
+  const [semester, setSemester] = useState(() => initialValue("semester", ""));
+  const [expectedGraduationYear, setExpectedGraduationYear] = useState(() => initialValue("expectedGraduationYear", ""));
+  const [country, setCountry] = useState(() => initialValue("country", "India"));
+  const [stateName, setStateName] = useState(() => initialValue("state", ""));
+  const [city, setCity] = useState(() => initialValue("city", ""));
+  const [selectedInterests, setSelectedInterests] = useState(() => initialValue("interests", []));
+  const [primaryGoal, setPrimaryGoal] = useState(() => initialValue("primaryCareerGoal", ""));
+  const [alternativeGoal, setAlternativeGoal] = useState(() => initialValue("alternativeCareerGoal", ""));
+  const [careerPreference, setCareerPreference] = useState(() => initialValue("careerPreference", "unsure"));
+  const [selectedSkills, setSelectedSkills] = useState(() => (draft.skills || preferences.skills || []).map((skill) => typeof skill === "string" ? skill : skill.name));
+  const [dailyHours, setDailyHours] = useState(() => Math.max(1, Math.min(4, Math.round((draft.dailyHours ?? preferences.weeklyHoursAvailable / 7) || 2))));
+  const [connectionType, setConnectionType] = useState(() => draft.connectionType || "independent");
+  const [institutionCode, setInstitutionCode] = useState(() => draft.institutionCode || "");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        step,
+        educationStage: stage,
+        schoolOrInstitution,
+        board,
+        academicStream,
+        degreeOrProgram,
+        specialization,
+        yearOfStudy,
+        semester,
+        expectedGraduationYear,
+        country,
+        state: stateName,
+        city,
+        interests: selectedInterests,
+        primaryCareerGoal: primaryGoal,
+        alternativeCareerGoal: alternativeGoal,
+        careerPreference,
+        skills: selectedSkills,
+        dailyHours,
+        connectionType,
+        institutionCode,
+      }));
+    } catch {
+      toast.error("Your onboarding draft could not be saved on this device.");
+    }
+  }, [
+    step, stage, schoolOrInstitution, board, academicStream, degreeOrProgram,
+    specialization, yearOfStudy, semester, expectedGraduationYear, country,
+    stateName, city, selectedInterests, primaryGoal, alternativeGoal,
+    careerPreference, selectedSkills, dailyHours, connectionType, institutionCode,
+  ]);
 
   // Consume pre-selected interests from Career Wheel if coming from Login / entry
   useEffect(() => {
+    if (Object.keys(draft).length) return;
     if (location.state?.preselectedInterests?.length) {
       setSelectedInterests(location.state.preselectedInterests);
     }
@@ -73,7 +134,7 @@ export default function StudentOnboarding() {
         setAlternativeGoal(location.state.preselectedRoles[1]);
       }
     }
-  }, [location.state]);
+  }, [draft, location.state]);
 
   const toggleInterest = (item) => {
     if (selectedInterests.includes(item)) {
@@ -93,35 +154,38 @@ export default function StudentOnboarding() {
 
   const handleFinish = async () => {
     setSaving(true);
+    const onboardingData = {
+      educationStage: stage,
+      schoolOrInstitution,
+      board,
+      academicStream,
+      degreeOrProgram,
+      specialization,
+      yearOfStudy,
+      semester,
+      expectedGraduationYear: expectedGraduationYear ? Number(expectedGraduationYear) : null,
+      country,
+      state: stateName,
+      city,
+      interests: selectedInterests,
+      primaryCareerGoal: primaryGoal,
+      alternativeCareerGoal: alternativeGoal,
+      careerPreference,
+      skills: selectedSkills.map((name) => ({ name, level: "beginner" })),
+      weeklyHoursAvailable: dailyHours * 7,
+      onboardingStep: totalSteps,
+      onboardingCompleted: true,
+    };
     try {
       if (user) {
-        await updatePreferences({
-          educationStage: stage,
-          academicStream: "CSE",
-          interests: selectedInterests,
-          primaryCareerGoal: primaryGoal,
-          alternativeCareerGoal: alternativeGoal,
-          targetRole: primaryGoal,
-          skills: selectedSkills.map((s) => ({ name: s, level: "beginner" })),
-          weeklyHoursAvailable: dailyHours * 7,
-          onboardingCompleted: true,
-        });
+        await updatePreferences(onboardingData);
+        localStorage.removeItem(DRAFT_KEY);
         toast.success("Welcome aboard! Your career workspace is ready.");
         navigate("/planner");
       } else {
         toast.success("Preferences configured! Create your student account to activate your plan.");
         navigate("/register?role=student", {
-          state: {
-            onboardingData: {
-              educationStage: stage,
-              academicStream: "CSE",
-              interests: selectedInterests,
-              primaryCareerGoal: primaryGoal,
-              alternativeCareerGoal: alternativeGoal,
-              skills: selectedSkills,
-              weeklyHoursAvailable: dailyHours * 7,
-            },
-          },
+          state: { onboardingData },
         });
       }
     } catch {
@@ -130,6 +194,45 @@ export default function StudentOnboarding() {
       setSaving(false);
     }
   };
+
+  const handleContinue = async () => {
+    if (user) {
+      setSaving(true);
+      try {
+        await updatePreferences({
+          educationStage: stage,
+          schoolOrInstitution,
+          board,
+          academicStream,
+          degreeOrProgram,
+          specialization,
+          yearOfStudy,
+          semester,
+          expectedGraduationYear: expectedGraduationYear ? Number(expectedGraduationYear) : null,
+          country,
+          state: stateName,
+          city,
+          interests: selectedInterests,
+          primaryCareerGoal: primaryGoal,
+          alternativeCareerGoal: alternativeGoal,
+          careerPreference,
+          skills: selectedSkills.map((name) => ({ name, level: "beginner" })),
+          weeklyHoursAvailable: dailyHours * 7,
+          onboardingStep: step + 1,
+          onboardingCompleted: false,
+        });
+      } catch {
+        toast.error("Could not save your progress. Please try again.");
+        setSaving(false);
+        return;
+      }
+      setSaving(false);
+    }
+    setStep((current) => current + 1);
+  };
+
+  const isSchoolStage = stage.startsWith("Class") || stage === "Intermediate";
+  const isProgramStage = ["Diploma", "Undergraduate", "Postgraduate", "PhD", "Research Scholar", "Postdoctoral Research"].includes(stage);
 
   return (
     <div style={{ maxWidth: 750, margin: "2rem auto", padding: "1.5rem" }}>
@@ -164,6 +267,80 @@ export default function StudentOnboarding() {
                   {s}
                 </button>
               ))}
+            </div>
+            <p style={{ color: "var(--text-muted)", margin: "1rem 0" }}>
+              Not sure or between stages? You can leave this blank and update it later.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <label>
+                School / institution
+                <input value={schoolOrInstitution} onChange={(e) => setSchoolOrInstitution(e.target.value)} maxLength={120} />
+              </label>
+              {isSchoolStage && (
+                <label>
+                  Board
+                  <input value={board} onChange={(e) => setBoard(e.target.value)} maxLength={40} placeholder="e.g. CBSE, State Board" />
+                </label>
+              )}
+              {isSchoolStage && (
+                <label>
+                  Stream
+                  <select value={academicStream} onChange={(e) => setAcademicStream(e.target.value)}>
+                    <option value="">Not selected</option>
+                    <option value="Science">Science</option>
+                    <option value="Commerce">Commerce</option>
+                    <option value="Humanities">Humanities</option>
+                    <option value="Vocational">Vocational</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+              )}
+              {isProgramStage && (
+                <>
+                  <label>
+                    Program / degree
+                    <input value={degreeOrProgram} onChange={(e) => setDegreeOrProgram(e.target.value)} maxLength={60} placeholder="e.g. BSc, Diploma" />
+                  </label>
+                  <label>
+                    Specialization
+                    <input value={specialization} onChange={(e) => setSpecialization(e.target.value)} maxLength={60} />
+                  </label>
+                  <label>
+                    Year of study
+                    <input value={yearOfStudy} onChange={(e) => setYearOfStudy(e.target.value)} maxLength={20} placeholder="e.g. Year 2" />
+                  </label>
+                  <label>
+                    Semester (optional)
+                    <input value={semester} onChange={(e) => setSemester(e.target.value)} maxLength={20} />
+                  </label>
+                  <label>
+                    Expected graduation year
+                    <input
+                      type="number"
+                      min="1900"
+                      max="2200"
+                      value={expectedGraduationYear || ""}
+                      onChange={(e) => setExpectedGraduationYear(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Program stream
+                    <input value={academicStream} onChange={(e) => setAcademicStream(e.target.value)} maxLength={40} />
+                  </label>
+                </>
+              )}
+              <label>
+                Country
+                <input value={country} onChange={(e) => setCountry(e.target.value)} maxLength={60} />
+              </label>
+              <label>
+                State / region
+                <input value={stateName} onChange={(e) => setStateName(e.target.value)} maxLength={80} />
+              </label>
+              <label>
+                City
+                <input value={city} onChange={(e) => setCity(e.target.value)} maxLength={80} />
+              </label>
             </div>
           </div>
         )}
@@ -209,6 +386,26 @@ export default function StudentOnboarding() {
               You can experiment and change your direction anytime without losing your skills or progress.
             </p>
 
+            <fieldset style={{ border: 0, padding: 0, margin: "0 0 1.25rem" }}>
+              <legend style={{ fontWeight: 600, marginBottom: "0.5rem" }}>Career direction</legend>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                {[
+                  ["traditional", "Traditional"],
+                  ["unconventional", "Unconventional"],
+                  ["both", "A mix of both"],
+                  ["unsure", "Still exploring"],
+                ].map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`tab ${careerPreference === value ? "active" : ""}`}
+                    onClick={() => setCareerPreference(value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </fieldset>
             <div style={{ marginBottom: "1.25rem" }}>
               <label style={{ display: "block", marginBottom: "0.4rem", fontWeight: 600 }}>Primary Career Target</label>
               <input
@@ -358,10 +555,11 @@ export default function StudentOnboarding() {
             <button
               type="button"
               className="btn btn-primary"
-              onClick={() => setStep((s) => s + 1)}
+              onClick={handleContinue}
+              disabled={saving}
               style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
             >
-              Next <FaArrowRight />
+              {saving ? "Saving..." : "Next"} <FaArrowRight />
             </button>
           ) : (
             <button

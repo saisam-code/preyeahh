@@ -24,12 +24,20 @@ const preferencesSchema = new mongoose.Schema(
       type: String,
       enum: [...EDUCATION_STAGES, ""],
       set: (v) => normalizeEducationStage(v),
-      default: "Undergraduate",
+      default: "",
     },
-    academicStream: { type: String, default: "" }, // MPC, BiPC, CEC, MEC, etc.
+    academicStream: { type: String, default: "" }, // Science, Commerce, Humanities, Vocational, or a program stream
     degreeOrProgram: { type: String, default: "" },
+    specialization: { type: String, default: "" },
+    yearOfStudy: { type: String, default: "" },
+    semester: { type: String, default: "" },
+    expectedGraduationYear: { type: Number, min: 1900, max: 2200, default: null },
+    schoolOrInstitution: { type: String, default: "" },
     board: { type: String, default: "" },
     subjects: { type: [String], default: [] },
+    country: { type: String, default: "India" },
+    state: { type: String, default: "" },
+    city: { type: String, default: "" },
     currentRole: { type: String, default: "", trim: true },
     targetRole: { type: String, default: "", trim: true },
     primaryCareerGoal: { type: String, default: "", trim: true },
@@ -42,6 +50,11 @@ const preferencesSchema = new mongoose.Schema(
     weaknesses: { type: [String], default: [] },
     goals: { type: [String], default: [] },
     interests: { type: [String], default: [] },
+    careerPreference: {
+      type: String,
+      enum: ["traditional", "unconventional", "both", "unsure"],
+      default: "unsure",
+    },
     skills: { type: [skillSchema], default: [] },
     weeklyHoursAvailable: { type: Number, default: 0, min: 0, max: 168 },
     preferredLanguage: { type: String, default: "English", trim: true },
@@ -50,7 +63,24 @@ const preferencesSchema = new mongoose.Schema(
     shareProfileWithGuides: { type: Boolean, default: false },
     onboardingCompleted: { type: Boolean, default: false },
     onboardingSkipped: { type: Boolean, default: false },
+    onboardingStep: { type: Number, min: 1, max: 6, default: 1 },
     lastExtractedAt: { type: Date, default: null },
+  },
+  { _id: false }
+);
+
+const educationHistorySchema = new mongoose.Schema(
+  {
+    educationStage: { type: String, enum: EDUCATION_STAGES, required: true },
+    schoolOrInstitution: { type: String, default: "" },
+    board: { type: String, default: "" },
+    academicStream: { type: String, default: "" },
+    degreeOrProgram: { type: String, default: "" },
+    specialization: { type: String, default: "" },
+    yearOfStudy: { type: String, default: "" },
+    semester: { type: String, default: "" },
+    expectedGraduationYear: { type: Number, default: null },
+    recordedAt: { type: Date, default: Date.now },
   },
   { _id: false }
 );
@@ -78,6 +108,7 @@ const studentSchema = new mongoose.Schema(
     // TODO: Review DPDP Act parental-consent requirements with a lawyer
     dateOfBirth: { type: Date, default: null },
     ageBand: { type: String, enum: ["UNDER_18", "18_PLUS"], default: "18_PLUS", index: true },
+    educationHistory: { type: [educationHistorySchema], default: [] },
 
     // Google OAuth identity — stable sub claim from Google's ID token
     googleId: { type: String, unique: true, sparse: true, index: true },
