@@ -5,31 +5,14 @@ import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { chatCompletion } from "../services/groqService.js";
-import { SAMPLE_GOVERNMENT_JOBS, SAMPLE_GOVERNMENT_NOTIFICATIONS } from "../data/seedGovernmentCareers.js";
 import escapeRegex from "../utils/escapeRegex.js";
 import { normalizeEducationStage } from "../constants/educationStages.js";
-
-/**
- * Ensures baseline verified government careers exist in DB.
- */
-async function ensureGovernmentDataSeeded() {
-  const count = await GovernmentJob.countDocuments();
-  if (count === 0) {
-    await GovernmentJob.insertMany(SAMPLE_GOVERNMENT_JOBS).catch(() => {});
-  }
-  const notifCount = await GovernmentNotification.countDocuments();
-  if (notifCount === 0) {
-    await GovernmentNotification.insertMany(SAMPLE_GOVERNMENT_NOTIFICATIONS).catch(() => {});
-  }
-}
 
 /**
  * GET /api/government-careers/jobs
  * Query params: category, qualification, level, state, stage, search, minPay
  */
 export const getGovernmentJobs = asyncHandler(async (req, res) => {
-  await ensureGovernmentDataSeeded();
-
   const { category, qualification, level, state, stage, search, minPay } = req.query;
   const filter = { isActive: true };
 
@@ -74,7 +57,6 @@ export const getGovernmentJobs = asyncHandler(async (req, res) => {
  * GET /api/government-careers/jobs/:slug
  */
 export const getGovernmentJobBySlug = asyncHandler(async (req, res) => {
-  await ensureGovernmentDataSeeded();
   const { slug } = req.params;
 
   const job = await GovernmentJob.findOne({ slug, isActive: true }).lean();
@@ -101,7 +83,6 @@ export const getGovernmentJobBySlug = asyncHandler(async (req, res) => {
  * Syllabus & Examination Library
  */
 export const getGovernmentExamsAndSyllabi = asyncHandler(async (req, res) => {
-  await ensureGovernmentDataSeeded();
   const { conductingBody, category, search } = req.query;
 
   const filter = { isActive: true };
@@ -129,7 +110,6 @@ export const getGovernmentExamsAndSyllabi = asyncHandler(async (req, res) => {
  * Time-aware recruitment notifications
  */
 export const getGovernmentNotifications = asyncHandler(async (req, res) => {
-  await ensureGovernmentDataSeeded();
   const { status, category, search } = req.query;
 
   const filter = { isActive: true };

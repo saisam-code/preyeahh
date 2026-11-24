@@ -140,7 +140,7 @@ Before consolidation, `careerPlannerService.js` mixed:
 - Added `careerIntelligenceService.js`
 - Added `plannerService.js`
 - Added `studentDevelopmentService.js`
-- Retained `careerPlannerService.js` as a compatibility re-export facade
+- Initially retained `careerPlannerService.js` as a compatibility re-export facade; it was later removed after confirming no remaining consumers.
 - Updated three direct live pages to domain-specific imports
 
 This preserves API contracts while establishing clear ownership.
@@ -249,7 +249,6 @@ Frontend:
 - `frontend/src/services/careerIntelligenceService.js`
 - `frontend/src/services/plannerService.js`
 - `frontend/src/services/studentDevelopmentService.js`
-- `frontend/src/services/careerPlannerService.js`
 - Multiple lint cleanup files
 
 Deleted:

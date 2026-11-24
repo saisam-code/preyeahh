@@ -3,32 +3,36 @@ import { FaMoon, FaSun } from "react-icons/fa";
 
 const STORAGE_KEY = "pp_theme";
 
-function resolveInitialTheme() {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if (saved === "dark") return true;
-  if (saved === "light") return false;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+function readThemePreference() {
+  return localStorage.getItem(STORAGE_KEY) || "system";
 }
 
-/**
- * Exact port of initTheme()/toggleTheme() from app.js.
- * Toggles the `dark` class on <body>, same class the existing
- * style.css design tokens key off (body.dark { ... }).
- */
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(resolveInitialTheme);
+  const [theme, setTheme] = useState(readThemePreference);
+  const [systemDark, setSystemDark] = useState(() => window.matchMedia("(prefers-color-scheme: dark)").matches);
   const [pop, setPop] = useState(false);
+  const isDark = theme === "dark" || (theme === "system" && systemDark);
 
   useEffect(() => {
-    document.body.classList.toggle("dark", isDark);
-  }, [isDark]);
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const updateSystemTheme = (event) => setSystemDark(event.matches);
+    const updatePreference = () => setTheme(readThemePreference());
+    media.addEventListener("change", updateSystemTheme);
+    window.addEventListener("preyeahh-theme-change", updatePreference);
+    return () => {
+      media.removeEventListener("change", updateSystemTheme);
+      window.removeEventListener("preyeahh-theme-change", updatePreference);
+    };
+  }, []);
 
   const handleToggle = () => {
-    setIsDark((prev) => {
-      const next = !prev;
-      localStorage.setItem(STORAGE_KEY, next ? "dark" : "light");
-      return next;
-    });
+    const next = isDark ? "light" : "dark";
+    localStorage.setItem(STORAGE_KEY, next);
+    setTheme(next);
     setPop(true);
     setTimeout(() => setPop(false), 400);
   };
@@ -37,8 +41,9 @@ export default function ThemeToggle() {
     <button
       id="theme-toggle"
       className={pop ? "spinning" : ""}
+      type="button"
       onClick={handleToggle}
-      aria-label="Toggle theme"
+      aria-label={`Switch to ${isDark ? "light" : "dark"} theme`}
     >
       {isDark ? <FaSun /> : <FaMoon />}
     </button>

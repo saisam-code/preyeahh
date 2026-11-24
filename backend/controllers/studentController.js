@@ -51,6 +51,7 @@ export const registerStudent = asyncHandler(async (req, res) => {
     profileFields.filter((field) => Object.hasOwn(req.body, field)).map((field) => [field, req.body[field]])
   );
   if (Object.keys(onboardingProfile).length) {
+    onboardingProfile.onboardingCompleted = req.body.onboardingCompleted === true;
     await profileService.updatePreferences(student.id, onboardingProfile);
   }
 

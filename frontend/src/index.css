@@ -3,7 +3,7 @@
   Editorial Layout · Deep Forest & Fresh Green · Fluid Typography
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "./styles/tokens.css";
 
 *,
 *::before,
@@ -11,116 +11,6 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-}
-
-/* ── TOKENS ── */
-:root {
-  /* Crisp, high-contrast editorial light canvas */
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --surface-mid: #f1f5f9;
-  --surface-high: #e2e8f0;
-  --card: #ffffff;
-  --card-bg: #ffffff;
-
-  /* Borders */
-  --border: #e2e8f0;
-  --border-subtle: #f1f5f9;
-  --border-focus: rgba(37, 99, 235, 0.45);
-
-  /* Brand Primary — Electric Royal Blue */
-  --primary: #2563eb;
-  --primary-glow: #3b82f6;
-  --primary-dim: #1d4ed8;
-  --primary-bg: rgba(37, 99, 235, 0.08);
-
-  /* Accents */
-  --secondary: #0d9488;
-  --secondary-dim: #115e59;
-  --secondary-bg: rgba(13, 148, 136, 0.08);
-  --accent: #f59e0b;
-  --accent-dim: #d97706;
-
-  /* Text — High-contrast, crystal sharp typography */
-  --text: #0f172a;
-  --text-dim: #334155;
-  --text-muted: #64748b;
-  --muted: #64748b;
-
-  /* Status */
-  --error: #ef4444;
-  --error-bg: rgba(239, 68, 68, 0.08);
-  --success: #10b981;
-  --warning: #f59e0b;
-
-  /* Typography */
-  --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --font-heading: 'Plus Jakarta Sans', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
-
-  /* Spacing */
-  --sp-xs: 0.375rem;
-  --sp-sm: 0.75rem;
-  --sp-md: 1rem;
-  --sp-lg: 1.5rem;
-  --sp-xl: 2rem;
-  --sp-2xl: 3rem;
-  --sp-3xl: 4.5rem;
-
-  /* Radius */
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
-  --r-xl: 20px;
-  --r-2xl: 28px;
-  --r-full: 9999px;
-
-  /* Shadows */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(15, 23, 42, 0.04);
-  --shadow-float: 0 12px 32px rgba(15, 23, 42, 0.08), 0 2px 8px rgba(37, 99, 235, 0.08);
-  --shadow-glow: 0 0 28px rgba(37, 99, 235, 0.2);
-}
-
-/* Dark Mode */
-body.dark {
-  /* Ultra-sleek deep midnight canvas */
-  --bg: #090d16;
-  --surface: #111827;
-  --surface-mid: #182234;
-  --surface-high: #243048;
-  --card: #111827;
-  --card-bg: #111827;
-
-  --border: rgba(255, 255, 255, 0.09);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-focus: rgba(59, 130, 246, 0.5);
-
-  --primary: #3b82f6;
-  --primary-glow: #60a5fa;
-  --primary-dim: #2563eb;
-  --primary-bg: rgba(59, 130, 246, 0.14);
-
-  --secondary: #14b8a6;
-  --secondary-dim: #0d9488;
-  --secondary-bg: rgba(20, 184, 166, 0.14);
-
-  --accent: #fbbf24;
-  --accent-dim: #f59e0b;
-
-  --text: #f8fafc;
-  --text-dim: #cbd5e1;
-  --text-muted: #94a3b8;
-  --muted: #94a3b8;
-
-  --error: #f87171;
-  --error-bg: rgba(248, 113, 113, 0.15);
-  --success: #34d399;
-  --warning: #fbbf24;
-
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.65), 0 4px 16px rgba(37, 99, 235, 0.15);
-  --shadow-glow: 0 0 35px rgba(59, 130, 246, 0.25);
-  --shadow-orange-glow: 0 0 30px rgba(245, 158, 11, 0.25);
 }
 
 /* ── BASE ── */
@@ -132,10 +22,33 @@ body {
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
-  line-height: 1.6;
+  line-height: var(--line-height);
+  font-size: var(--font-base);
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   transition: background 0.3s ease, color 0.3s ease;
+}
+
+.role-header-tint {
+  border-top: 3px solid var(--role-tint);
+}
+
+.public-layout-root h1,
+.public-layout-root h2,
+.public-layout-root h3 {
+  font-family: var(--font-display);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+table, .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+code, kbd, samp {
+  font-family: var(--font-code);
 }
 
 /* ── SCROLLBAR ── */

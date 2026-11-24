@@ -1,12 +1,12 @@
 /**
- * Seeds the curated resource library.
- * Usage: npm run seed:resources -- --force   (WARNING: replaces all existing resources)
- * --force flag is REQUIRED to prevent accidental data loss.
+ * Idempotently seeds curated resources without deleting user-created records.
+ * Usage: Set SEED_RESOURCES=true and run npm run seed:resources --prefix backend.
  */
 import "dotenv/config";
 import mongoose from "mongoose";
 import logger from "../utils/logger.js";
 import Resource from "../models/Resource.js";
+import { assertSeedAllowed } from "../utils/seedGuard.js";
 
 const seedData = [
   // JavaScript — all branches can benefit
@@ -74,33 +74,30 @@ const seedData = [
   { title: "CSS Tricks", description: "Tips, tricks, and techniques on CSS — flexbox, grid.", type: "article", url: "https://css-tricks.com/", provider: "CSS Tricks", technology: "css", category: "frontend", tags: ["styling", "flexbox", "grid", "layout"], difficulty: "intermediate", branches: ["CSE"], isCurated: true },
 ];
 
-const seedDB = async () => {
-  // 1.15 — Require --force to prevent accidental production data wipe
-  if (!process.argv.includes("--force")) {
-    console.error("Error: seedResources requires --force flag to prevent accidental use.");
-    console.error("Usage: node scripts/seedResources.js --force");
-    process.exit(1);
-  }
+async function seedResources() {
+  assertSeedAllowed(process.env, "SEED_RESOURCES");
 
+  const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/preyeah";
+  await mongoose.connect(mongoUri);
   try {
-    const mongoUri = process.env.MONGO_URI || "mongodb://localhost:27017/preyeah";
-
-    logger.info("Connecting to MongoDB...");
-    await mongoose.connect(mongoUri);
-    logger.info("Connected.");
-
-    logger.info("Clearing existing resources...");
-    await Resource.deleteMany();
-
-    logger.info("Inserting seed data...");
-    await Resource.insertMany(seedData);
-
-    logger.info(`Successfully inserted ${seedData.length} resources.`);
-    process.exit(0);
-  } catch (err) {
-    logger.error("Seed failed:", err.message);
-    process.exit(1);
+    const result = await Resource.bulkWrite(
+      seedData.map((resource) => ({
+        updateOne: {
+          filter: { url: resource.url },
+          update: { $set: resource },
+          upsert: true,
+        },
+      }))
+    );
+    logger.info(
+      `Resource seed complete: ${result.upsertedCount} added, ${result.modifiedCount} updated, ${result.matchedCount} matched.`
+    );
+  } finally {
+    await mongoose.disconnect();
   }
-};
+}
 
-seedDB();
+seedResources().catch((error) => {
+  logger.error("Resource seed failed:", error.message);
+  process.exitCode = 1;
+});

@@ -12,6 +12,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import mongoose from "mongoose";
+import { readFile } from "node:fs/promises";
 
 // Import models/index.js to test central registration
 await import("../models/index.js");
@@ -19,6 +20,12 @@ await import("../models/index.js");
 test("2.3: GovernmentCareer models are registered in mongoose", () => {
   assert.ok(mongoose.models.GovernmentJob, "GovernmentJob model is registered");
   assert.ok(mongoose.models.GovernmentNotification, "GovernmentNotification model is registered");
+});
+
+test("Government career read endpoints never auto-seed unverified sample data", async () => {
+  const source = await readFile(new URL("../controllers/governmentCareersController.js", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /seedGovernmentCareers|SAMPLE_GOVERNMENT|insertMany/);
+  assert.doesNotMatch(source, /ensureGovernmentDataSeeded/);
 });
 
 test("2.3: GovernmentJob attemptsAllowed accepts both numbers and strings", () => {

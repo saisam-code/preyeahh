@@ -53,11 +53,5 @@ Thumbs.db
 *.swo
 *~
 
-# VS Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
-
-# txt and png
-.txt
-.png
+# VS Code workspace state
+.vscode/

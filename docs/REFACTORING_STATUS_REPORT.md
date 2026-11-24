@@ -9,11 +9,11 @@
 
 The application is a React/Vite frontend and Express/Mongoose backend. The repository has a substantial existing Phase 1-3 refactor, including security/privacy models, new parent and institution workflows, government career data, career intelligence schemas, and a central model registry. It is presently buildable and the backend test suite passes.
 
-This takeover did not discard or reset existing work. The current foundation passes 39 backend tests, a frontend production build, and frontend lint. The earlier privacy and institution-approval fixes remain intact. This update adds a shared education-stage catalog, resumable student onboarding, optional non-engineering registration, and allowlisted profile persistence; it does not complete the broader PREYEAHH product specification.
+This takeover did not discard or reset existing work. The earlier privacy and institution-approval fixes remain intact. Subsequent changes add a shared education-stage catalog, resumable student onboarding, optional non-engineering registration, allowlisted profile persistence, and safer seed behavior; they do not complete the broader PREYEAHH product specification.
 
 ## 2. Previous work reconstructed
 
-The latest commit, `da1e819` (`rework`), introduced or materially changed:
+The earlier baseline commit, `da1e819` (`rework`), introduced or materially changed:
 
 - Parent and institution account/link workflows.
 - `StudentGoal`, `CareerDomain`, `QuizResult`, `AuditLog`, and `ParentLink` models.
@@ -27,9 +27,9 @@ Recent repository history also contains login and UI revisions, but no reliable 
 
 ## 3. Completed and verified
 
-- Backend test suite: 39 tests passed, 0 failed.
-- Frontend production build: passed, 807 modules transformed; existing large-chunk warning remains.
-- Frontend lint: passed.
+- Latest backend test suite: 44 tests passed, 0 failed.
+- Latest frontend production build: passed, 807 modules transformed; existing large-chunk warning remains.
+- Latest frontend lint: passed.
 - GovernmentCareer model registration and frontend/backend route usage.
 - Education-stage constants are duplicated exactly at backend and frontend constants.
 - Student portfolio and career outcomes default to private in Mongoose.
@@ -41,7 +41,7 @@ Recent repository history also contains login and UI revisions, but no reliable 
 - Student profiles support detailed school/program/location fields and retain an education-history snapshot when a completed learner changes education stage or program details.
 - Student onboarding can resume from a device draft and saves authenticated progress by step; guest onboarding data is sent through registration and persisted via explicit profile-field allowlists.
 - Student registration no longer assumes an engineering branch or career goal; guide branch requirements remain unchanged, and privacy-consent fields are not accepted from registration/onboarding payloads.
-- Uncommitted frontend institution, parent, and student-link service files are not imported and remain candidate utilities, not repository truth.
+- The unused `studentLinkService.js` and `careerPlannerService.js` frontend files were removed after confirming there were no in-repository imports. Other helper services should be assessed independently before removal.
 
 ## 4. Implemented but not verified
 
@@ -113,8 +113,8 @@ Opportunity creation accepted `url` while the model stores `officialUrl`. Creati
 ### Core flows
 
 - Student auth/profile: frontend auth context -> student routes -> student/extended auth controllers -> profile service -> Student model.
-- Career discovery: CareerDiscovery page -> careerPlannerService -> career intelligence routes/controller -> Role/CareerIntelligence models.
-- Planner: PersonalCareerPlanner -> careerPlannerService -> planner routes/controller -> PersonalCareerPlan and StudentGoal.
+- Career discovery: CareerDiscovery page -> careerIntelligenceService -> career intelligence routes/controller -> Role/CareerIntelligence models.
+- Planner: PersonalCareerPlanner -> plannerService -> planner routes/controller -> PersonalCareerPlan and StudentGoal.
 - Student projects: page/service -> development routes/controller -> StudentProject.
 - Institution: parent/institution/student portals -> extended/student/development routes -> Institution/InstitutionMembership.
 

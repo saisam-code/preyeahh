@@ -13,13 +13,28 @@ import {
   FaRocket,
 } from "react-icons/fa6";
 
+export const WHEEL_DOMAIN_COLORS = Object.freeze({
+  "tech-eng": "#E4572E",
+  "med-health": "#F3A712",
+  "arts-media": "#17BEBB",
+  "business-ent": "#2E86AB",
+  "science-res": "#3F5EFB",
+  "law-public": "#7B4FD6",
+  "edu-psych": "#C13CA4",
+  "sports-fit": "#E76F9B",
+  "agri-env": "#8D6E63",
+  "trades-voc": "#607D8B",
+  "aviation-def": "#D98E04",
+  "emerging-unconv": "#4F9D69",
+});
+
 export const CAREER_DOMAINS = [
   {
     id: "tech-eng",
     title: "Technology & Engineering",
     shortTitle: "Tech & Engineering",
     icon: FaLaptopCode,
-    color: "#2563eb", // Vibrant Blue
+    color: WHEEL_DOMAIN_COLORS["tech-eng"],
     bgLight: "rgba(37, 99, 235, 0.08)",
     description: "Build software, design intelligent systems, architecture, and shape the digital world.",
     careers: [
@@ -35,7 +50,7 @@ export const CAREER_DOMAINS = [
     title: "Medicine & Healthcare",
     shortTitle: "Healthcare",
     icon: FaHeartPulse,
-    color: "#e11d48", // Crimson Rose
+    color: WHEEL_DOMAIN_COLORS["med-health"],
     bgLight: "rgba(225, 29, 72, 0.08)",
     description: "Heal lives, study disease mechanisms, and improve physical and mental human well-being.",
     careers: [
@@ -51,7 +66,7 @@ export const CAREER_DOMAINS = [
     title: "Arts, Design & Media",
     shortTitle: "Arts & Media",
     icon: FaPalette,
-    color: "#9333ea", // Purple Violet
+    color: WHEEL_DOMAIN_COLORS["arts-media"],
     bgLight: "rgba(147, 51, 234, 0.08)",
     description: "Express stories through visual design, cinema, sound, digital illustration, and media.",
     careers: [
@@ -67,7 +82,7 @@ export const CAREER_DOMAINS = [
     title: "Business & Entrepreneurship",
     shortTitle: "Business",
     icon: FaBriefcase,
-    color: "#d97706", // Amber
+    color: WHEEL_DOMAIN_COLORS["business-ent"],
     bgLight: "rgba(217, 119, 6, 0.08)",
     description: "Launch innovative ventures, drive financial growth, lead teams, and scale global organizations.",
     careers: [
@@ -83,7 +98,7 @@ export const CAREER_DOMAINS = [
     title: "Science & Research",
     shortTitle: "Science & Research",
     icon: FaMicroscope,
-    color: "#0891b2", // Cyan
+    color: WHEEL_DOMAIN_COLORS["science-res"],
     bgLight: "rgba(8, 145, 178, 0.08)",
     description: "Investigate cosmic mysteries, molecular physics, genetics, and fundamental scientific truths.",
     careers: [
@@ -99,7 +114,7 @@ export const CAREER_DOMAINS = [
     title: "Law & Public Services",
     shortTitle: "Law & Public",
     icon: FaScaleBalanced,
-    color: "#475569", // Slate
+    color: WHEEL_DOMAIN_COLORS["law-public"],
     bgLight: "rgba(71, 85, 105, 0.08)",
     description: "Uphold justice, craft public policy, defend civil rights, and govern societal institutions.",
     careers: [
@@ -115,7 +130,7 @@ export const CAREER_DOMAINS = [
     title: "Education & Psychology",
     shortTitle: "Education",
     icon: FaBookOpen,
-    color: "#ea580c", // Orange
+    color: WHEEL_DOMAIN_COLORS["edu-psych"],
     bgLight: "rgba(234, 88, 12, 0.08)",
     description: "Inspire next generations, design pedagogical innovations, and explore human cognition.",
     careers: [
@@ -131,7 +146,7 @@ export const CAREER_DOMAINS = [
     title: "Sports & Fitness",
     shortTitle: "Sports & Fitness",
     icon: FaDumbbell,
-    color: "#16a34a", // Vibrant Green
+    color: WHEEL_DOMAIN_COLORS["sports-fit"],
     bgLight: "rgba(22, 163, 74, 0.08)",
     description: "Excel in athletic performance, sports analytics, biomechanics, and physical coaching.",
     careers: [
@@ -147,7 +162,7 @@ export const CAREER_DOMAINS = [
     title: "Agriculture & Environment",
     shortTitle: "Agriculture & Env",
     icon: FaSeedling,
-    color: "#65a30d", // Lime Green
+    color: WHEEL_DOMAIN_COLORS["agri-env"],
     bgLight: "rgba(101, 163, 13, 0.08)",
     description: "Sustain planetary ecosystems, advance regenerative agriculture, and fight climate change.",
     careers: [
@@ -163,7 +178,7 @@ export const CAREER_DOMAINS = [
     title: "Skilled Trades & Vocational",
     shortTitle: "Skilled Trades",
     icon: FaWrench,
-    color: "#b45309", // Warm Ochre
+    color: WHEEL_DOMAIN_COLORS["trades-voc"],
     bgLight: "rgba(180, 83, 9, 0.08)",
     description: "Master craft expertise, precision engineering, architectural builds, and technical mastery.",
     careers: [
@@ -179,7 +194,7 @@ export const CAREER_DOMAINS = [
     title: "Aviation & Defence",
     shortTitle: "Aviation & Defence",
     icon: FaPlaneDeparture,
-    color: "#0369a1", // Sky Blue
+    color: WHEEL_DOMAIN_COLORS["aviation-def"],
     bgLight: "rgba(3, 105, 161, 0.08)",
     description: "Pilot commercial aircraft, navigate flight operations, aerospace engineering, and national security.",
     careers: [
@@ -195,7 +210,7 @@ export const CAREER_DOMAINS = [
     title: "Emerging & Unconventional",
     shortTitle: "Emerging & Creative",
     icon: FaRocket,
-    color: "#db2777", // Fuchsia Pink
+    color: WHEEL_DOMAIN_COLORS["emerging-unconv"],
     bgLight: "rgba(219, 39, 119, 0.08)",
     description: "Pioneer new frontiers in content creation, esports, metaverse, culinary arts, and web3.",
     careers: [

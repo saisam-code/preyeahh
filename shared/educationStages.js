@@ -48,3 +48,17 @@ export function normalizeEducationStages(stages) {
     ? [...new Set(stages.map(normalizeEducationStage).filter(Boolean))]
     : [];
 }
+
+export function getEducationMaturityStage(stage) {
+  const normalized = normalizeEducationStage(stage);
+  const classMatch = /^Class (\d+)$/.exec(normalized);
+  if (classMatch) {
+    const grade = Number(classMatch[1]);
+    if (grade <= 7) return "junior";
+    if (grade <= 10) return "teen";
+    return "senior";
+  }
+  if (normalized === "Intermediate") return "senior";
+  if (["Diploma", "Undergraduate", "Postgraduate"].includes(normalized)) return "pro";
+  return "research";
+}

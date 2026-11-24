@@ -1,4 +1,7 @@
-import { Routes, Route, Navigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Routes, Route, Navigate, useLocation, useSearchParams } from "react-router-dom";
+import { useAuth } from "./context/AuthContext.jsx";
+import { getEducationMaturityStage } from "./constants/educationStages.js";
 
 // Layouts
 import PublicLayout from "./layouts/PublicLayout.jsx";
@@ -49,6 +52,38 @@ import Dashboard from "./pages/Dashboard.jsx";
 
 export default function App() {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const { user } = useAuth();
+  const [appearanceRevision, setAppearanceRevision] = useState(0);
+
+  useEffect(() => {
+    const refreshAppearance = () => setAppearanceRevision((revision) => revision + 1);
+    window.addEventListener("preyeahh-appearance-change", refreshAppearance);
+    return () => window.removeEventListener("preyeahh-appearance-change", refreshAppearance);
+  }, []);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const storedOverride = localStorage.getItem("pp_stage_override") || "auto";
+    const educationStage = user?.preferences?.educationStage;
+    const isAdmin = location.pathname === "/admin";
+    const roleRoute = /^\/(dashboard|discovery|government-careers|planner|roadmaps|roadmap|quiz|profile|resources|roles|beyond|chat|guide-panel|parent-portal|institution-portal)(\/|$)/.test(location.pathname);
+    const stage = storedOverride !== "auto"
+      ? storedOverride
+      : educationStage
+        ? getEducationMaturityStage(educationStage)
+        : "senior";
+
+    root.dataset.stage = stage;
+    root.dataset.role = isAdmin ? "admin" : roleRoute ? user?.role || "" : "";
+    if (isAdmin) {
+      root.dataset.rolePreview = "";
+      root.style.setProperty("--role-tint", "#1F2933");
+    } else {
+      root.dataset.rolePreview = roleRoute ? user?.role || "student" : "";
+      root.style.removeProperty("--role-tint");
+    }
+  }, [appearanceRevision, location.pathname, user]);
 
   // Redirect legacy /?login=1 queries directly to canonical /login
   if (searchParams.get("login") === "1") {

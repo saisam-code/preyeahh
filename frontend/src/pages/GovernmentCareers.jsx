@@ -447,12 +447,14 @@ export default function GovernmentCareers() {
               Multi-Level Examination Syllabus Library
             </h2>
             <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", margin: 0 }}>
-              Official papers, subject weightage, topic breakdowns, and negative marking structures.
+              Examination outlines appear here when verified source records are available.
             </p>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            {exams.map((ex) => (
+            {exams.length === 0 ? (
+              <p style={{ color: "var(--text-muted)" }}>No verified examination syllabus records have been published yet.</p>
+            ) : exams.map((ex) => (
               <div key={ex._id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
                   <div>
@@ -517,12 +519,14 @@ export default function GovernmentCareers() {
               Verified Recruitment Notifications &amp; Schedules
             </h2>
             <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", margin: 0 }}>
-              Live notification tracking directly verified against UPSC, SSC, RRB, and official recruitment gazettes.
+              Recruitment notices appear here when current official records have been verified.
             </p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "1.25rem" }}>
-            {notifications.map((notif) => (
+            {notifications.length === 0 ? (
+              <p style={{ color: "var(--text-muted)" }}>No verified recruitment notifications have been published yet.</p>
+            ) : notifications.map((notif) => (
               <div key={notif._id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
                   <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>

@@ -4,6 +4,7 @@
 export {
   EDUCATION_STAGES,
   STUDENT_EDUCATION_STAGES,
+  getEducationMaturityStage,
   normalizeEducationStage,
   normalizeEducationStages,
 } from "../../../shared/educationStages.js";
