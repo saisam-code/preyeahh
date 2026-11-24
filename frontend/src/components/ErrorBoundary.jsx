@@ -28,8 +28,8 @@ export default class ErrorBoundary extends Component {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "var(--bg, #f8fafc)",
-            color: "var(--text, #0f172a)",
+            background: "var(--bg)",
+            color: "var(--text)",
             padding: "2rem",
             fontFamily: "var(--font-sans, system-ui, sans-serif)",
           }}
@@ -38,8 +38,8 @@ export default class ErrorBoundary extends Component {
             style={{
               maxWidth: 500,
               width: "100%",
-              background: "var(--surface, #ffffff)",
-              border: "1px solid var(--border, #e2e8f0)",
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
               borderRadius: "1rem",
               padding: "2.5rem",
               textAlign: "center",
@@ -50,19 +50,19 @@ export default class ErrorBoundary extends Component {
             <h2 style={{ fontSize: "1.5rem", fontWeight: 800, margin: "0 0 0.5rem" }}>
               Something went wrong
             </h2>
-            <p style={{ color: "var(--text-muted, #64748b)", fontSize: "0.95rem", lineHeight: 1.5, margin: "0 0 1.5rem" }}>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", lineHeight: 1.5, margin: "0 0 1.5rem" }}>
               An unexpected error occurred in the workspace. Your data has not been lost.
             </p>
             {this.state.error && (
               <pre
                 style={{
-                  background: "var(--surface-mid, #f1f5f9)",
+                  background: "var(--surface-mid)",
                   padding: "0.75rem",
                   borderRadius: "0.5rem",
                   fontSize: "0.8rem",
                   textAlign: "left",
                   overflowX: "auto",
-                  color: "var(--error, #ef4444)",
+                  color: "var(--error)",
                   marginBottom: "1.5rem",
                 }}
               >

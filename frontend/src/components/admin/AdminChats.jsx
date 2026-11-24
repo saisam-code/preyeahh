@@ -204,7 +204,7 @@ export default function AdminChats({ targetChatId = null }) {
                             <FaCircle
                               style={{
                                 fontSize: "0.45rem",
-                                color: chat.isArchived ? "var(--text-muted)" : "#16a34a",
+                                color: chat.isArchived ? "var(--text-muted)" : "var(--success)",
                                 marginRight: "0.35rem",
                               }}
                             />

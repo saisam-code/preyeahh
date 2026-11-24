@@ -14,8 +14,11 @@
   --success: #2e7d32;
   --warning: #e8a317;
   --warning-soft: #ffe8c9;
+  --warning-text: #855300;
   --danger: #d64545;
   --on-primary: #ffffff;
+  --wheel-label-dark: #12261e;
+  --wheel-label-light: #ffffff;
   --overlay-color: rgb(18 38 30 / 60%);
 
   --bg: var(--paper);
@@ -91,6 +94,7 @@
   --success: #76cf7c;
   --warning: #f4c252;
   --warning-soft: #47371b;
+  --warning-text: #f4c252;
   --danger: #ff7777;
   --on-primary: #0e1712;
   --overlay-color: rgb(0 0 0 / 65%);
@@ -138,6 +142,7 @@
     --success: #76cf7c;
     --warning: #f4c252;
     --warning-soft: #47371b;
+    --warning-text: #f4c252;
     --danger: #ff7777;
     --on-primary: #0e1712;
     --overlay-color: rgb(0 0 0 / 65%);

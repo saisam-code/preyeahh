@@ -19,7 +19,12 @@ export default function CareerCategoryDetails({
   }
 
   const Icon = domain.icon;
-  const labelPresentation = wheelLabelPresentation(domain.color);
+  const wheelStyles = getComputedStyle(document.documentElement);
+  const labelPresentation = wheelLabelPresentation(
+    domain.color,
+    wheelStyles.getPropertyValue("--wheel-label-dark").trim(),
+    wheelStyles.getPropertyValue("--wheel-label-light").trim()
+  );
 
   return (
     <div
@@ -126,7 +131,7 @@ export default function CareerCategoryDetails({
                     borderRadius: "50%",
                     border: isPicked ? `2px solid ${domain.color}` : "1.5px solid var(--border)",
                     background: isPicked ? domain.color : "transparent",
-                    color: "#fff",
+                    color: "var(--on-primary)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",

@@ -16,7 +16,7 @@ function ProgressBar({ completed, total }) {
           style={{
             height: "100%",
             borderRadius: 99,
-            background: pct === 100 ? "#10b981" : "linear-gradient(90deg,#6366f1,#8b5cf6)",
+            background: pct === 100 ? "var(--success)" : "linear-gradient(90deg,var(--info),var(--primary))",
             width: `${pct}%`,
             transition: "width 0.4s ease",
           }}
@@ -93,7 +93,7 @@ export default function AdminStudentRoadmaps({ student, onBack }) {
                     <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
                       <strong style={{ fontSize: "1rem" }}>{roadmap.title}</strong>
                       {roadmap.isCompleted && (
-                        <span style={{ fontSize: "0.75rem", background: "#10b981", color: "#fff", padding: "0.15rem 0.5rem", borderRadius: 99 }}>
+                        <span style={{ fontSize: "var(--font-size-xs)", background: "var(--success)", color: "var(--on-primary)", padding: "0.15rem 0.5rem", borderRadius: "var(--r-full)" }}>
                           <FaCheck /> Complete
                         </span>
                       )}
@@ -165,7 +165,7 @@ export default function AdminStudentRoadmaps({ student, onBack }) {
                               {section.topics.map((topic) => (
                                 <div key={topic._id} className={`roadmap-topic-admin ${topic.isCompleted ? "completed" : ""}`}>
                                   <div className="topic-check">
-                                    {topic.isCompleted ? <FaCheck style={{ color: "#10b981" }} /> : <FaCircle style={{ color: "var(--muted)", fontSize: "0.5rem" }} />}
+                                    {topic.isCompleted ? <FaCheck style={{ color: "var(--success)" }} /> : <FaCircle style={{ color: "var(--muted)", fontSize: "0.5rem" }} />}
                                   </div>
                                   <div className="topic-body">
                                     <strong className={topic.isCompleted ? "line-through" : ""}>{topic.title}</strong>

@@ -61,7 +61,7 @@ export default function AdminStudentChats({ student, onBack }) {
               <div className="chat-card-header" onClick={() => setOpenChat(openChat?._id === chat._id ? null : chat)}>
                 <div className="chat-card-info">
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <FaCircle style={{ fontSize: "0.45rem", color: chat.isArchived ? "var(--muted)" : "#10b981" }} />
+                    <FaCircle style={{ fontSize: "0.45rem", color: chat.isArchived ? "var(--muted)" : "var(--success)" }} />
                     <strong>{chat.title || "Untitled Chat"}</strong>
                     {chat.isArchived && (
                       <span style={{ fontSize: "0.75rem", color: "var(--muted)", display: "flex", alignItems: "center", gap: "0.25rem" }}>

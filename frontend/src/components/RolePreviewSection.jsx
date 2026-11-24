@@ -220,7 +220,7 @@ export default function RolePreviewSection() {
                   height: 40,
                   borderRadius: "0.6rem",
                   background: isActive ? "var(--primary)" : "rgba(0,0,0,0.05)",
-                  color: isActive ? "#fff" : "var(--text)",
+                  color: isActive ? "var(--on-primary)" : "var(--text)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -335,7 +335,7 @@ export default function RolePreviewSection() {
             style={{
               background: "rgba(245, 158, 11, 0.12)",
               border: "1px solid rgba(245, 158, 11, 0.35)",
-              color: "#b45309",
+              color: "var(--warning-text)",
               borderRadius: "0.5rem",
               padding: "0.4rem 0.75rem",
               fontSize: "0.75rem",

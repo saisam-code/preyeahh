@@ -33,6 +33,8 @@ const checks = [
   ["dark muted text on surface", variable(dark, "ink-600"), variable(dark, "surface")],
   ["dark primary with button foreground", variable(dark, "primary"), variable(dark, "on-primary")],
 ];
+const wheelInk = variable(light, "wheel-label-dark");
+const wheelLight = variable(light, "wheel-label-light");
 const failures = [];
 
 for (const [label, foreground, background] of checks) {
@@ -42,7 +44,7 @@ for (const [label, foreground, background] of checks) {
 }
 
 for (const [id, color] of Object.entries(WHEEL_DOMAIN_COLORS)) {
-  const label = wheelLabelPresentation(color);
+  const label = wheelLabelPresentation(color, wheelInk, wheelLight);
   const backing = label.background === "transparent" ? color : label.background;
   const ratio = contrastRatio(label.foreground, backing);
   console.log(`${ratio >= 4.5 ? "PASS" : "FAIL"} wheel ${id}: ${ratio.toFixed(2)}:1${label.background === "transparent" ? "" : " (contrast plate)"}`);

@@ -255,7 +255,7 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
               .slice(0, 3)
               .map((r) => (
                 <li key={r._id}>
-                  <a href={`/roadmap/${r._id}`} style={{ color: "#2980b9" }}>
+                  <a href={`/roadmap/${r._id}`} style={{ color: "var(--info)" }}>
                     {r.title}
                   </a>
                 </li>
@@ -268,7 +268,7 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
           <h2 style={{ fontSize: "1.2rem", fontWeight: 900, marginBottom: "4px" }}>
             {roadmap.title}
           </h2>
-          <p style={{ fontSize: "0.85rem", color: "#555", marginBottom: "8px" }}>
+          <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "8px" }}>
             {roadmap.branch} • {roadmap.level} • {roadmap.estimatedWeeks}wks
           </p>
           <div style={{ fontSize: "0.85rem", fontWeight: 700 }}>
@@ -280,7 +280,7 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
               style={{ width: `${progressPct}%` }}
             ></div>
           </div>
-          <p style={{ fontSize: "0.7rem", color: "#888", marginTop: "8px" }}>
+          <p style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "8px" }}>
             Tip: Drag to pan • Ctrl+scroll to zoom
           </p>
         </div>
@@ -331,7 +331,7 @@ export default function RoadmapGraph({ roadmap, relatedRoadmaps = [], onTopicSta
                   )
                 )
               ) : (
-                <p style={{ fontSize: "0.9rem", color: "#666" }}>No resources linked.</p>
+                <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>No resources linked.</p>
               )}
             </div>
 

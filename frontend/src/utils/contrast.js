@@ -12,13 +12,13 @@ export function contrastRatio(first, second) {
   return (values[0] + 0.05) / (values[1] + 0.05);
 }
 
-export function wheelLabelPresentation(background) {
-  const choices = ["#12261E", "#FFFFFF"].map((foreground) => ({
+export function wheelLabelPresentation(background, ink, light) {
+  const choices = [ink, light].map((foreground) => ({
     foreground,
     contrast: contrastRatio(foreground, background),
   })).sort((a, b) => b.contrast - a.contrast);
   if (choices[0].contrast >= 4.5) {
     return { foreground: choices[0].foreground, background: "transparent", contrast: choices[0].contrast };
   }
-  return { foreground: "#FFFFFF", background: "#12261E", contrast: contrastRatio("#FFFFFF", "#12261E") };
+  return { foreground: light, background: ink, contrast: contrastRatio(light, ink) };
 }

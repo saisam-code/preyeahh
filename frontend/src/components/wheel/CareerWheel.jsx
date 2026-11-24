@@ -36,6 +36,9 @@ export default function CareerWheel({
   const innerRadius = 90;
   const outerRadius = 230;
   const segmentAngle = 360 / domains.length;
+  const wheelStyles = getComputedStyle(document.documentElement);
+  const labelDark = wheelStyles.getPropertyValue("--wheel-label-dark").trim();
+  const labelLight = wheelStyles.getPropertyValue("--wheel-label-light").trim();
 
   return (
     <div style={{ position: "relative", width: "100%", maxWidth: size, margin: "0 auto", userSelect: "none" }}>
@@ -61,7 +64,7 @@ export default function CareerWheel({
           const isSelected = selectedDomain?.id === d.id;
           const isMultiSelected = multiSelectedIds.includes(d.id);
           const isHovered = hoveredDomain?.id === d.id;
-          const labelPresentation = wheelLabelPresentation(d.color);
+          const labelPresentation = wheelLabelPresentation(d.color, labelDark, labelLight);
           const Icon = d.icon;
 
           // Mid angle for text label and icon placement
@@ -184,10 +187,10 @@ export default function CareerWheel({
           alt="PREYEAHH"
           style={{ width: 44, height: 44, objectFit: "contain", margin: "0 auto 0.25rem", display: "block" }}
         />
-        <div style={{ fontSize: "0.85rem", fontWeight: 800, fontFamily: "var(--font-display)", color: "var(--text)" }}>
+        <div style={{ fontSize: "var(--font-size-sm)", fontWeight: 800, fontFamily: "var(--font-display)", color: "var(--text)" }}>
           PRE<span>YEAHH</span>
         </div>
-        <div style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 600, letterSpacing: 0.5 }}>
+        <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", fontWeight: 600, letterSpacing: 0.5 }}>
           CAREER ORBIT
         </div>
       </div>

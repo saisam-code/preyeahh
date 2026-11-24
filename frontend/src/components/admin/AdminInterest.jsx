@@ -95,7 +95,7 @@ export default function AdminInterest() {
                   <td><strong style={{ color: "var(--primary)" }}>#{i + 1}</strong></td>
                   <td><strong>{r.roleName}</strong></td>
                   <td><span className="branch-tag">{r.branch}</span></td>
-                  <td><span style={{ color: "#16a34a", fontWeight: 700 }}>{r.committed}</span></td>
+                  <td><span style={{ color: "var(--success)", fontWeight: 700 }}>{r.committed}</span></td>
                   <td><span style={{ color: "var(--muted)", fontWeight: 600 }}>{r.exploring}</span></td>
                   <td><strong>{r.total}</strong></td>
                   <td style={{ minWidth: 140 }}>

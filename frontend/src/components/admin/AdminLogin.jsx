@@ -42,7 +42,7 @@ export default function AdminLogin({ onSuccess }) {
             </div>
           </div>
           {formState.errors.root && (
-            <p style={{ color: "#ef4444", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{formState.errors.root.message}</p>
+            <p style={{ color: "var(--danger)", fontSize: "var(--font-size-sm)", marginBottom: "0.75rem" }}>{formState.errors.root.message}</p>
           )}
           <button className="btn btn-primary" style={{ width: "100%" }} type="submit" disabled={formState.isSubmitting}>
             {formState.isSubmitting ? "Signing in..." : "Login"}
