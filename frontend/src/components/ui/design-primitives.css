@@ -169,11 +169,7 @@
 
 .ds-status-warning {
   color: var(--ink-900);
-  background: #ffe8c9;
-}
-
-[data-theme="dark"] .ds-status-warning {
-  background: #47371b;
+  background: var(--warning-soft);
 }
 
 .ds-state {

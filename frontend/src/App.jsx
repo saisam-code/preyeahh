@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
 import { getEducationMaturityStage } from "./constants/educationStages.js";
@@ -49,7 +49,7 @@ import InstitutionPortal from "./pages/InstitutionPortal.jsx";
 import Admin from "./pages/Admin.jsx";
 import GovernmentCareers from "./pages/GovernmentCareers.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import DesignSystem from "./pages/DesignSystem.jsx";
+const DesignSystem = import.meta.env.DEV ? lazy(() => import("./pages/DesignSystem.jsx")) : null;
 
 export default function App() {
   const [searchParams] = useSearchParams();
@@ -74,7 +74,7 @@ export default function App() {
     const root = document.documentElement;
     root.dataset.theme = localStorage.getItem("pp_theme") || "system";
     const storedOverride = localStorage.getItem("pp_stage_override") || "auto";
-    const educationStage = user?.preferences?.educationStage;
+    const educationStage = user?.preferences?.educationStage || location.state?.onboardingData?.educationStage;
     const isAdmin = location.pathname === "/admin";
     const roleRoute = /^\/(dashboard|discovery|government-careers|planner|roadmaps|roadmap|quiz|profile|resources|roles|beyond|chat|guide-panel|parent-portal|institution-portal)(\/|$)/.test(location.pathname);
     const stage = storedOverride !== "auto"
@@ -92,7 +92,7 @@ export default function App() {
       root.dataset.rolePreview = roleRoute ? user?.role || "student" : "";
       root.style.removeProperty("--role-tint");
     }
-  }, [appearanceRevision, location.pathname, user]);
+  }, [appearanceRevision, location.pathname, location.state, user]);
 
   // Redirect legacy /?login=1 queries directly to canonical /login
   if (searchParams.get("login") === "1") {
@@ -103,7 +103,7 @@ export default function App() {
 
   return (
     <Routes>
-      {import.meta.env.DEV && <Route path="/dev/design-system" element={<DesignSystem />} />}
+      {import.meta.env.DEV && <Route path="/dev/design-system" element={<Suspense fallback={null}><DesignSystem /></Suspense>} />}
       {/* ── EXPERIENCE A: PUBLIC WEBSITE (Home, About & Government Careers) ── */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />

@@ -5,14 +5,15 @@
   --paper: #f8f9f4;
   --surface: #ffffff;
   --line: #dfe5dc;
-  --primary: #039429;
-  --primary-hover: #027322;
+  --primary: #176b3a;
+  --primary-hover: #12582f;
   --primary-soft: #e3f4ea;
   --brand: #039429;
   --accent: #ff8a3d;
   --info: #2f6fed;
   --success: #2e7d32;
   --warning: #e8a317;
+  --warning-soft: #ffe8c9;
   --danger: #d64545;
   --on-primary: #ffffff;
   --overlay-color: rgb(18 38 30 / 60%);
@@ -89,6 +90,7 @@
   --info: #79a2ff;
   --success: #76cf7c;
   --warning: #f4c252;
+  --warning-soft: #47371b;
   --danger: #ff7777;
   --on-primary: #0e1712;
   --overlay-color: rgb(0 0 0 / 65%);
@@ -135,6 +137,7 @@
     --info: #79a2ff;
     --success: #76cf7c;
     --warning: #f4c252;
+    --warning-soft: #47371b;
     --danger: #ff7777;
     --on-primary: #0e1712;
     --overlay-color: rgb(0 0 0 / 65%);
