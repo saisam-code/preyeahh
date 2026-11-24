@@ -26,7 +26,7 @@ export const addStudentProject = asyncHandler(async (req, res) => {
     projectType: projectType || "Personal",
     liveUrl,
     repoUrl,
-    isPublicOnPortfolio: isPublicOnPortfolio !== false,
+    isPublicOnPortfolio: isPublicOnPortfolio === true,
   });
 
   res.status(201).json(new ApiResponse(201, project, "Project added to portfolio"));
@@ -57,7 +57,7 @@ export const listOpportunities = asyncHandler(async (req, res) => {
 });
 
 export const createOpportunity = asyncHandler(async (req, res) => {
-  const { title, category, description, eligibility, educationLevels, deadline, url, location } = req.body;
+  const { title, category, description, eligibility, educationLevels, deadline, officialUrl, url, location } = req.body;
   if (!title || !category || !description) {
     throw ApiError.badRequest("Title, category and description are required");
   }
@@ -69,7 +69,7 @@ export const createOpportunity = asyncHandler(async (req, res) => {
     eligibility: eligibility || "",
     educationLevels: Array.isArray(educationLevels) ? educationLevels : ["Undergraduate"],
     deadline: deadline ? new Date(deadline) : null,
-    url: url || "",
+    officialUrl: officialUrl || url || "",
     location: location || "All India",
     isActive: true,
   });
@@ -78,7 +78,12 @@ export const createOpportunity = asyncHandler(async (req, res) => {
 });
 
 export const updateOpportunity = asyncHandler(async (req, res) => {
-  const opp = await Opportunity.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  const updates = { ...req.body };
+  if (updates.url && !updates.officialUrl) {
+    updates.officialUrl = updates.url;
+  }
+  delete updates.url;
+  const opp = await Opportunity.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
   if (!opp) throw ApiError.notFound("Opportunity not found");
   res.status(200).json(new ApiResponse(200, opp, "Opportunity updated successfully"));
 });
@@ -103,7 +108,10 @@ export const requestInstitutionAssociation = asyncHandler(async (req, res) => {
     throw ApiError.badRequest("Institution code or association code is required");
   }
 
-  const query = associationCode ? { associationCode: associationCode.toUpperCase() } : { code: institutionCode.toUpperCase() };
+  const crypto = (await import("crypto")).default;
+  const query = associationCode
+    ? { associationCodeHash: crypto.createHash("sha256").update(associationCode.trim().toUpperCase()).digest("hex"), status: "APPROVED" }
+    : { code: institutionCode.trim().toUpperCase(), status: "APPROVED" };
   const inst = await Institution.findOne(query);
   if (!inst) throw ApiError.notFound("Institution not found with provided code");
 
@@ -117,9 +125,9 @@ export const requestInstitutionAssociation = asyncHandler(async (req, res) => {
     student: req.user.id,
     institution: inst._id,
     rollNumberOrStudentId: rollNumber || "",
-    status: associationCode ? "ACTIVE" : "PENDING",
+    status: "PENDING",
     source: associationCode ? "ASSOCIATION_CODE" : "STUDENT_REQUEST",
-    joinedAt: associationCode ? new Date() : null,
+    joinedAt: null,
   });
 
   res.status(201).json(new ApiResponse(201, membership, "Institution association submitted"));

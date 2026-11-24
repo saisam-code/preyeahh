@@ -22,12 +22,10 @@ import {
   getStudentPlan,
   addPlannerTask,
   togglePlannerTask,
-  reschedulePlannerTask,
   deletePlannerTask,
   generateAdaptiveSchedule,
   addCareerGoal,
   addExamDeadline,
-  submitPlannerReview,
 } from "../services/careerPlannerService.js";
 
 const CATEGORIES = [
@@ -62,7 +60,7 @@ export default function PersonalCareerPlanner() {
   const [taskCategory, setTaskCategory] = useState("Skill development");
   const [taskPriority, setTaskPriority] = useState("Medium");
   const [taskDate, setTaskDate] = useState(() => new Date().toISOString().split("T")[0]);
-  const [taskStart, setTaskStart] = useState("18:00");
+  const [taskStart] = useState("18:00");
   const [taskDuration, setTaskDuration] = useState(45);
 
   // New Goal modal

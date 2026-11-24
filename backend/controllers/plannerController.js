@@ -1,5 +1,6 @@
 import PersonalCareerPlan from "../models/PersonalCareerPlan.js";
 import Student from "../models/Student.js";
+import StudentGoal from "../models/StudentGoal.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -44,6 +45,14 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
   }
+
+  const canonicalGoals = await StudentGoal.find({ student: studentId, status: "ACTIVE" })
+    .sort({ type: 1, updatedAt: -1 })
+    .lean();
+  const primary = canonicalGoals.find((goal) => goal.type === "PRIMARY");
+  const alternative = canonicalGoals.find((goal) => goal.type === "ALTERNATIVE");
+  if (primary) plan.primaryCareer = primary.goalTitle;
+  if (alternative) plan.alternativeCareer = alternative.goalTitle;
 
   res.status(200).json(new ApiResponse(200, plan, "Personal Career Plan fetched"));
 });
@@ -188,6 +197,28 @@ export const addCareerGoal = asyncHandler(async (req, res) => {
   });
 
   await plan.save();
+
+  const canonicalType = {
+    Primary: "PRIMARY",
+    Alternative: "ALTERNATIVE",
+    Exploring: "EXPLORING",
+  }[goalType] || "EXPLORING";
+  const existing = await StudentGoal.findOne({
+    student: req.user.id,
+    goalTitle: title.trim(),
+    status: "ACTIVE",
+  });
+  if (existing) {
+    existing.type = canonicalType;
+    await existing.save();
+  } else {
+    await StudentGoal.create({
+      student: req.user.id,
+      goalTitle: title.trim(),
+      type: canonicalType,
+      status: "ACTIVE",
+    });
+  }
   res.status(201).json(new ApiResponse(201, plan.goals[plan.goals.length - 1], "Career goal added"));
 });
 

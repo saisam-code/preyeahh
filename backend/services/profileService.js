@@ -1,4 +1,5 @@
 import Student from "../models/Student.js";
+import StudentGoal from "../models/StudentGoal.js";
 import ApiError from "../utils/ApiError.js";
 import logger from "../utils/logger.js";
 import { jsonCompletion } from "./groqService.js";
@@ -25,6 +26,43 @@ function normalizeSkills(v) {
     out.push({ name, level });
   }
   return out.slice(0, 30);
+}
+
+async function syncCareerGoals(studentId, raw) {
+  const operations = [];
+
+  if (str(raw.primaryCareerGoal)) {
+    operations.push({
+      type: "PRIMARY",
+      goalTitle: str(raw.primaryCareerGoal),
+      status: "ACTIVE",
+    });
+  }
+  if (str(raw.alternativeCareerGoal)) {
+    operations.push({
+      type: "ALTERNATIVE",
+      goalTitle: str(raw.alternativeCareerGoal),
+      status: "ACTIVE",
+    });
+  }
+  for (const goalTitle of strList(raw.exploringCareers)) {
+    operations.push({ type: "EXPLORING", goalTitle, status: "ACTIVE" });
+  }
+
+  for (const goal of operations) {
+    const existing = await StudentGoal.findOne({
+      student: studentId,
+      goalTitle: goal.goalTitle,
+      status: "ACTIVE",
+    });
+    if (existing) {
+      existing.type = goal.type;
+      existing.status = "ACTIVE";
+      await existing.save();
+    } else {
+      await StudentGoal.create({ student: studentId, ...goal });
+    }
+  }
 }
 
 /**
@@ -90,6 +128,7 @@ export async function extractAndSaveProfile(studentId, branch, text) {
 
   const student = await Student.findByIdAndUpdate(studentId, { $set }, { new: true }).select(PUBLIC_SELECT);
   if (!student) throw ApiError.notFound("Student not found");
+  await syncCareerGoals(studentId, extracted);
   return { preferences: student.preferences, extracted };
 }
 
@@ -110,6 +149,7 @@ export async function updatePreferences(studentId, body) {
 
   const student = await Student.findByIdAndUpdate(studentId, { $set }, { new: true }).select(PUBLIC_SELECT);
   if (!student) throw ApiError.notFound("Student not found");
+  await syncCareerGoals(studentId, body);
   return student.preferences;
 }
 

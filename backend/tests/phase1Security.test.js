@@ -11,6 +11,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import escapeRegex from "../utils/escapeRegex.js";
 
 // ── 1.8 escapeRegex ──────────────────────────────────────────────────────────
@@ -50,6 +51,21 @@ test("profileService: toSetFields must not propagate share flags from AI data", 
   // Since toSetFields is not exported, we verify the module loads without error (import smoke test).
   assert.ok(mod, "profileService module loads without error");
   // The actual share-flag guard is a code-level fix, verified by code review + this smoke test.
+});
+
+test("Student project API defaults public sharing to false", async () => {
+  const source = await readFile(new URL("../controllers/studentDevelopmentController.js", import.meta.url), "utf8");
+  assert.match(
+    source,
+    /isPublicOnPortfolio:\s*isPublicOnPortfolio\s*===\s*true/,
+    "The create controller must require explicit public consent"
+  );
+});
+
+test("Institution association requests remain pending for approval", async () => {
+  const source = await readFile(new URL("../controllers/studentDevelopmentController.js", import.meta.url), "utf8");
+  assert.match(source, /status:\s*"PENDING"/, "Association requests must not bypass institution approval");
+  assert.doesNotMatch(source, /status:\s*associationCode\s*\?\s*"ACTIVE"/, "Association codes must not directly activate membership");
 });
 
 // ── 1.6 Privacy defaults (model schema level) ────────────────────────────────
