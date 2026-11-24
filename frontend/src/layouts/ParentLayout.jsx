@@ -63,7 +63,7 @@ export default function ParentLayout() {
             </span>
           </Link>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div className="parent-desktop-nav" style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <NavLink
               to="/parent-portal"
               className={({ isActive }) => (isActive ? "active" : "")}
@@ -102,8 +102,8 @@ export default function ParentLayout() {
                 }}
               >
                 <FaCircleUser style={{ fontSize: "var(--font-size-md)", color: "var(--success)" }} />
-                <span>{user?.name?.split(" ")[0] || "Parent"}</span>
-                <FaChevronDown style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
+                <span className="role-user-name">{user?.name?.split(" ")[0] || "Parent"}</span>
+                <FaChevronDown className="role-user-chevron" style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
               </button>
 
               {menuOpen && (

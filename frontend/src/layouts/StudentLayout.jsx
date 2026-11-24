@@ -137,8 +137,8 @@ export default function StudentLayout() {
                 }}
               >
                 <FaCircleUser style={{ fontSize: "var(--font-size-md)", color: "var(--primary)" }} />
-                <span>{user?.name?.split(" ")[0] || "Student"}</span>
-                <FaChevronDown style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
+                <span className="role-user-name">{user?.name?.split(" ")[0] || "Student"}</span>
+                <FaChevronDown className="role-user-chevron" style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
               </button>
 
               {menuOpen && (
@@ -239,7 +239,7 @@ export default function StudentLayout() {
 
             {/* Mobile Menu Button */}
             <button
-              className="nav-hamburger"
+              className="nav-hamburger student-menu-toggle"
               onClick={() => setDrawerOpen(true)}
               style={{ background: "transparent", border: "none", fontSize: "var(--font-size-lg)", color: "var(--text)", cursor: "pointer" }}
             >
@@ -297,7 +297,7 @@ export default function StudentLayout() {
       )}
 
       {/* Main Student Workspace Outlet */}
-      <main style={{ flex: 1, paddingBottom: "3rem" }}>
+      <main className="student-workspace-main" style={{ flex: 1, paddingBottom: "3rem" }}>
         <Outlet />
       </main>
 

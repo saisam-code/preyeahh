@@ -8,6 +8,7 @@ export default function AuthLayout() {
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
       {/* ── MINIMAL AUTH HEADER ── */}
       <header
+        className="auth-layout-header"
         style={{
           height: 64,
           background: "var(--surface)",
@@ -29,6 +30,7 @@ export default function AuthLayout() {
           <ThemeToggle />
           <Link
             to="/"
+            className="auth-back-home"
             style={{
               color: "var(--text-muted)",
               textDecoration: "none",
@@ -39,7 +41,7 @@ export default function AuthLayout() {
               fontWeight: 600,
             }}
           >
-            <FaArrowLeft style={{ fontSize: "var(--font-size-xs)" }} /> Back to Home
+            <FaArrowLeft style={{ fontSize: "var(--font-size-xs)" }} /> <span>Back to Home</span>
           </Link>
         </div>
       </header>

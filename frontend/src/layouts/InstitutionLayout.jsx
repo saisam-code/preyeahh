@@ -62,7 +62,7 @@ export default function InstitutionLayout() {
             </span>
           </Link>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div className="institution-desktop-nav" style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
             <NavLink
               to="/institution-portal"
               className={({ isActive }) => (isActive ? "active" : "")}
@@ -101,8 +101,8 @@ export default function InstitutionLayout() {
                 }}
               >
                 <FaCircleUser style={{ fontSize: "var(--font-size-md)", color: "var(--warning-text)" }} />
-                <span>{user?.name?.split(" ")[0] || "Placement Cell"}</span>
-                <FaChevronDown style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
+                <span className="role-user-name">{user?.name?.split(" ")[0] || "Placement Cell"}</span>
+                <FaChevronDown className="role-user-chevron" style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
               </button>
 
               {menuOpen && (

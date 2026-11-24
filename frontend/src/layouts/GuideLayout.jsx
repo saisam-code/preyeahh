@@ -21,6 +21,7 @@ export default function GuideLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function GuideLayout() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <nav
-        className="role-header-tint"
+        className="role-header-tint guide-header"
         style={{
           height: 70,
           background: "var(--surface)",
@@ -86,7 +87,7 @@ export default function GuideLayout() {
             </span>
           </Link>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          <div className="guide-desktop-nav" style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             <NavLink
               to="/guide-panel"
               className={({ isActive }) => (isActive ? "active" : "")}
@@ -209,8 +210,8 @@ export default function GuideLayout() {
                 }}
               >
                 <FaCircleUser style={{ fontSize: "var(--font-size-md)", color: "var(--info-text)" }} />
-                <span>{user?.name?.split(" ")[0] || "Guide"}</span>
-                <FaChevronDown style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
+                <span className="role-user-name">{user?.name?.split(" ")[0] || "Guide"}</span>
+                <FaChevronDown className="role-user-chevron" style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
               </button>
 
               {menuOpen && (
@@ -251,9 +252,45 @@ export default function GuideLayout() {
                 </div>
               )}
             </div>
+
+            <button
+              className="nav-hamburger guide-menu-toggle"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open guide navigation"
+            >
+              <FaBars />
+            </button>
           </div>
         </div>
       </nav>
+
+      {drawerOpen && (
+        <div className="role-mobile-drawer">
+          <button
+            className="role-mobile-drawer-backdrop"
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close guide navigation"
+          />
+          <aside className="role-mobile-drawer-panel" aria-label="Guide navigation">
+            <div className="role-mobile-drawer-heading">
+              <strong>Guide Navigation</strong>
+              <button onClick={() => setDrawerOpen(false)} aria-label="Close guide navigation">
+                <FaXmark />
+              </button>
+            </div>
+            <NavLink to="/guide-panel" onClick={() => setDrawerOpen(false)}><FaCompass /> Branch Guidance</NavLink>
+            <NavLink to="/chat" onClick={() => setDrawerOpen(false)}>
+              <FaCommentDots /> Mentorship Inbox{unreadCount > 0 ? ` (${unreadCount})` : ""}
+            </NavLink>
+            <NavLink to="/roles" onClick={() => setDrawerOpen(false)}><FaCompass /> Roles Catalog</NavLink>
+            <NavLink to="/resources" onClick={() => setDrawerOpen(false)}><FaBookmark /> Resources</NavLink>
+            <NavLink to="/beyond" onClick={() => setDrawerOpen(false)}><FaBullseye /> Beyond Degree</NavLink>
+            <button className="role-mobile-signout" onClick={handleSignOut}>
+              <FaRightFromBracket /> Sign Out
+            </button>
+          </aside>
+        </div>
+      )}
 
       <main style={{ flex: 1 }}>
         <Outlet />

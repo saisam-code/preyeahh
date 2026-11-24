@@ -19,6 +19,7 @@ export default function PublicLayout() {
     <div className="public-layout-root" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* ── PUBLIC HEADER: ONLY HOME, ABOUT, LOGIN, GET STARTED ── */}
       <header
+        className="public-header"
         style={{
           height: 70,
           background: "var(--surface)",
@@ -94,6 +95,7 @@ export default function PublicLayout() {
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             <ThemeToggle />
 
+            <div className="public-header-auth-actions" style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
             {isAuthenticated ? (
               <Link
                 to={workspacePath}
@@ -137,6 +139,7 @@ export default function PublicLayout() {
                 </Link>
               </>
             )}
+            </div>
 
             {/* Mobile Hamburger */}
             <button
@@ -169,7 +172,7 @@ export default function PublicLayout() {
             style={{
               position: "relative",
               marginLeft: "auto",
-              width: "280px",
+              width: "min(280px, 100vw)",
               height: "100%",
               background: "var(--surface)",
               padding: "1.5rem",
@@ -263,7 +266,7 @@ export default function PublicLayout() {
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
+          <div className="public-footer-links" style={{ display: "flex", alignItems: "center", gap: "1.5rem", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
             <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>Home</Link>
             <Link to="/about" style={{ textDecoration: "none", color: "inherit" }}>About</Link>
             <Link to="/government-careers" style={{ textDecoration: "none", color: "inherit" }}>Govt Careers</Link>

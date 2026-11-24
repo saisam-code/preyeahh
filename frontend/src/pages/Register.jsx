@@ -9,6 +9,7 @@ import CareerCategoryDetails from "../components/wheel/CareerCategoryDetails.jsx
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 import { STUDENT_EDUCATION_STAGES } from "../constants/educationStages.js";
 import toast from "react-hot-toast";
+import "./Register.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 const BRANCH_OPTIONS = ["CSE", "ECE", "EEE", "MECH", "CIVIL", "IT", "AI&DS", "OTHER"];
@@ -171,10 +172,10 @@ export default function Register() {
   };
 
   return (
-    <main style={{ minHeight: "calc(100vh - 70px)", background: "var(--bg)", padding: "2rem 1.5rem" }}>
-      <div style={{ maxWidth: 1300, margin: "0 auto" }}>
+    <main className="register-page">
+      <div className="register-content">
         {/* Title Bar */}
-        <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <div className="register-title">
           <span style={{ fontSize: "var(--font-size-sm)", textTransform: "uppercase", letterSpacing: 1.2, color: "var(--primary)", fontWeight: 700 }}>
             DISCOVER · CHOOSE · REGISTER
           </span>
@@ -251,14 +252,14 @@ export default function Register() {
         )}
 
         {/* ── MAIN WORKSPACE GRID: WHEEL + DETAILS + REGISTRATION ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "2rem", alignItems: "start" }}>
+        <div className="register-workspace">
           {/* 1. RADIAL CAREER WHEEL */}
           <div
+            className="register-wheel-card"
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
               borderRadius: "var(--radius)",
-              padding: "2rem 1.5rem",
               boxShadow: "0 8px 30px color-mix(in srgb, var(--ink-900) 3%, transparent)",
               display: "flex",
               flexDirection: "column",
@@ -269,7 +270,7 @@ export default function Register() {
               <div style={{ fontSize: "var(--font-size-xs)", textTransform: "uppercase", letterSpacing: 1, color: "var(--primary)", fontWeight: 700 }}>
                 Interactive Radial Wheel
               </div>
-              <h3 style={{ margin: "0.15rem 0", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>Click Any Domain Segment</h3>
+              <h3 style={{ margin: "0.15rem 0", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>Tap or Click a Domain Segment</h3>
             </div>
 
             <CareerWheel
@@ -287,7 +288,7 @@ export default function Register() {
           </div>
 
           {/* 2. SELECTED CATEGORY DETAILS */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+          <div className="register-details">
             <CareerCategoryDetails
               domain={selectedDomain}
               selectedCareerNames={selectedCareerRoles}
@@ -299,11 +300,11 @@ export default function Register() {
 
           {/* 3. INTEGRATED REGISTRATION FORM */}
           <div
+            className="register-form-card"
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
               borderRadius: "var(--radius)",
-              padding: "2rem",
               boxShadow: "0 8px 30px color-mix(in srgb, var(--ink-900) 3%, transparent)",
             }}
           >
@@ -488,7 +489,7 @@ export default function Register() {
                 {/* Parent Specific Fields */}
                 {role === "parent" && (
                   <>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                    <div className="register-field-grid">
                       <div className="form-group">
                         <label htmlFor="reg-phone">Phone Number</label>
                         <input id="reg-phone" type="tel" placeholder="+91 9876543210" {...register("phone")} />
@@ -517,7 +518,7 @@ export default function Register() {
                 {/* Institution Specific Fields */}
                 {role === "institution" && (
                   <>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                    <div className="register-field-grid">
                       <div className="form-group">
                         <label htmlFor="reg-code">College Code</label>
                         <input id="reg-code" type="text" placeholder="e.g. NBKR" {...register("code", { required: "Code is required" })} />
@@ -535,7 +536,7 @@ export default function Register() {
                         </select>
                       </div>
                     </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                    <div className="register-field-grid">
                       <div className="form-group">
                         <label htmlFor="reg-contactPerson">Contact Person</label>
                         <input id="reg-contactPerson" type="text" placeholder="Placement Officer" {...register("contactPerson")} />
@@ -549,7 +550,7 @@ export default function Register() {
                 )}
 
                 {/* Password Fields */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+                <div className="register-field-grid">
                   <div className="form-group">
                     <label htmlFor="reg-pass">Password</label>
                     <div className="pass-wrap">
