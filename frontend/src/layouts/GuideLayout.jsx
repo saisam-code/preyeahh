@@ -51,6 +51,7 @@ export default function GuideLayout() {
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       <nav
+        className="role-header-tint"
         style={{
           height: 70,
           background: "var(--surface)",

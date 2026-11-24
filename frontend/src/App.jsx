@@ -49,6 +49,7 @@ import InstitutionPortal from "./pages/InstitutionPortal.jsx";
 import Admin from "./pages/Admin.jsx";
 import GovernmentCareers from "./pages/GovernmentCareers.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
+import DesignSystem from "./pages/DesignSystem.jsx";
 
 export default function App() {
   const [searchParams] = useSearchParams();
@@ -94,6 +95,7 @@ export default function App() {
 
   return (
     <Routes>
+      {import.meta.env.DEV && <Route path="/dev/design-system" element={<DesignSystem />} />}
       {/* ── EXPERIENCE A: PUBLIC WEBSITE (Home, About & Government Careers) ── */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />

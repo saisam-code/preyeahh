@@ -33,6 +33,7 @@ export default function ThemeToggle() {
     const next = isDark ? "light" : "dark";
     localStorage.setItem(STORAGE_KEY, next);
     setTheme(next);
+    window.dispatchEvent(new Event("preyeah-theme-change"));
     setPop(true);
     setTimeout(() => setPop(false), 400);
   };

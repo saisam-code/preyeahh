@@ -50,6 +50,7 @@ export default function StudentLayout() {
     <div className="student-layout-root" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {/* ── STUDENT APP NAVBAR ── */}
       <nav
+        className="role-header-tint"
         style={{
           height: 70,
           background: "var(--surface)",

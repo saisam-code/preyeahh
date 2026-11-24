@@ -1,5 +1,6 @@
 import { useState } from "react";
 import preyeahhLogo from "../../assets/preyeahh-logo.png";
+import { wheelLabelPresentation } from "../../utils/contrast.js";
 
 /**
  * Helper to calculate SVG arc path between two angles
@@ -60,6 +61,8 @@ export default function CareerWheel({
           const isSelected = selectedDomain?.id === d.id;
           const isMultiSelected = multiSelectedIds.includes(d.id);
           const isHovered = hoveredDomain?.id === d.id;
+          const labelPresentation = wheelLabelPresentation(d.color);
+          const Icon = d.icon;
 
           // Mid angle for text label and icon placement
           const midAngle = startAngle + segmentAngle / 2;
@@ -94,11 +97,23 @@ export default function CareerWheel({
                 d={pathData}
                 fill={d.color}
                 opacity={isSelected ? 1 : isHovered ? 0.92 : isMultiSelected ? 0.85 : 0.72}
-                stroke={isSelected ? "#ffffff" : isMultiSelected ? "#ffffff" : "var(--surface)"}
-                strokeWidth={isSelected ? 3.5 : isMultiSelected ? 2.5 : 1.5}
+                stroke={isSelected || isMultiSelected ? "var(--ink-900)" : "var(--surface)"}
+                strokeWidth={isSelected ? 4 : isMultiSelected ? 3 : 1.5}
                 filter={isSelected || isHovered ? "url(#segment-glow)" : "none"}
                 style={{ transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)" }}
               />
+
+              {labelPresentation.background !== "transparent" && (
+                <rect
+                  x={textX - 44}
+                  y={textY - 10}
+                  width="88"
+                  height="20"
+                  rx="6"
+                  fill={labelPresentation.background}
+                  transform={`rotate(${midAngle > 90 && midAngle < 270 ? midAngle + 180 : midAngle}, ${textX}, ${textY})`}
+                />
+              )}
 
               {/* Segment Label */}
               <text
@@ -106,18 +121,26 @@ export default function CareerWheel({
                 y={textY}
                 textAnchor="middle"
                 dominantBaseline="central"
-                fill="#ffffff"
+                fill={labelPresentation.foreground}
                 style={{
                   fontSize: "10.5px",
                   fontWeight: 700,
                   fontFamily: "var(--font-heading)",
                   pointerEvents: "none",
-                  textShadow: "0 1px 3px rgba(0,0,0,0.7)",
                 }}
                 transform={`rotate(${midAngle > 90 && midAngle < 270 ? midAngle + 180 : midAngle}, ${textX}, ${textY})`}
               >
-                {d.shortTitle}
+                {isMultiSelected ? `✓ ${d.shortTitle}` : d.shortTitle}
               </text>
+              <foreignObject
+                x={center + (innerRadius + 18) * Math.cos(midRad) - 9}
+                y={center + (innerRadius + 18) * Math.sin(midRad) - 9}
+                width="18"
+                height="18"
+                style={{ pointerEvents: "none", color: labelPresentation.foreground }}
+              >
+                <Icon aria-hidden="true" focusable="false" style={{ width: 18, height: 18 }} />
+              </foreignObject>
             </g>
           );
         })}

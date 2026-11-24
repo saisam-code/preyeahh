@@ -15,6 +15,8 @@ export default function Profile() {
   const [text, setText] = useState("");
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [themePreference, setThemePreference] = useState(() => localStorage.getItem("pp_theme") || "system");
+  const [stageOverride, setStageOverride] = useState(() => localStorage.getItem("pp_stage_override") || "auto");
   const [form, setForm] = useState({
     targetRole: prefs.targetRole || "",
     experienceLevel: prefs.experienceLevel || "beginner",
@@ -82,6 +84,19 @@ export default function Profile() {
   };
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const updateThemePreference = (event) => {
+    const preference = event.target.value;
+    localStorage.setItem("pp_theme", preference);
+    document.documentElement.dataset.theme = preference;
+    setThemePreference(preference);
+    window.dispatchEvent(new Event("preyeahh-theme-change"));
+  };
+  const updateStageOverride = (event) => {
+    const override = event.target.value;
+    localStorage.setItem("pp_stage_override", override);
+    setStageOverride(override);
+    window.dispatchEvent(new Event("preyeahh-appearance-change"));
+  };
 
   return (
     <div>
@@ -91,6 +106,29 @@ export default function Profile() {
       </div>
 
       <div className="section" style={{ maxWidth: 760 }}>
+        <div style={card}>
+          <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "1rem" }}>Appearance</div>
+          <div className="form-group">
+            <label htmlFor="appearance-theme">Color theme</label>
+            <select id="appearance-theme" style={selectStyle} value={themePreference} onChange={updateThemePreference}>
+              <option value="system">Match device</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="appearance-stage">Adaptive maturity appearance</label>
+            <select id="appearance-stage" style={selectStyle} value={stageOverride} onChange={updateStageOverride}>
+              <option value="auto">Match my education stage</option>
+              <option value="junior">Junior (Classes 5-7)</option>
+              <option value="teen">Teen (Classes 8-10)</option>
+              <option value="senior">Senior (Classes 11-12)</option>
+              <option value="pro">Professional (Diploma / UG / PG)</option>
+              <option value="research">Research / Working / Independent</option>
+            </select>
+          </div>
+        </div>
+
         {prefs.aiProfileSummary && (
           <div style={{ ...card, borderLeft: "3px solid var(--primary)" }}>
             <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "0.4rem" }}>AI summary of you</div>

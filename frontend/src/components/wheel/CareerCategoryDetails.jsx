@@ -1,4 +1,5 @@
 import { FaCheck, FaPlus, FaArrowRight } from "react-icons/fa6";
+import { wheelLabelPresentation } from "../../utils/contrast.js";
 
 export default function CareerCategoryDetails({
   domain,
@@ -18,6 +19,7 @@ export default function CareerCategoryDetails({
   }
 
   const Icon = domain.icon;
+  const labelPresentation = wheelLabelPresentation(domain.color);
 
   return (
     <div
@@ -26,7 +28,7 @@ export default function CareerCategoryDetails({
         border: `2px solid ${domain.color}`,
         borderRadius: "1.25rem",
         padding: "1.75rem",
-        boxShadow: `0 12px 32px ${domain.bgLight}`,
+        boxShadow: "var(--shadow-float)",
         transition: "all 0.3s ease",
       }}
     >
@@ -39,7 +41,7 @@ export default function CareerCategoryDetails({
               height: 44,
               borderRadius: "0.75rem",
               background: domain.color,
-              color: "#ffffff",
+              color: labelPresentation.foreground,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -52,7 +54,7 @@ export default function CareerCategoryDetails({
             <h2 style={{ fontSize: "1.35rem", fontWeight: 800, margin: 0, color: "var(--text)" }}>
               {domain.title}
             </h2>
-            <span style={{ fontSize: "0.8rem", color: domain.color, fontWeight: 700 }}>
+            <span style={{ fontSize: "0.8rem", color: "var(--ink-600)", fontWeight: 700 }}>
               {domain.careers.length} Core Career Paths
             </span>
           </div>
@@ -63,8 +65,8 @@ export default function CareerCategoryDetails({
           onClick={() => onAddDomainInterest(domain.title)}
           className="btn btn-sm"
           style={{
-            background: isDomainSelected ? domain.color : "transparent",
-            color: isDomainSelected ? "#fff" : domain.color,
+            background: isDomainSelected ? "var(--ink-900)" : "transparent",
+            color: isDomainSelected ? "var(--surface)" : "var(--ink-900)",
             border: `1.5px solid ${domain.color}`,
             borderRadius: "2rem",
             fontSize: "0.78rem",
@@ -100,7 +102,7 @@ export default function CareerCategoryDetails({
                   border: isPicked ? `2px solid ${domain.color}` : "1px solid var(--border)",
                   borderRadius: "0.75rem",
                   padding: "0.75rem 1rem",
-                  background: isPicked ? domain.bgLight : "var(--surface)",
+                  background: isPicked ? `color-mix(in srgb, ${domain.color} 12%, var(--surface))` : "var(--surface)",
                   cursor: "pointer",
                   display: "flex",
                   justifyContent: "space-between",
@@ -109,7 +111,7 @@ export default function CareerCategoryDetails({
                 }}
               >
                 <div>
-                  <strong style={{ fontSize: "0.95rem", color: isPicked ? domain.color : "var(--text)" }}>
+                  <strong style={{ fontSize: "0.95rem", color: "var(--text)" }}>
                     {career.name}
                   </strong>
                   <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
