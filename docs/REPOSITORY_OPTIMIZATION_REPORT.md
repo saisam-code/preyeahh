@@ -47,5 +47,6 @@ Final validation was run after the service-file removals: all 44 backend tests p
 - Previously persisted government-career records were left untouched and may still need review against official sources. No verified ingestion or admin review workflow was added.
 - Removing the frontend compatibility files may affect consumers outside this repository.
 - The frontend build still reports a large-chunk warning.
-- The package-lock update reported two critical npm audit advisories. They were not investigated as part of this cleanup.
-- No commit was created.
+- The initial dependency audit findings were addressed in a follow-up hardening pass. Current npm audits report zero vulnerabilities across the root, backend, and frontend packages.
+- The backend now requires Node.js 20.x or 22+ to use patched Nodemailer and minimatch releases.
+- Cleanup, security, encoding, and dependency-hardening changes are recorded in separate commits.

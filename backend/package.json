@@ -5,7 +5,7 @@
   "type": "module",
   "main": "server.js",
   "engines": {
-    "node": ">=18"
+    "node": "^20.0.0 || >=22.0.0"
   },
   "scripts": {
     "start": "node server.js",
@@ -33,7 +33,10 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.5",
     "morgan": "^1.10.0",
-    "nodemailer": "^9.0.3"
+    "nodemailer": "^10.6.1"
+  },
+  "overrides": {
+    "minimatch": "^11.0.9"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

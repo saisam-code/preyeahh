@@ -35,7 +35,7 @@ Stack: React + Vite (frontend), Node + Express (backend), MongoDB, Groq (AI). Ho
 
 ## Run locally
 
-Needs Node.js, a MongoDB URI, and Google OAuth credentials (only for Google login).
+Needs Node.js 20.x or 22+, a MongoDB URI, and Google OAuth credentials (only for Google login).
 
 ```bash
 git clone <repository-url>
