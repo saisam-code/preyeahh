@@ -47,7 +47,7 @@ export default function CareerWheel({
       >
         <defs>
           <filter id="segment-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feDropShadow dx="0" dy="4" stdDeviation="6" floodOpacity="0.3" floodColor="#000" />
+            <feDropShadow dx="0" dy="4" stdDeviation="6" floodOpacity="0.3" floodColor="var(--ink-900)" />
           </filter>
         </defs>
 
@@ -123,7 +123,7 @@ export default function CareerWheel({
                 dominantBaseline="central"
                 fill={labelPresentation.foreground}
                 style={{
-                  fontSize: "10.5px",
+                  fontSize: "var(--font-size-xs)",
                   fontWeight: 700,
                   fontFamily: "var(--font-heading)",
                   pointerEvents: "none",
@@ -153,7 +153,7 @@ export default function CareerWheel({
           fill="var(--surface)"
           stroke="var(--border)"
           strokeWidth="2"
-          filter="drop-shadow(0 4px 12px rgba(0,0,0,0.1))"
+          filter="drop-shadow(0 4px 12px var(--overlay-color))"
         />
 
         <circle

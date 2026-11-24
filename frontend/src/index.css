@@ -33,6 +33,11 @@ body {
   border-top: 3px solid var(--role-tint);
 }
 
+.admin-page-title {
+  border-left: 0.1875rem solid var(--warning);
+  padding-left: 0.75rem;
+}
+
 .public-layout-root h1,
 .public-layout-root h2,
 .public-layout-root h3 {

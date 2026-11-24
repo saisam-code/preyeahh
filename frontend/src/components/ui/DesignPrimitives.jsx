@@ -72,8 +72,14 @@ export function LoadingState() {
   return <div className="ds-state" role="status"><FaSpinner className="ds-spinner" aria-hidden="true" /><span>Loading your information</span></div>;
 }
 
-export function ErrorState() {
-  return <div className="ds-state ds-error-state" role="alert"><FaCircleExclamation aria-hidden="true" /><strong>Could not load this section</strong><Button variant="secondary" type="button">Try again</Button></div>;
+export function ErrorState({ onRetry }) {
+  return (
+    <div className="ds-state ds-error-state" role="alert">
+      <FaCircleExclamation aria-hidden="true" />
+      <strong>Could not load this section</strong>
+      {onRetry && <Button variant="secondary" type="button" onClick={onRetry}>Try again</Button>}
+    </div>
+  );
 }
 
 export function ModalDemo() {

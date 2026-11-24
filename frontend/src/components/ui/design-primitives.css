@@ -12,11 +12,7 @@
   padding: 0.65rem 1rem;
   cursor: pointer;
   background: var(--primary);
-  color: #fff;
-}
-
-[data-theme="dark"] .ds-button {
-  color: #0e1712;
+  color: var(--on-primary);
 }
 
 .ds-button-secondary {
@@ -98,7 +94,7 @@
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgb(18 38 30 / 60%);
+  background: var(--overlay-color);
 }
 
 .ds-modal {

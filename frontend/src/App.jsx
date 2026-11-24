@@ -59,12 +59,20 @@ export default function App() {
 
   useEffect(() => {
     const refreshAppearance = () => setAppearanceRevision((revision) => revision + 1);
+    const refreshTheme = () => {
+      document.documentElement.dataset.theme = localStorage.getItem("pp_theme") || "system";
+    };
     window.addEventListener("preyeahh-appearance-change", refreshAppearance);
-    return () => window.removeEventListener("preyeahh-appearance-change", refreshAppearance);
+    window.addEventListener("preyeahh-theme-change", refreshTheme);
+    return () => {
+      window.removeEventListener("preyeahh-appearance-change", refreshAppearance);
+      window.removeEventListener("preyeahh-theme-change", refreshTheme);
+    };
   }, []);
 
   useEffect(() => {
     const root = document.documentElement;
+    root.dataset.theme = localStorage.getItem("pp_theme") || "system";
     const storedOverride = localStorage.getItem("pp_stage_override") || "auto";
     const educationStage = user?.preferences?.educationStage;
     const isAdmin = location.pathname === "/admin";
