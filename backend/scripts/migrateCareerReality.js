@@ -3,6 +3,9 @@
  *
  * Converts legacy string salaryRange and demand/competition fields in Role documents
  * to the { value, kind, source } realityFactSchema format.
+ * Both correctly encoded and legacy double-encoded rupee defaults are recognized so
+ * existing fake salary data is cleared instead of being presented as verified reality.
+ * The legacy spellings are intentional compatibility data, not user-facing copy.
  *
  * Usage:
  *   node scripts/migrateCareerReality.js [--dry-run]
