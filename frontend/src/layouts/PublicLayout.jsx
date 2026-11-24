@@ -35,7 +35,7 @@ export default function PublicLayout() {
           {/* Logo */}
           <Link to="/" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
             <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 34, height: 34, objectFit: "contain" }} />
-            <span style={{ fontSize: "1.3rem", fontWeight: 800, color: "var(--text)" }}>
+            <span style={{ fontSize: "var(--font-size-lg)", fontWeight: 800, color: "var(--text)" }}>
               Pre<span style={{ color: "var(--primary)" }}>yeahh</span>
             </span>
           </Link>
@@ -48,11 +48,11 @@ export default function PublicLayout() {
               className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
               style={({ isActive }) => ({
                 textDecoration: "none",
-                fontSize: "0.95rem",
+                fontSize: "var(--font-size-md)",
                 fontWeight: 600,
                 color: isActive ? "var(--primary)" : "var(--text)",
                 padding: "0.35rem 0.6rem",
-                borderRadius: "0.4rem",
+                borderRadius: "var(--radius)",
               })}
             >
               Home
@@ -62,11 +62,11 @@ export default function PublicLayout() {
               className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
               style={({ isActive }) => ({
                 textDecoration: "none",
-                fontSize: "0.95rem",
+                fontSize: "var(--font-size-md)",
                 fontWeight: 600,
                 color: isActive ? "var(--primary)" : "var(--text)",
                 padding: "0.35rem 0.6rem",
-                borderRadius: "0.4rem",
+                borderRadius: "var(--radius)",
               })}
             >
               About
@@ -76,11 +76,11 @@ export default function PublicLayout() {
               className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
               style={({ isActive }) => ({
                 textDecoration: "none",
-                fontSize: "0.95rem",
+                fontSize: "var(--font-size-md)",
                 fontWeight: 600,
                 color: isActive ? "var(--primary)" : "var(--text)",
                 padding: "0.35rem 0.6rem",
-                borderRadius: "0.4rem",
+                borderRadius: "var(--radius)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.3rem",
@@ -100,7 +100,7 @@ export default function PublicLayout() {
                 className="btn btn-primary btn-sm"
                 style={{
                   padding: "0.45rem 1.15rem",
-                  fontSize: "0.88rem",
+                  fontSize: "var(--font-size-sm)",
                   fontWeight: 600,
                   textDecoration: "none",
                   display: "inline-flex",
@@ -108,14 +108,14 @@ export default function PublicLayout() {
                   gap: "0.35rem",
                 }}
               >
-                Open Workspace <FaArrowRight style={{ fontSize: "0.75rem" }} />
+                Open Workspace <FaArrowRight style={{ fontSize: "var(--font-size-xs)" }} />
               </Link>
             ) : (
               <>
                 <Link
                   to="/login"
                   className="btn btn-outline btn-sm"
-                  style={{ padding: "0.45rem 1rem", fontSize: "0.88rem", fontWeight: 600, textDecoration: "none" }}
+                  style={{ padding: "0.45rem 1rem", fontSize: "var(--font-size-sm)", fontWeight: 600, textDecoration: "none" }}
                 >
                   Login
                 </Link>
@@ -125,7 +125,7 @@ export default function PublicLayout() {
                   className="btn btn-primary btn-sm"
                   style={{
                     padding: "0.45rem 1.15rem",
-                    fontSize: "0.88rem",
+                    fontSize: "var(--font-size-sm)",
                     fontWeight: 600,
                     textDecoration: "none",
                     display: "inline-flex",
@@ -133,7 +133,7 @@ export default function PublicLayout() {
                     gap: "0.35rem",
                   }}
                 >
-                  Get Started <FaArrowRight style={{ fontSize: "0.75rem" }} />
+                  Get Started <FaArrowRight style={{ fontSize: "var(--font-size-xs)" }} />
                 </Link>
               </>
             )}
@@ -146,7 +146,7 @@ export default function PublicLayout() {
               style={{
                 background: "transparent",
                 border: "none",
-                fontSize: "1.2rem",
+                fontSize: "var(--font-size-lg)",
                 color: "var(--text)",
                 cursor: "pointer",
                 padding: "0.4rem",
@@ -162,7 +162,7 @@ export default function PublicLayout() {
       {drawerOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex" }}>
           <div
-            style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }}
+            style={{ position: "absolute", inset: 0, background: "color-mix(in srgb, var(--ink-900) 50%, transparent)" }}
             onClick={() => setDrawerOpen(false)}
           />
           <div
@@ -176,14 +176,14 @@ export default function PublicLayout() {
               display: "flex",
               flexDirection: "column",
               gap: "1rem",
-              boxShadow: "-4px 0 24px rgba(0,0,0,0.15)",
+              boxShadow: "-4px 0 24px color-mix(in srgb, var(--ink-900) 15%, transparent)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-              <strong style={{ fontSize: "1.1rem" }}>Menu</strong>
+              <strong style={{ fontSize: "var(--font-size-md)" }}>Menu</strong>
               <button
                 onClick={() => setDrawerOpen(false)}
-                style={{ background: "transparent", border: "none", fontSize: "1.2rem", cursor: "pointer" }}
+                style={{ background: "transparent", border: "none", fontSize: "var(--font-size-lg)", cursor: "pointer" }}
               >
                 <FaXmark />
               </button>
@@ -193,21 +193,21 @@ export default function PublicLayout() {
               to="/"
               end
               onClick={() => setDrawerOpen(false)}
-              style={{ textDecoration: "none", color: "var(--text)", fontSize: "1rem", fontWeight: 600, padding: "0.5rem 0" }}
+              style={{ textDecoration: "none", color: "var(--text)", fontSize: "var(--font-size-md)", fontWeight: 600, padding: "0.5rem 0" }}
             >
               Home
             </NavLink>
             <NavLink
               to="/about"
               onClick={() => setDrawerOpen(false)}
-              style={{ textDecoration: "none", color: "var(--text)", fontSize: "1rem", fontWeight: 600, padding: "0.5rem 0" }}
+              style={{ textDecoration: "none", color: "var(--text)", fontSize: "var(--font-size-md)", fontWeight: 600, padding: "0.5rem 0" }}
             >
               About
             </NavLink>
             <NavLink
               to="/government-careers"
               onClick={() => setDrawerOpen(false)}
-              style={{ textDecoration: "none", color: "var(--text)", fontSize: "1rem", fontWeight: 600, padding: "0.5rem 0" }}
+              style={{ textDecoration: "none", color: "var(--text)", fontSize: "var(--font-size-md)", fontWeight: 600, padding: "0.5rem 0" }}
             >
               Govt Careers
             </NavLink>
@@ -258,12 +258,12 @@ export default function PublicLayout() {
         <div style={{ maxWidth: 1240, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
             <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 28, height: 28, objectFit: "contain" }} />
-            <span style={{ fontWeight: 700, fontSize: "0.95rem" }}>
+            <span style={{ fontWeight: 700, fontSize: "var(--font-size-md)" }}>
               PREYEAHH · Career Intelligence &amp; Development Platform
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
             <Link to="/" style={{ textDecoration: "none", color: "inherit" }}>Home</Link>
             <Link to="/about" style={{ textDecoration: "none", color: "inherit" }}>About</Link>
             <Link to="/government-careers" style={{ textDecoration: "none", color: "inherit" }}>Govt Careers</Link>

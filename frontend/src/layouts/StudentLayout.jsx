@@ -67,16 +67,16 @@ export default function StudentLayout() {
           {/* Logo */}
           <Link to="/dashboard" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
             <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 34, height: 34, objectFit: "contain" }} />
-            <span style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", fontWeight: 800, color: "var(--text)" }}>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: "var(--font-size-lg)", fontWeight: 800, color: "var(--text)" }}>
               Pre<span style={{ color: "var(--primary)" }}>yeahh</span>
               <span
                 style={{
-                  fontSize: "0.7rem",
+                  fontSize: "var(--font-size-xs)",
                   marginLeft: "0.4rem",
                   background: "var(--primary-bg)",
                   color: "var(--primary)",
                   padding: "0.15rem 0.45rem",
-                  borderRadius: "1rem",
+                  borderRadius: "var(--radius)",
                   fontWeight: 700,
                   verticalAlign: "middle",
                 }}
@@ -98,16 +98,16 @@ export default function StudentLayout() {
                   alignItems: "center",
                   gap: "0.4rem",
                   padding: "0.45rem 0.8rem",
-                  borderRadius: "0.5rem",
-                  fontSize: "0.88rem",
+                  borderRadius: "var(--radius)",
+                  fontSize: "var(--font-size-sm)",
                   fontWeight: 600,
                   textDecoration: "none",
-                  color: isActive ? "#fff" : "var(--text)",
+                  color: isActive ? "var(--white)" : "var(--text)",
                   background: isActive ? "var(--primary)" : "transparent",
                   transition: "all 0.15s ease",
                 })}
               >
-                <item.icon style={{ fontSize: "0.85rem" }} />
+                <item.icon style={{ fontSize: "var(--font-size-sm)" }} />
                 <span>{item.label}</span>
               </NavLink>
             ))}
@@ -128,17 +128,17 @@ export default function StudentLayout() {
                   gap: "0.5rem",
                   background: "var(--surface-mid)",
                   border: "1px solid var(--border)",
-                  borderRadius: "2rem",
+                  borderRadius: "var(--radius)",
                   padding: "0.35rem 0.8rem",
                   cursor: "pointer",
                   color: "var(--text)",
-                  fontSize: "0.85rem",
+                  fontSize: "var(--font-size-sm)",
                   fontWeight: 600,
                 }}
               >
-                <FaCircleUser style={{ fontSize: "1.1rem", color: "var(--primary)" }} />
+                <FaCircleUser style={{ fontSize: "var(--font-size-md)", color: "var(--primary)" }} />
                 <span>{user?.name?.split(" ")[0] || "Student"}</span>
-                <FaChevronDown style={{ fontSize: "0.7rem", opacity: 0.7 }} />
+                <FaChevronDown style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
               </button>
 
               {menuOpen && (
@@ -150,8 +150,8 @@ export default function StudentLayout() {
                     width: 190,
                     background: "var(--surface)",
                     border: "1px solid var(--border)",
-                    borderRadius: "0.75rem",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                    borderRadius: "var(--radius)",
+                    boxShadow: "0 10px 30px color-mix(in srgb, var(--ink-900) 10%, transparent)",
                     padding: "0.5rem",
                     zIndex: 200,
                     display: "flex",
@@ -167,8 +167,8 @@ export default function StudentLayout() {
                       alignItems: "center",
                       gap: "0.5rem",
                       padding: "0.6rem 0.8rem",
-                      borderRadius: "0.4rem",
-                      fontSize: "0.85rem",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-sm)",
                       color: "var(--text)",
                       textDecoration: "none",
                       fontWeight: 600,
@@ -185,8 +185,8 @@ export default function StudentLayout() {
                       alignItems: "center",
                       gap: "0.5rem",
                       padding: "0.6rem 0.8rem",
-                      borderRadius: "0.4rem",
-                      fontSize: "0.85rem",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-sm)",
                       color: "var(--text)",
                       textDecoration: "none",
                       fontWeight: 600,
@@ -203,8 +203,8 @@ export default function StudentLayout() {
                       alignItems: "center",
                       gap: "0.5rem",
                       padding: "0.6rem 0.8rem",
-                      borderRadius: "0.4rem",
-                      fontSize: "0.85rem",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-sm)",
                       color: "var(--text)",
                       textDecoration: "none",
                       fontWeight: 600,
@@ -220,9 +220,9 @@ export default function StudentLayout() {
                       alignItems: "center",
                       gap: "0.5rem",
                       padding: "0.6rem 0.8rem",
-                      borderRadius: "0.4rem",
-                      fontSize: "0.85rem",
-                      color: "var(--error, #e11d48)",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-sm)",
+                      color: "var(--error, var(--danger))",
                       background: "transparent",
                       border: "none",
                       cursor: "pointer",
@@ -241,7 +241,7 @@ export default function StudentLayout() {
             <button
               className="nav-hamburger"
               onClick={() => setDrawerOpen(true)}
-              style={{ background: "transparent", border: "none", fontSize: "1.2rem", color: "var(--text)", cursor: "pointer" }}
+              style={{ background: "transparent", border: "none", fontSize: "var(--font-size-lg)", color: "var(--text)", cursor: "pointer" }}
             >
               <FaBars />
             </button>
@@ -252,7 +252,7 @@ export default function StudentLayout() {
       {/* Mobile Drawer */}
       {drawerOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex" }}>
-          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} onClick={() => setDrawerOpen(false)} />
+          <div style={{ position: "absolute", inset: 0, background: "color-mix(in srgb, var(--ink-900) 50%, transparent)" }} onClick={() => setDrawerOpen(false)} />
           <div
             style={{
               position: "relative",
@@ -267,8 +267,8 @@ export default function StudentLayout() {
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-              <strong style={{ fontSize: "1.1rem" }}>Student Navigation</strong>
-              <button onClick={() => setDrawerOpen(false)} style={{ background: "transparent", border: "none", fontSize: "1.2rem" }}>
+              <strong style={{ fontSize: "var(--font-size-md)" }}>Student Navigation</strong>
+              <button onClick={() => setDrawerOpen(false)} style={{ background: "transparent", border: "none", fontSize: "var(--font-size-lg)" }}>
                 <FaXmark />
               </button>
             </div>
@@ -289,7 +289,7 @@ export default function StudentLayout() {
             <Link to="/profile" onClick={() => setDrawerOpen(false)} style={{ textDecoration: "none", color: "var(--text)", padding: "0.4rem 0" }}>
               My Profile
             </Link>
-            <button onClick={handleSignOut} className="btn btn-outline" style={{ marginTop: "1rem", color: "var(--error, #e11d48)" }}>
+            <button onClick={handleSignOut} className="btn btn-outline" style={{ marginTop: "1rem", color: "var(--error, var(--danger))" }}>
               Sign Out
             </button>
           </div>

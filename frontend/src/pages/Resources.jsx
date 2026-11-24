@@ -6,8 +6,8 @@ import { useBranch } from "../context/BranchContext.jsx";
 import ContributorLabel from "../components/ContributorLabel.jsx";
 
 const TYPE_COLORS = {
-  video: "#ef4444", article: "#3b82f6", documentation: "#8b5cf6", course: "#f97316",
-  book: "#14b8a6", practice: "#22c55e", github: "#6b7280",
+  video: "var(--danger)", article: "var(--info)", documentation: "var(--info)", course: "var(--warning)",
+  book: "var(--secondary)", practice: "var(--success)", github: "var(--text-muted)",
 };
 
 export default function Resources() {
@@ -67,7 +67,7 @@ export default function Resources() {
           <select
             value={difficulty}
             onChange={(e) => { setDifficulty(e.target.value); setPage(1); }}
-            style={{ padding: "0.5rem 1rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "999px", color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600 }}
+            style={{ padding: "0.5rem 1rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--r-full)", color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600 }}
           >
             <option value="all">All Levels</option>
             <option value="beginner">Beginner</option>
@@ -83,29 +83,29 @@ export default function Resources() {
           <div className="empty"><p>No resources found — try a different search</p></div>
         ) : (
           <>
-            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "1rem" }}>{meta.total} resources found</div>
+            <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginBottom: "1rem" }}>{meta.total} resources found</div>
             <div className="roles-grid">
               {resources.map((r) => {
                 const color = TYPE_COLORS[r.type] || "var(--primary)";
                 return (
                   <div key={r.id} className="role-card" onClick={() => handleOpen(r)} style={{ cursor: r.url ? "pointer" : "default" }}>
                     <div className="role-card-top">
-                      <span style={{ padding: "0.22rem 0.65rem", borderRadius: 999, background: `${color}18`, color, fontSize: "0.65rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{r.type}</span>
-                      <span style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{r.difficulty}</span>
+                      <span style={{ padding: "0.22rem 0.65rem", borderRadius: "var(--r-full)", background: `${color}18`, color, fontSize: "var(--font-size-icon)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>{r.type}</span>
+                      <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>{r.difficulty}</span>
                     </div>
                     <div className="role-card-body">
-                      <h3 style={{ fontSize: "1rem" }}>{r.title}</h3>
-                      <p style={{ fontSize: "0.825rem" }}>{r.description}</p>
+                      <h3 style={{ fontSize: "var(--font-size-md)" }}>{r.title}</h3>
+                      <p style={{ fontSize: "var(--font-size-sm)" }}>{r.description}</p>
                       <ContributorLabel item={r} />
                       {r.provider && (
-                        <div style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                        <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
                           {r.provider}{r.estimatedDuration > 0 && ` · ${r.estimatedDuration} min`}
                         </div>
                       )}
                       {r.tags?.length > 0 && (
                         <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
                           {r.tags.slice(0, 4).map((tag) => (
-                            <span key={tag} style={{ fontSize: "0.68rem", padding: "0.15rem 0.5rem", background: "var(--surface-high)", borderRadius: 999, color: "var(--text-muted)" }}>{tag}</span>
+                            <span key={tag} style={{ fontSize: "var(--font-size-icon)", padding: "0.15rem 0.5rem", background: "var(--surface-high)", borderRadius: "var(--r-full)", color: "var(--text-muted)" }}>{tag}</span>
                           ))}
                         </div>
                       )}
@@ -118,7 +118,7 @@ export default function Resources() {
             {meta.totalPages > 1 && (
               <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "1rem", marginTop: "2rem" }}>
                 <button className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</button>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Page {meta.page} of {meta.totalPages}</span>
+                <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>Page {meta.page} of {meta.totalPages}</span>
                 <button className="btn btn-outline btn-sm" disabled={page >= meta.totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
               </div>
             )}

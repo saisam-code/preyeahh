@@ -29,11 +29,11 @@ export default function ResendVerification() {
 
   return (
     <div style={{ minHeight: "calc(100vh - 70px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem", background: "var(--bg)" }}>
-      <div style={{ maxWidth: 460, width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1.25rem", padding: "2.5rem 2rem", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+      <div style={{ maxWidth: 460, width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "2.5rem 2rem", boxShadow: "0 10px 30px color-mix(in srgb, var(--ink-900) 3%, transparent)" }}>
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 44, height: 44, objectFit: "contain", margin: "0 auto 0.75rem" }} />
-          <h2 style={{ fontSize: "1.4rem", fontWeight: 800, margin: "0 0 0.25rem" }}>Resend Verification Link</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", margin: 0 }}>
+          <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 800, margin: "0 0 0.25rem" }}>Resend Verification Link</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: 0 }}>
             Enter your email to receive a new 24-hour verification link.
           </p>
         </div>
@@ -46,8 +46,8 @@ export default function ResendVerification() {
             style={{
               flex: 1,
               padding: "0.45rem",
-              borderRadius: "0.5rem",
-              fontSize: "0.82rem",
+              borderRadius: "var(--radius)",
+              fontSize: "var(--font-size-sm)",
               fontWeight: role === "student" ? 700 : 500,
               border: "1px solid",
               borderColor: role === "student" ? "var(--primary)" : "var(--border)",
@@ -64,8 +64,8 @@ export default function ResendVerification() {
             style={{
               flex: 1,
               padding: "0.45rem",
-              borderRadius: "0.5rem",
-              fontSize: "0.82rem",
+              borderRadius: "var(--radius)",
+              fontSize: "var(--font-size-sm)",
               fontWeight: role === "guide" ? 700 : 500,
               border: "1px solid",
               borderColor: role === "guide" ? "var(--primary)" : "var(--border)",
@@ -79,10 +79,10 @@ export default function ResendVerification() {
         </div>
 
         {dispatched ? (
-          <div style={{ background: "var(--primary-bg)", border: "1px solid var(--primary)", borderRadius: "0.75rem", padding: "1.5rem", textAlign: "center" }}>
-            <FaCheck style={{ fontSize: "2rem", color: "var(--primary)", marginBottom: "0.75rem" }} />
-            <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.15rem" }}>Verification Email Sent</h3>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", lineHeight: 1.5, margin: "0 0 1.25rem" }}>
+          <div style={{ background: "var(--primary-bg)", border: "1px solid var(--primary)", borderRadius: "var(--radius)", padding: "1.5rem", textAlign: "center" }}>
+            <FaCheck style={{ fontSize: "var(--font-size-2xl)", color: "var(--primary)", marginBottom: "0.75rem" }} />
+            <h3 style={{ margin: "0 0 0.5rem", fontSize: "var(--font-size-lg)" }}>Verification Email Sent</h3>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", lineHeight: 1.5, margin: "0 0 1.25rem" }}>
               Please check your inbox and click the verification link within 24 hours.
             </p>
             <Link to={`/login?role=${role}`} className="btn btn-outline btn-sm">
@@ -92,20 +92,20 @@ export default function ResendVerification() {
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} noValidate style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             <div>
-              <label style={{ fontSize: "0.85rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>
+              <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>
                 {role === "guide" ? "Official NBKRIST Email" : "Registered Email"}
               </label>
               <input
                 type="email"
                 placeholder={role === "guide" ? "faculty@nbkrist.org" : "student@gmail.com"}
                 {...register("email", { required: "Email is required" })}
-                style={{ width: "100%", padding: "0.65rem 0.8rem", borderRadius: "0.5rem", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
+                style={{ width: "100%", padding: "0.65rem 0.8rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
               />
-              {errors.email && <small style={{ color: "var(--error)", fontSize: "0.78rem" }}>{errors.email.message}</small>}
+              {errors.email && <small style={{ color: "var(--error)", fontSize: "var(--font-size-xs)" }}>{errors.email.message}</small>}
             </div>
 
             {errors.root && (
-              <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid var(--error)", borderRadius: "0.5rem", padding: "0.6rem", color: "var(--error)", fontSize: "0.82rem" }}>
+              <div style={{ background: "color-mix(in srgb, var(--danger) 10%, transparent)", border: "1px solid var(--error)", borderRadius: "var(--radius)", padding: "0.6rem", color: "var(--error)", fontSize: "var(--font-size-sm)" }}>
                 {errors.root.message}
               </div>
             )}
@@ -120,7 +120,7 @@ export default function ResendVerification() {
             </button>
 
             <div style={{ textAlign: "center", marginTop: "0.5rem" }}>
-              <Link to={`/login?role=${role}`} style={{ fontSize: "0.85rem", color: "var(--text-muted)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              <Link to={`/login?role=${role}`} style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
                 <FaArrowLeft /> Back to Login
               </Link>
             </div>

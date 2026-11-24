@@ -44,16 +44,16 @@ export default function ParentLayout() {
         <div style={{ maxWidth: 1200, width: "100%", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Link to="/parent-portal" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
             <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 34, height: 34, objectFit: "contain" }} />
-            <span style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", fontWeight: 800, color: "var(--text)" }}>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: "var(--font-size-lg)", fontWeight: 800, color: "var(--text)" }}>
               Pre<span style={{ color: "var(--primary)" }}>yeahh</span>
               <span
                 style={{
-                  fontSize: "0.7rem",
+                  fontSize: "var(--font-size-xs)",
                   marginLeft: "0.4rem",
-                  background: "rgba(16,185,129,0.1)",
-                  color: "#10b981",
+                  background: "color-mix(in srgb, var(--success) 10%, transparent)",
+                  color: "var(--success)",
                   padding: "0.15rem 0.45rem",
-                  borderRadius: "1rem",
+                  borderRadius: "var(--radius)",
                   fontWeight: 700,
                   verticalAlign: "middle",
                 }}
@@ -68,7 +68,7 @@ export default function ParentLayout() {
               to="/parent-portal"
               className={({ isActive }) => (isActive ? "active" : "")}
               style={{
-                fontSize: "0.9rem",
+                fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 color: "var(--text)",
                 textDecoration: "none",
@@ -93,17 +93,17 @@ export default function ParentLayout() {
                   gap: "0.5rem",
                   background: "var(--surface-mid)",
                   border: "1px solid var(--border)",
-                  borderRadius: "2rem",
+                  borderRadius: "var(--radius)",
                   padding: "0.35rem 0.8rem",
                   cursor: "pointer",
                   color: "var(--text)",
-                  fontSize: "0.85rem",
+                  fontSize: "var(--font-size-sm)",
                   fontWeight: 600,
                 }}
               >
-                <FaCircleUser style={{ fontSize: "1.1rem", color: "#10b981" }} />
+                <FaCircleUser style={{ fontSize: "var(--font-size-md)", color: "var(--success)" }} />
                 <span>{user?.name?.split(" ")[0] || "Parent"}</span>
-                <FaChevronDown style={{ fontSize: "0.7rem", opacity: 0.7 }} />
+                <FaChevronDown style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
               </button>
 
               {menuOpen && (
@@ -115,8 +115,8 @@ export default function ParentLayout() {
                     width: 170,
                     background: "var(--surface)",
                     border: "1px solid var(--border)",
-                    borderRadius: "0.75rem",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                    borderRadius: "var(--radius)",
+                    boxShadow: "0 10px 30px color-mix(in srgb, var(--ink-900) 10%, transparent)",
                     padding: "0.5rem",
                     zIndex: 200,
                   }}
@@ -128,9 +128,9 @@ export default function ParentLayout() {
                       alignItems: "center",
                       gap: "0.5rem",
                       padding: "0.6rem 0.8rem",
-                      borderRadius: "0.4rem",
-                      fontSize: "0.85rem",
-                      color: "var(--error, #e11d48)",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-sm)",
+                      color: "var(--error, var(--danger))",
                       background: "transparent",
                       border: "none",
                       cursor: "pointer",

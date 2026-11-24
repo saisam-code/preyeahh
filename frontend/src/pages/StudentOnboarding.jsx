@@ -269,16 +269,16 @@ export default function StudentOnboarding() {
     <div style={{ maxWidth: 750, margin: "2rem auto", padding: "1.5rem" }}>
       {/* Progress Bar */}
       <div style={{ marginBottom: "2rem" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
           <span>STEP {step} OF {totalSteps}</span>
           <span>{Math.round((step / totalSteps) * 100)}% COMPLETE</span>
         </div>
-        <div style={{ width: "100%", height: 6, background: "var(--border)", borderRadius: 3, overflow: "hidden" }}>
+        <div style={{ width: "100%", height: 6, background: "var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
           <div style={{ width: `${(step / totalSteps) * 100}%`, height: "100%", background: "var(--primary)", transition: "width 0.3s ease" }} />
         </div>
       </div>
 
-      <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "2rem" }}>
+      <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "2rem" }}>
         {/* Step 1: Education Stage */}
         {step === 1 && (
           <div>
@@ -293,7 +293,7 @@ export default function StudentOnboarding() {
                   type="button"
                   className={`tab ${stage === s ? "active" : ""}`}
                   onClick={() => setStage(s)}
-                  style={{ padding: "0.85rem", textAlign: "left", borderRadius: "0.6rem" }}
+                  style={{ padding: "0.85rem", textAlign: "left", borderRadius: "var(--radius)" }}
                 >
                   {s}
                 </button>
@@ -409,9 +409,9 @@ export default function StudentOnboarding() {
                     onClick={() => toggleInterest(item)}
                     style={{
                       padding: "0.6rem 1rem",
-                      borderRadius: "2rem",
+                      borderRadius: "var(--radius)",
                       border: active ? "1.5px solid var(--primary)" : "1px solid var(--border)",
-                      background: active ? "var(--primary-bg, rgba(26,86,219,0.08))" : "var(--card-bg)",
+                      background: active ? "var(--primary-bg, color-mix(in srgb, var(--info) 8%, transparent))" : "var(--card-bg)",
                       color: active ? "var(--primary)" : "inherit",
                       cursor: "pointer",
                       fontWeight: active ? 600 : 400,
@@ -460,7 +460,7 @@ export default function StudentOnboarding() {
                 value={primaryGoal}
                 onChange={(e) => setPrimaryGoal(e.target.value)}
                 placeholder="e.g. Software Engineer, Filmmaker, Architect..."
-                style={{ width: "100%", padding: "0.6rem 0.85rem", borderRadius: "0.5rem", border: "1px solid var(--border)" }}
+                style={{ width: "100%", padding: "0.6rem 0.85rem", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}
               />
             </div>
 
@@ -471,7 +471,7 @@ export default function StudentOnboarding() {
                 value={alternativeGoal}
                 onChange={(e) => setAlternativeGoal(e.target.value)}
                 placeholder="e.g. UX Designer, Data Analyst, Photographer..."
-                style={{ width: "100%", padding: "0.6rem 0.85rem", borderRadius: "0.5rem", border: "1px solid var(--border)" }}
+                style={{ width: "100%", padding: "0.6rem 0.85rem", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}
               />
             </div>
           </div>
@@ -494,9 +494,9 @@ export default function StudentOnboarding() {
                     onClick={() => toggleSkill(skill)}
                     style={{
                       padding: "0.6rem 1rem",
-                      borderRadius: "2rem",
+                      borderRadius: "var(--radius)",
                       border: active ? "1.5px solid var(--primary)" : "1px solid var(--border)",
-                      background: active ? "var(--primary-bg, rgba(26,86,219,0.08))" : "var(--card-bg)",
+                      background: active ? "var(--primary-bg, color-mix(in srgb, var(--info) 8%, transparent))" : "var(--card-bg)",
                       color: active ? "var(--primary)" : "inherit",
                       cursor: "pointer",
                       fontWeight: active ? 600 : 400,
@@ -524,10 +524,10 @@ export default function StudentOnboarding() {
                   type="button"
                   className={`tab ${dailyHours === hrs ? "active" : ""}`}
                   onClick={() => setDailyHours(hrs)}
-                  style={{ flex: 1, padding: "1.25rem", textAlign: "center", borderRadius: "0.75rem" }}
+                  style={{ flex: 1, padding: "1.25rem", textAlign: "center", borderRadius: "var(--radius)" }}
                 >
-                  <div style={{ fontSize: "1.4rem", fontWeight: 700 }}>{hrs}h</div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>per day</div>
+                  <div style={{ fontSize: "var(--font-size-lg)", fontWeight: 700 }}>{hrs}h</div>
+                  <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>per day</div>
                 </button>
               ))}
             </div>
@@ -556,13 +556,13 @@ export default function StudentOnboarding() {
                 onClick={() => setConnectionType("independent")}
                 style={{
                   border: connectionType === "independent" ? "2px solid var(--primary)" : "1px solid var(--border)",
-                  borderRadius: "0.75rem",
+                  borderRadius: "var(--radius)",
                   padding: "1rem",
                   cursor: "pointer",
                 }}
               >
                 <strong>I am joining independently</strong>
-                <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                <p style={{ margin: "0.25rem 0 0", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                   Full access to career roadmaps, AI planner, mentor discovery, and public opportunities.
                 </p>
               </div>
@@ -571,13 +571,13 @@ export default function StudentOnboarding() {
                 onClick={() => setConnectionType("institution")}
                 style={{
                   border: connectionType === "institution" ? "2px solid var(--primary)" : "1px solid var(--border)",
-                  borderRadius: "0.75rem",
+                  borderRadius: "var(--radius)",
                   padding: "1rem",
                   cursor: "pointer",
                 }}
               >
                 <strong>My school / college is connected to Preyeahh</strong>
-                <p style={{ margin: "0.25rem 0 0", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+                <p style={{ margin: "0.25rem 0 0", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                   Enter your institution code to connect with your college's placement cell and clubs.
                 </p>
                 {connectionType === "institution" && (
@@ -586,7 +586,7 @@ export default function StudentOnboarding() {
                     value={institutionCode}
                     onChange={(e) => setInstitutionCode(e.target.value)}
                     placeholder="Enter Institution Association Code"
-                    style={{ marginTop: "0.75rem", width: "100%", padding: "0.5rem 0.75rem", borderRadius: "0.4rem", border: "1px solid var(--border)" }}
+                    style={{ marginTop: "0.75rem", width: "100%", padding: "0.5rem 0.75rem", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}
                   />
                 )}
               </div>

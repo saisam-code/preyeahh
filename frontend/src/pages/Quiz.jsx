@@ -8,7 +8,7 @@ import { useBranch } from "../context/BranchContext.jsx";
 
 const selectStyle = {
   padding: "0.5rem 1rem", background: "var(--surface)", border: "1.5px solid var(--border)",
-  borderRadius: "999px", color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600,
+  borderRadius: "var(--r-full)", color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600,
 };
 
 export default function Quiz() {
@@ -119,7 +119,7 @@ export default function Quiz() {
       </div>
 
       <div className="section">
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem", marginBottom: "2rem" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", marginBottom: "2rem" }}>
           <div style={{ fontWeight: 700, marginBottom: "0.75rem", color: "var(--text)" }}>Generate a new quiz</div>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             <input
@@ -160,13 +160,13 @@ export default function Quiz() {
                   style={{
                     background: active?.id === q.id ? "var(--primary-bg)" : "var(--surface)",
                     border: `1px solid ${active?.id === q.id ? "var(--primary)" : "var(--border)"}`,
-                    borderRadius: 10, padding: "0.875rem 1rem", cursor: "pointer",
+                    borderRadius: "var(--radius)", padding: "0.875rem 1rem", cursor: "pointer",
                     display: "flex", justifyContent: "space-between", alignItems: "center",
                   }}
                 >
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--text)" }}>{q.title}</div>
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                    <div style={{ fontWeight: 600, fontSize: "var(--font-size-sm)", color: "var(--text)" }}>{q.title}</div>
+                    <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.2rem" }}>
                       {q.difficulty} {q.isCompleted ? `· ${q.score}%` : "· Not taken"}
                     </div>
                   </div>
@@ -180,7 +180,7 @@ export default function Quiz() {
           </div>
 
           {active && (
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
               <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, color: "var(--text)", marginBottom: "0.5rem" }}>{active.title}</h2>
               <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem" }}>
                 <span className="type-badge badge-core">{active.difficulty}</span>
@@ -190,20 +190,20 @@ export default function Quiz() {
               {active.questions.map((q, qi) => {
                 const userAnswer = submitted ? active.userAnswers?.[qi] : answers[qi];
                 return (
-                  <div key={q.id} style={{ marginBottom: "1.5rem", padding: "1rem", background: "var(--surface-mid)", borderRadius: 10 }}>
+                  <div key={q.id} style={{ marginBottom: "1.5rem", padding: "1rem", background: "var(--surface-mid)", borderRadius: "var(--radius)" }}>
                     <div style={{ fontWeight: 600, marginBottom: "0.75rem", color: "var(--text)" }}>{qi + 1}. {q.questionText}</div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
                       {q.options.map((opt) => {
                         let bg = "var(--surface)";
                         let border = "var(--border)";
                         if (!submitted && answers[qi] === opt) { bg = "var(--primary-bg)"; border = "var(--primary)"; }
-                        if (submitted && opt === q.correctAnswer) { bg = "rgba(22,163,74,0.15)"; border = "var(--primary)"; }
+                        if (submitted && opt === q.correctAnswer) { bg = "color-mix(in srgb, var(--success) 15%, transparent)"; border = "var(--primary)"; }
                         if (submitted && opt === userAnswer && opt !== q.correctAnswer) { bg = "var(--error-bg)"; border = "var(--error)"; }
                         return (
                           <div
                             key={opt}
                             onClick={() => !submitted && setAnswers((prev) => prev.map((a, i) => (i === qi ? opt : a)))}
-                            style={{ padding: "0.6rem 1rem", background: bg, border: `1.5px solid ${border}`, borderRadius: 8, cursor: submitted ? "default" : "pointer", fontSize: "0.875rem", color: "var(--text)", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                            style={{ padding: "0.6rem 1rem", background: bg, border: `1.5px solid ${border}`, borderRadius: "var(--radius)", cursor: submitted ? "default" : "pointer", fontSize: "var(--font-size-sm)", color: "var(--text)", display: "flex", justifyContent: "space-between", alignItems: "center" }}
                           >
                             {opt}
                             {submitted && opt === q.correctAnswer && <FaCircleCheck style={{ color: "var(--primary)" }} />}
@@ -213,7 +213,7 @@ export default function Quiz() {
                       })}
                     </div>
                     {submitted && q.explanation && (
-                      <div style={{ marginTop: "0.75rem", padding: "0.75rem", background: "var(--primary-bg)", borderRadius: 8, fontSize: "0.8rem", color: "var(--text-dim)" }}>{q.explanation}</div>
+                      <div style={{ marginTop: "0.75rem", padding: "0.75rem", background: "var(--primary-bg)", borderRadius: "var(--radius)", fontSize: "var(--font-size-xs)", color: "var(--text-dim)" }}>{q.explanation}</div>
                     )}
                   </div>
                 );

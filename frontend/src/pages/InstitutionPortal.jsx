@@ -81,26 +81,26 @@ export default function InstitutionPortal() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "2rem", flexWrap: "wrap", gap: "1rem" }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
-            <span style={{ fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: 1.2, color: "var(--primary)", fontWeight: 700 }}>
+            <span style={{ fontSize: "var(--font-size-sm)", textTransform: "uppercase", letterSpacing: 1.2, color: "var(--primary)", fontWeight: 700 }}>
               Placement Cell &amp; Campus Ecosystem
             </span>
             <span
               style={{
-                fontSize: "0.72rem",
+                fontSize: "var(--font-size-xs)",
                 background: "var(--primary-bg)",
                 color: "var(--primary)",
                 padding: "0.15rem 0.5rem",
-                borderRadius: "1rem",
+                borderRadius: "var(--radius)",
                 fontWeight: 700,
               }}
             >
               NBKRIST CAMPUS PORTAL
             </span>
           </div>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2.2rem", fontWeight: 800, margin: "0.2rem 0 0.5rem" }}>
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "var(--font-size-3xl)", fontWeight: 800, margin: "0.2rem 0 0.5rem" }}>
             Institution Command Center
           </h1>
-          <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.95rem" }}>
+          <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "var(--font-size-md)" }}>
             Manage campus clubs, verified placement drives, student associations, and inter-departmental career milestones.
           </p>
         </div>
@@ -136,80 +136,80 @@ export default function InstitutionPortal() {
         <div style={{ display: "flex", flexDirection: "column", gap: "1.75rem" }}>
           {/* Metrics Grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "1.25rem" }}>
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "0.5rem" }}>
                 <FaUserGraduate /> Associated Students
               </div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, color: "var(--primary)" }}>{user?.studentCount ?? 0}</div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Verified enrolled students</div>
+              <div style={{ fontSize: "var(--font-size-2xl)", fontWeight: 800, color: "var(--primary)" }}>{user?.studentCount ?? 0}</div>
+              <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.2rem" }}>Verified enrolled students</div>
             </div>
 
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "0.5rem" }}>
                 <FaPeopleGroup /> Active Faculty Guides
               </div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, color: "#10b981" }}>{user?.guideCount ?? 0}</div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Verified Mentors Onboarded</div>
+              <div style={{ fontSize: "var(--font-size-2xl)", fontWeight: 800, color: "var(--success)" }}>{user?.guideCount ?? 0}</div>
+              <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.2rem" }}>Verified Mentors Onboarded</div>
             </div>
 
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "0.5rem" }}>
                 <FaCalendarDays /> Upcoming Campus Drives
               </div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, color: "#f59e0b" }}>{workshops.length}</div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Workshops &amp; Seminars</div>
+              <div style={{ fontSize: "var(--font-size-2xl)", fontWeight: 800, color: "var(--warning-text)" }}>{workshops.length}</div>
+              <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.2rem" }}>Workshops &amp; Seminars</div>
             </div>
 
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "0.5rem" }}>
                 <FaChartPie /> Pending Requests
               </div>
-              <div style={{ fontSize: "2rem", fontWeight: 800, color: pendingRequests.length > 0 ? "var(--error)" : "var(--primary)" }}>
+              <div style={{ fontSize: "var(--font-size-2xl)", fontWeight: 800, color: pendingRequests.length > 0 ? "var(--error)" : "var(--primary)" }}>
                 {pendingRequests.length}
               </div>
-              <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>Awaiting verification</div>
+              <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.2rem" }}>Awaiting verification</div>
             </div>
           </div>
 
           {/* Placement Readiness Cohort Breakdown */}
-          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1.25rem", padding: "1.75rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-            <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.2rem", fontWeight: 700 }}>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
+            <h3 style={{ margin: "0 0 0.5rem", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>
               2026 Graduating Cohort Placement &amp; Govt Exam Readiness
             </h3>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "1.5rem" }}>
               Composite metric derived from verified project repos, roadmap completion, and diagnostic coding scores.
             </p>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1.25rem" }}>
-              <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>Tier 1 / High CTC Readiness</span>
-                <strong style={{ fontSize: "1.4rem", color: "var(--primary)" }}>38.4% (479 Students)</strong>
-                <div style={{ height: 6, background: "rgba(0,0,0,0.08)", borderRadius: 3, marginTop: "0.5rem" }}>
-                  <div style={{ width: "38.4%", height: "100%", background: "var(--primary)", borderRadius: 3 }} />
+              <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+                <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", display: "block" }}>Tier 1 / High CTC Readiness</span>
+                <strong style={{ fontSize: "var(--font-size-lg)", color: "var(--primary)" }}>38.4% (479 Students)</strong>
+                <div style={{ height: 6, background: "color-mix(in srgb, var(--ink-900) 8%, transparent)", borderRadius: "var(--radius)", marginTop: "0.5rem" }}>
+                  <div style={{ width: "38.4%", height: "100%", background: "var(--primary)", borderRadius: "var(--radius)" }} />
                 </div>
               </div>
 
-              <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>Core Engineering &amp; PSU GATE Track</span>
-                <strong style={{ fontSize: "1.4rem", color: "#10b981" }}>42.1% (525 Students)</strong>
-                <div style={{ height: 6, background: "rgba(0,0,0,0.08)", borderRadius: 3, marginTop: "0.5rem" }}>
-                  <div style={{ width: "42.1%", height: "100%", background: "#10b981", borderRadius: 3 }} />
+              <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+                <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", display: "block" }}>Core Engineering &amp; PSU GATE Track</span>
+                <strong style={{ fontSize: "var(--font-size-lg)", color: "var(--success)" }}>42.1% (525 Students)</strong>
+                <div style={{ height: 6, background: "color-mix(in srgb, var(--ink-900) 8%, transparent)", borderRadius: "var(--radius)", marginTop: "0.5rem" }}>
+                  <div style={{ width: "42.1%", height: "100%", background: "var(--success)", borderRadius: "var(--radius)" }} />
                 </div>
               </div>
 
-              <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>Under Remedial / Skills Prep</span>
-                <strong style={{ fontSize: "1.4rem", color: "#f59e0b" }}>19.5% (244 Students)</strong>
-                <div style={{ height: 6, background: "rgba(0,0,0,0.08)", borderRadius: 3, marginTop: "0.5rem" }}>
-                  <div style={{ width: "19.5%", height: "100%", background: "#f59e0b", borderRadius: 3 }} />
+              <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+                <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", display: "block" }}>Under Remedial / Skills Prep</span>
+                <strong style={{ fontSize: "var(--font-size-lg)", color: "var(--warning-text)" }}>19.5% (244 Students)</strong>
+                <div style={{ height: 6, background: "color-mix(in srgb, var(--ink-900) 8%, transparent)", borderRadius: "var(--radius)", marginTop: "0.5rem" }}>
+                  <div style={{ width: "19.5%", height: "100%", background: "var(--warning)", borderRadius: "var(--radius)" }} />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Connected Institutions Directory */}
-          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1.25rem", padding: "1.75rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-            <h3 style={{ margin: "0 0 1rem", fontSize: "1.15rem", fontWeight: 700 }}>Partner Institutions &amp; Campus Cells</h3>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
+            <h3 style={{ margin: "0 0 1rem", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>Partner Institutions &amp; Campus Cells</h3>
             {loading ? (
               <p>Loading institutions directory...</p>
             ) : institutions.length === 0 ? (
@@ -217,12 +217,12 @@ export default function InstitutionPortal() {
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
                 {institutions.map((inst) => (
-                  <div key={inst._id} style={{ border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem", background: "var(--surface-mid)" }}>
+                  <div key={inst._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem", background: "var(--surface-mid)" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
                       <strong>{inst.name}</strong>
                       <span className="branch-tag">{inst.code}</span>
                     </div>
-                    <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                       {inst.category} • {inst.location || "Andhra Pradesh"}
                     </div>
                   </div>
@@ -235,17 +235,17 @@ export default function InstitutionPortal() {
 
       {/* ── STUDENT REQUESTS TAB ── */}
       {activeTab === "requests" && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1.25rem", padding: "1.75rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
-          <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.2rem", fontWeight: 700 }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
+          <h3 style={{ margin: "0 0 0.5rem", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>
             Pending Student Association Requests
           </h3>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", marginBottom: "1.5rem" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "1.5rem" }}>
             Students registered under your institutional affiliation code (<strong style={{ color: "var(--primary)" }}>NBKRIST-2026</strong>). Verify their credentials to grant access to campus placement drives.
           </p>
 
           {pendingRequests.length === 0 ? (
             <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--text-muted)" }}>
-              <p style={{ fontSize: "1.05rem", fontWeight: 600 }}>All pending requests processed! 🎉</p>
+              <p style={{ fontSize: "var(--font-size-md)", fontWeight: 600 }}>All pending requests processed! 🎉</p>
               <span>New student requests will appear here when they link their student profile.</span>
             </div>
           ) : (
@@ -255,7 +255,7 @@ export default function InstitutionPortal() {
                   key={req.id}
                   style={{
                     border: "1px solid var(--border)",
-                    borderRadius: "0.75rem",
+                    borderRadius: "var(--radius)",
                     padding: "1.25rem",
                     display: "flex",
                     justifyContent: "space-between",
@@ -266,11 +266,11 @@ export default function InstitutionPortal() {
                   }}
                 >
                   <div>
-                    <strong style={{ fontSize: "1.05rem", display: "block" }}>{req.studentName}</strong>
-                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                    <strong style={{ fontSize: "var(--font-size-md)", display: "block" }}>{req.studentName}</strong>
+                    <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginTop: "0.2rem" }}>
                       Roll No: <strong>{req.rollNo}</strong> • {req.branch} ({req.year}) • CGPA: <strong style={{ color: "var(--primary)" }}>{req.cgpa}</strong>
                     </div>
-                    <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>
+                    <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.15rem" }}>
                       Email: {req.email} • Requested on: {req.submittedDate}
                     </div>
                   </div>
@@ -299,11 +299,11 @@ export default function InstitutionPortal() {
 
       {/* ── WORKSHOPS & EVENTS TAB ── */}
       {activeTab === "events" && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1.25rem", padding: "1.75rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
             <div>
-              <h3 style={{ margin: "0 0 0.25rem", fontSize: "1.2rem", fontWeight: 700 }}>Campus Workshops &amp; Drives</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", margin: 0 }}>
+              <h3 style={{ margin: "0 0 0.25rem", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>Campus Workshops &amp; Drives</h3>
+              <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: 0 }}>
                 Scheduled internal recruitment bootcamps, technical symposia, and public sector coaching.
               </p>
             </div>
@@ -317,8 +317,8 @@ export default function InstitutionPortal() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {workshops.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--text-muted)", background: "var(--surface)", border: "1px dashed var(--border)", borderRadius: "0.75rem" }}>
-                <p style={{ fontSize: "1.05rem", fontWeight: 600 }}>No workshops or campus recruitment drives scheduled yet.</p>
+              <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--text-muted)", background: "var(--surface)", border: "1px dashed var(--border)", borderRadius: "var(--radius)" }}>
+                <p style={{ fontSize: "var(--font-size-md)", fontWeight: 600 }}>No workshops or campus recruitment drives scheduled yet.</p>
                 <span>Use the "Add Workshop" button above to schedule your first event.</span>
               </div>
             ) : (
@@ -327,7 +327,7 @@ export default function InstitutionPortal() {
                   key={w.id}
                   style={{
                     border: "1px solid var(--border)",
-                    borderRadius: "0.75rem",
+                    borderRadius: "var(--radius)",
                     padding: "1.25rem",
                     display: "flex",
                     justifyContent: "space-between",
@@ -338,14 +338,14 @@ export default function InstitutionPortal() {
                   }}
                 >
                   <div>
-                    <strong style={{ fontSize: "1rem", display: "block" }}>{w.title}</strong>
-                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+                    <strong style={{ fontSize: "var(--font-size-md)", display: "block" }}>{w.title}</strong>
+                    <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginTop: "0.2rem" }}>
                       Host: {w.host} • Date: <strong>{w.date}</strong> • Venue: {w.location}
                     </div>
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                    <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--primary)" }}>
+                    <span style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, color: "var(--primary)" }}>
                       {w.registeredCount} Students Enrolled
                     </span>
                     <span className="branch-tag">{w.status}</span>
@@ -359,11 +359,11 @@ export default function InstitutionPortal() {
 
       {/* ── NOTICES TAB ── */}
       {activeTab === "announcements" && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1.25rem", padding: "1.75rem", boxShadow: "0 4px 15px rgba(0,0,0,0.02)" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", boxShadow: "0 4px 15px color-mix(in srgb, var(--ink-900) 2%, transparent)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
             <div>
-              <h3 style={{ margin: "0 0 0.25rem", fontSize: "1.2rem", fontWeight: 700 }}>Campus Notices &amp; Bulletins</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.88rem", margin: 0 }}>
+              <h3 style={{ margin: "0 0 0.25rem", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>Campus Notices &amp; Bulletins</h3>
+              <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: 0 }}>
                 Internal notices pushed instantly to student notification feeds and parent portals.
               </p>
             </div>
@@ -377,25 +377,25 @@ export default function InstitutionPortal() {
 
           {/* Form to compose new notice */}
           {showNoticeForm && (
-            <form onSubmit={handleCreateNotice} style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.5rem", marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: 700 }}>Publish New Campus Bulletin</h4>
+            <form onSubmit={handleCreateNotice} style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", marginBottom: "1.5rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <h4 style={{ margin: 0, fontSize: "var(--font-size-md)", fontWeight: 700 }}>Publish New Campus Bulletin</h4>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem" }}>
                 <div>
-                  <label style={{ fontSize: "0.85rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Title</label>
+                  <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Title</label>
                   <input
                     type="text"
                     value={newNoticeTitle}
                     onChange={(e) => setNewNoticeTitle(e.target.value)}
                     placeholder="e.g. TCS Ninja & Digital National Qualifier Test Schedule"
-                    style={{ width: "100%", padding: "0.6rem", borderRadius: "0.4rem", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
+                    style={{ width: "100%", padding: "0.6rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
                   />
                 </div>
                 <div>
-                  <label style={{ fontSize: "0.85rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Target Department / Branch</label>
+                  <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Target Department / Branch</label>
                   <select
                     value={newNoticeBranch}
                     onChange={(e) => setNewNoticeBranch(e.target.value)}
-                    style={{ width: "100%", padding: "0.6rem", borderRadius: "0.4rem", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
+                    style={{ width: "100%", padding: "0.6rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
                   >
                     <option value="All Engineering Branches">All Engineering Branches</option>
                     <option value="CSE & IT Only">CSE &amp; IT Only</option>
@@ -405,13 +405,13 @@ export default function InstitutionPortal() {
                 </div>
               </div>
               <div>
-                <label style={{ fontSize: "0.85rem", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Notice Content</label>
+                <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, display: "block", marginBottom: "0.3rem" }}>Notice Content</label>
                 <textarea
                   rows={3}
                   value={newNoticeContent}
                   onChange={(e) => setNewNoticeContent(e.target.value)}
                   placeholder="Detail the deadline, eligibility criteria, and required registration forms..."
-                  style={{ width: "100%", padding: "0.6rem", borderRadius: "0.4rem", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
+                  style={{ width: "100%", padding: "0.6rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)" }}
                 />
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
@@ -425,8 +425,8 @@ export default function InstitutionPortal() {
           {/* Notices List */}
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {notices.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--text-muted)", background: "var(--surface)", border: "1px dashed var(--border)", borderRadius: "0.75rem" }}>
-                <p style={{ fontSize: "1.05rem", fontWeight: 600 }}>No campus bulletins published yet.</p>
+              <div style={{ textAlign: "center", padding: "2.5rem 1rem", color: "var(--text-muted)", background: "var(--surface)", border: "1px dashed var(--border)", borderRadius: "var(--radius)" }}>
+                <p style={{ fontSize: "var(--font-size-md)", fontWeight: 600 }}>No campus bulletins published yet.</p>
                 <span>Click "+ Compose Notice" above to broadcast notifications to students and parents.</span>
               </div>
             ) : (
@@ -439,18 +439,18 @@ export default function InstitutionPortal() {
                     borderTop: "1px solid var(--border)",
                     borderRight: "1px solid var(--border)",
                     borderBottom: "1px solid var(--border)",
-                    borderRadius: "0.5rem",
+                    borderRadius: "var(--radius)",
                     padding: "1.25rem",
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.3rem" }}>
-                    <strong style={{ fontSize: "1.05rem" }}>{n.title}</strong>
-                    <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>{n.date}</span>
+                    <strong style={{ fontSize: "var(--font-size-md)" }}>{n.title}</strong>
+                    <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>{n.date}</span>
                   </div>
-                  <div style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: 600, marginBottom: "0.5rem" }}>
+                  <div style={{ fontSize: "var(--font-size-xs)", color: "var(--primary)", fontWeight: 600, marginBottom: "0.5rem" }}>
                     Target: {n.branch}
                   </div>
-                  <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--text-muted)", lineHeight: 1.45 }}>
+                  <p style={{ margin: 0, fontSize: "var(--font-size-sm)", color: "var(--text-muted)", lineHeight: 1.45 }}>
                     {n.content}
                   </p>
                 </div>

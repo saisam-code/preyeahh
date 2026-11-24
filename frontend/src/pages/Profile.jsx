@@ -3,8 +3,8 @@ import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
 import { extractProfile, updatePreferences } from "../services/studentService.js";
 
-const card = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 12, padding: "1.5rem", marginBottom: "1.5rem" };
-const selectStyle = { width: "100%", padding: "0.55rem 0.75rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: 8, color: "var(--text)" };
+const card = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", marginBottom: "1.5rem" };
+const selectStyle = { width: "100%", padding: "0.55rem 0.75rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--radius)", color: "var(--text)" };
 const csv = (arr) => (arr || []).join(", ");
 const splitCsv = (s) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
@@ -132,18 +132,18 @@ export default function Profile() {
         {prefs.aiProfileSummary && (
           <div style={{ ...card, borderLeft: "3px solid var(--primary)" }}>
             <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "0.4rem" }}>AI summary of you</div>
-            <p style={{ color: "var(--text-dim)", fontSize: "0.9rem", lineHeight: 1.6 }}>{prefs.aiProfileSummary}</p>
+            <p style={{ color: "var(--text-dim)", fontSize: "var(--font-size-sm)", lineHeight: 1.6 }}>{prefs.aiProfileSummary}</p>
           </div>
         )}
 
         <div style={card}>
           <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "0.5rem" }}>Describe yourself</div>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.82rem", marginBottom: "0.75rem" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "0.75rem" }}>
             Tell us where you are, what you know and where you want to go. The AI fills in your profile so chat, roadmaps and quizzes fit you. It also keeps learning from your chats.
           </p>
           <textarea
             className="search-input"
-            style={{ width: "100%", minHeight: 110, borderRadius: 12, padding: "0.75rem 1rem" }}
+            style={{ width: "100%", minHeight: 110, borderRadius: "var(--radius)", padding: "0.75rem 1rem" }}
             maxLength={2000}
             placeholder="e.g. I'm a 3rd-year CSE student, comfortable with Python and basic React. I want to become a backend developer and can study about 8 hours a week."
             value={text}
@@ -173,7 +173,7 @@ export default function Profile() {
           <div className="form-group"><label>Skills (comma separated)</label><input value={form.skills} onChange={set("skills")} placeholder="Python, SQL, React" /></div>
           <div className="form-group"><label>Goals (comma separated)</label><input value={form.goals} onChange={set("goals")} placeholder="Get a placement, build a project" /></div>
           <div className="form-group"><label>Interests (comma separated)</label><input value={form.interests} onChange={set("interests")} placeholder="Web, AI" /></div>
-          <fieldset style={{ border: "1px solid var(--border)", borderRadius: 8, padding: "0.85rem 1rem", marginBottom: "1rem" }}>
+          <fieldset style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.85rem 1rem", marginBottom: "1rem" }}>
             <legend style={{ padding: "0 0.35rem", fontWeight: 700, color: "var(--text)" }}>Sharing with branch guides</legend>
             <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>
               <input type="checkbox" checked={form.shareContactWithGuides} onChange={(event) => setForm({ ...form, shareContactWithGuides: event.target.checked })} />

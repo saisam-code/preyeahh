@@ -94,13 +94,13 @@ export default function Home() {
               alignItems: "center",
               gap: "0.5rem",
               padding: "0.4rem 1.15rem",
-              borderRadius: "2rem",
+              borderRadius: "var(--radius)",
               background: "var(--primary-bg)",
               color: "var(--primary)",
-              fontSize: "0.86rem",
+              fontSize: "var(--font-size-sm)",
               fontWeight: 700,
               marginBottom: "1.5rem",
-              border: "1px solid rgba(37,99,235,0.2)",
+              border: "1px solid color-mix(in srgb, var(--info) 20%, transparent)",
             }}
           >
             <FaBolt /> For Students from Class 6 to PhD, Independent Learners & Career Switchers
@@ -108,8 +108,8 @@ export default function Home() {
 
           <h1
             style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "clamp(2.3rem, 5.5vw, 4.2rem)",
+              fontFamily: "var(--font-public-heading)",
+              fontSize: "clamp(var(--font-size-3xl), 5.5vw, var(--font-size-4xl))",
               fontWeight: 800,
               lineHeight: 1.1,
               margin: "0 auto 1.5rem",
@@ -125,7 +125,7 @@ export default function Home() {
           <p
             style={{
               color: "var(--text-muted)",
-              fontSize: "clamp(1.05rem, 2vw, 1.25rem)",
+              fontSize: "clamp(var(--font-size-md), 2vw, var(--font-size-lg))",
               maxWidth: 720,
               margin: "0 auto 2.5rem",
               lineHeight: 1.6,
@@ -141,8 +141,8 @@ export default function Home() {
               className="btn btn-primary"
               style={{
                 padding: "0.9rem 2.2rem",
-                fontSize: "1.05rem",
-                borderRadius: "0.6rem",
+                fontSize: "var(--font-size-md)",
+                borderRadius: "var(--radius)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.5rem",
@@ -157,8 +157,8 @@ export default function Home() {
               className="btn btn-outline"
               style={{
                 padding: "0.9rem 2.2rem",
-                fontSize: "1.05rem",
-                borderRadius: "0.6rem",
+                fontSize: "var(--font-size-md)",
+                borderRadius: "var(--radius)",
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.5rem",
@@ -177,7 +177,7 @@ export default function Home() {
         <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
           <span
             style={{
-              fontSize: "0.82rem",
+              fontSize: "var(--font-size-sm)",
               textTransform: "uppercase",
               letterSpacing: 1.4,
               color: "var(--primary)",
@@ -188,15 +188,15 @@ export default function Home() {
           </span>
           <h2
             style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "2.3rem",
+              fontFamily: "var(--font-public-heading)",
+              fontSize: "var(--font-size-3xl)",
               fontWeight: 800,
               margin: "0.3rem 0 0.5rem",
             }}
           >
             The Complete PREYEAHH Journey
           </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "1.05rem", maxWidth: 640, margin: "0 auto" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", maxWidth: 640, margin: "0 auto" }}>
             Career development is not a one-off placement decision. It is an intentional, iterative lifecycle.
           </p>
         </div>
@@ -206,7 +206,7 @@ export default function Home() {
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
-            borderRadius: "1rem",
+            borderRadius: "var(--radius)",
             padding: "1rem 1.25rem",
             marginBottom: "2rem",
             display: "flex",
@@ -214,7 +214,7 @@ export default function Home() {
             alignItems: "center",
             flexWrap: "wrap",
             gap: "0.5rem",
-            fontSize: "0.78rem",
+            fontSize: "var(--font-size-xs)",
             fontWeight: 700,
             color: "var(--primary)",
           }}
@@ -241,14 +241,14 @@ export default function Home() {
               style={{
                 background: "var(--surface)",
                 border: "1px solid var(--border)",
-                borderRadius: "1rem",
+                borderRadius: "var(--radius)",
                 padding: "1.5rem",
                 position: "relative",
               }}
             >
               <div
                 style={{
-                  fontSize: "0.75rem",
+                  fontSize: "var(--font-size-xs)",
                   fontWeight: 800,
                   color: "var(--primary)",
                   letterSpacing: 1.2,
@@ -257,8 +257,8 @@ export default function Home() {
               >
                 PHASE {st.step} · {st.name}
               </div>
-              <h3 style={{ fontSize: "1.15rem", margin: "0 0 0.4rem" }}>{st.title}</h3>
-              <p style={{ margin: 0, fontSize: "0.88rem", color: "var(--text-muted)", lineHeight: 1.5 }}>
+              <h3 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.4rem" }}>{st.title}</h3>
+              <p style={{ margin: 0, fontSize: "var(--font-size-sm)", color: "var(--text-muted)", lineHeight: 1.5 }}>
                 {st.desc}
               </p>
             </div>
@@ -274,7 +274,7 @@ export default function Home() {
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <span
             style={{
-              fontSize: "0.82rem",
+              fontSize: "var(--font-size-sm)",
               textTransform: "uppercase",
               letterSpacing: 1.4,
               color: "var(--primary)",
@@ -285,15 +285,15 @@ export default function Home() {
           </span>
           <h2
             style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "2.3rem",
+              fontFamily: "var(--font-public-heading)",
+              fontSize: "var(--font-size-3xl)",
               fontWeight: 800,
               margin: "0.3rem 0 0.5rem",
             }}
           >
             The Gaps in Conventional Career Counselling
           </h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "1.05rem", maxWidth: 640, margin: "0 auto" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", maxWidth: 640, margin: "0 auto" }}>
             Why superficial aptitude tests and generic search advice fail modern students.
           </p>
         </div>
@@ -305,17 +305,17 @@ export default function Home() {
               style={{
                 background: "var(--surface)",
                 border: "1px solid var(--border)",
-                borderRadius: "1rem",
+                borderRadius: "var(--radius)",
                 padding: "1.75rem",
               }}
             >
-              <div style={{ color: "#e11d48", fontWeight: 700, fontSize: "0.95rem", marginBottom: "0.5rem" }}>
+              <div style={{ color: "var(--danger)", fontWeight: 700, fontSize: "var(--font-size-md)", marginBottom: "0.5rem" }}>
                 Problem: {item.q}
               </div>
               <div
                 style={{
                   color: "var(--text)",
-                  fontSize: "0.92rem",
+                  fontSize: "var(--font-size-sm)",
                   lineHeight: 1.5,
                   paddingTop: "0.5rem",
                   borderTop: "1px solid var(--border)",
@@ -334,7 +334,7 @@ export default function Home() {
         style={{
           background: "var(--surface-mid)",
           border: "1.5px solid var(--border)",
-          borderRadius: "1.5rem",
+          borderRadius: "var(--radius)",
           padding: "3.5rem 1.5rem",
           textAlign: "center",
           marginBottom: "5rem",
@@ -345,10 +345,10 @@ export default function Home() {
           alt="PREYEAHH Logo"
           style={{ width: 56, height: 56, objectFit: "contain", margin: "0 auto 1rem", display: "block" }}
         />
-        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "2.3rem", fontWeight: 800, margin: "0 0 0.75rem" }}>
+        <h2 style={{ fontFamily: "var(--font-public-heading)", fontSize: "var(--font-size-3xl)", fontWeight: 800, margin: "0 0 0.75rem" }}>
           Ready to discover what you can become?
         </h2>
-        <p style={{ color: "var(--text-muted)", fontSize: "1.1rem", maxWidth: 580, margin: "0 auto 2rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", maxWidth: 580, margin: "0 auto 2rem" }}>
           Join students, parents, guides, and educational institutions on the modern career development universe.
         </p>
         <div style={{ display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
@@ -357,8 +357,8 @@ export default function Home() {
             className="btn btn-primary"
             style={{
               padding: "0.85rem 2.2rem",
-              fontSize: "1rem",
-              borderRadius: "0.6rem",
+              fontSize: "var(--font-size-md)",
+              borderRadius: "var(--radius)",
               textDecoration: "none",
               fontWeight: 600,
             }}
@@ -370,8 +370,8 @@ export default function Home() {
             className="btn btn-outline"
             style={{
               padding: "0.85rem 2.2rem",
-              fontSize: "1rem",
-              borderRadius: "0.6rem",
+              fontSize: "var(--font-size-md)",
+              borderRadius: "var(--radius)",
               textDecoration: "none",
               fontWeight: 600,
             }}

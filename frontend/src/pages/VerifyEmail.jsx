@@ -43,22 +43,22 @@ export default function VerifyEmail() {
 
   return (
     <div style={{ minHeight: "calc(100vh - 70px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem", background: "var(--bg)" }}>
-      <div style={{ maxWidth: 460, width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1.25rem", padding: "2.5rem 2rem", textAlign: "center", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
+      <div style={{ maxWidth: 460, width: "100%", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "2.5rem 2rem", textAlign: "center", boxShadow: "0 10px 30px color-mix(in srgb, var(--ink-900) 3%, transparent)" }}>
         <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 44, height: 44, objectFit: "contain", margin: "0 auto 1.25rem" }} />
 
         {status === "loading" && (
           <div>
-            <FaSpinner className="fa-spin" style={{ fontSize: "2rem", color: "var(--primary)", marginBottom: "1rem" }} />
-            <h2 style={{ fontSize: "1.3rem", fontWeight: 700, margin: "0 0 0.5rem" }}>Verifying your email...</h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>Please wait while we confirm your credentials.</p>
+            <FaSpinner className="fa-spin" style={{ fontSize: "var(--font-size-2xl)", color: "var(--primary)", marginBottom: "1rem" }} />
+            <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 700, margin: "0 0 0.5rem" }}>Verifying your email...</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Please wait while we confirm your credentials.</p>
           </div>
         )}
 
         {status === "success" && (
           <div>
-            <FaCircleCheck style={{ fontSize: "2.5rem", color: "#10b981", marginBottom: "1rem" }} />
-            <h2 style={{ fontSize: "1.35rem", fontWeight: 800, margin: "0 0 0.5rem" }}>Email Verified!</h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", lineHeight: 1.5, margin: "0 0 1.5rem" }}>
+            <FaCircleCheck style={{ fontSize: "var(--font-size-3xl)", color: "var(--success)", marginBottom: "1rem" }} />
+            <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 800, margin: "0 0 0.5rem" }}>Email Verified!</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", lineHeight: 1.5, margin: "0 0 1.5rem" }}>
               {message}
             </p>
             <Link to={`/login?role=${role}`} className="btn btn-primary" style={{ display: "inline-block", width: "100%" }}>
@@ -69,9 +69,9 @@ export default function VerifyEmail() {
 
         {status === "error" && (
           <div>
-            <FaCircleXmark style={{ fontSize: "2.5rem", color: "var(--error)", marginBottom: "1rem" }} />
-            <h2 style={{ fontSize: "1.35rem", fontWeight: 800, margin: "0 0 0.5rem" }}>Verification Failed</h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", lineHeight: 1.5, margin: "0 0 1.5rem" }}>
+            <FaCircleXmark style={{ fontSize: "var(--font-size-3xl)", color: "var(--error)", marginBottom: "1rem" }} />
+            <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 800, margin: "0 0 0.5rem" }}>Verification Failed</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", lineHeight: 1.5, margin: "0 0 1.5rem" }}>
               {message}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>

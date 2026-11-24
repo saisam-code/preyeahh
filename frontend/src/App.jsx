@@ -87,7 +87,7 @@ export default function App() {
     root.dataset.role = isAdmin ? "admin" : roleRoute ? user?.role || "" : "";
     if (isAdmin) {
       root.dataset.rolePreview = "";
-      root.style.setProperty("--role-tint", "#1F2933");
+      root.style.setProperty("--role-tint", "var(--role-admin)");
     } else {
       root.dataset.rolePreview = roleRoute ? user?.role || "student" : "";
       root.style.removeProperty("--role-tint");

@@ -109,7 +109,7 @@ export default function MyRoadmaps() {
 
       <div className="section">
         {/* Generate box */}
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1.25rem", marginBottom: "1.5rem" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem", marginBottom: "1.5rem" }}>
           <div style={{ fontWeight: 700, marginBottom: "0.75rem", color: "var(--text)" }}>Generate a new roadmap</div>
           <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
             <input
@@ -125,7 +125,7 @@ export default function MyRoadmaps() {
               <FaPlus /> {generating ? "Generating..." : "Generate"}
             </button>
           </div>
-          <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
+          <p style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.5rem" }}>
             Tip: open any role on the Roles page and use "Generate AI Roadmap" to base it on that role's curated guidance.
           </p>
         </div>
@@ -151,7 +151,7 @@ export default function MyRoadmaps() {
                     style={{
                       background: active ? "var(--primary-bg)" : "var(--surface)",
                       border: `1.5px solid ${active ? "var(--primary)" : "var(--border)"}`,
-                      borderRadius: "12px",
+                      borderRadius: "var(--radius)",
                       padding: "1rem",
                       cursor: "pointer",
                       transition: "all 0.15s",
@@ -172,20 +172,20 @@ export default function MyRoadmaps() {
                     </button>
 
                     {/* Level badge */}
-                    <span className="type-badge badge-core" style={{ alignSelf: "flex-start", fontSize: "0.65rem" }}>{rm.level}</span>
+                    <span className="type-badge badge-core" style={{ alignSelf: "flex-start", fontSize: "var(--font-size-icon)" }}>{rm.level}</span>
 
                     {/* Title */}
-                    <div style={{ fontWeight: 800, fontSize: "0.9rem", color: "var(--text)", lineHeight: 1.3, paddingRight: "1.5rem" }}>{rm.title}</div>
+                    <div style={{ fontWeight: 800, fontSize: "var(--font-size-sm)", color: "var(--text)", lineHeight: 1.3, paddingRight: "1.5rem" }}>{rm.title}</div>
 
                     {/* Meta */}
-                    <div style={{ fontSize: "0.72rem", color: "var(--text-muted)" }}>{rm.branch || "General"} · {rm.estimatedWeeks} weeks</div>
+                    <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>{rm.branch || "General"} · {rm.estimatedWeeks} weeks</div>
 
                     {/* Progress */}
                     <div style={{ marginTop: "auto" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.68rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--font-size-icon)", color: "var(--text-muted)", marginBottom: "4px" }}>
                         <span>Progress</span><span>{pct}%</span>
                       </div>
-                      <div style={{ height: 5, background: "var(--border)", borderRadius: 999, overflow: "hidden" }}>
+                      <div style={{ height: 5, background: "var(--border)", borderRadius: "var(--r-full)", overflow: "hidden" }}>
                         <div style={{ width: `${pct}%`, height: "100%", background: "var(--primary)", transition: "width 0.3s" }} />
                       </div>
                     </div>
@@ -197,7 +197,7 @@ export default function MyRoadmaps() {
 
           {/* RIGHT: selected roadmap detail */}
           {selected && (
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "12px", padding: "1.5rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
               {/* Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
                 <h2 style={{ fontFamily: "var(--font-display)", fontWeight: 800, color: "var(--text)", margin: 0 }}>{selected.title}</h2>
@@ -211,43 +211,43 @@ export default function MyRoadmaps() {
               </div>
 
               {selected.description && (
-                <p style={{ color: "var(--text-dim)", fontSize: "0.875rem", marginBottom: "0.75rem" }}>{selected.description}</p>
+                <p style={{ color: "var(--text-dim)", fontSize: "var(--font-size-sm)", marginBottom: "0.75rem" }}>{selected.description}</p>
               )}
 
               <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap", alignItems: "center", marginBottom: "1.25rem" }}>
                 <span className="branch-tag">{selected.branch || "General"}</span>
                 <span className="type-badge badge-core">{selected.level}</span>
-                <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{selected.estimatedWeeks} weeks</span>
+                <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>{selected.estimatedWeeks} weeks</span>
               </div>
 
               {/* Fit snapshot */}
               {(selected.fitSnapshot?.whyThisFits?.length || selected.fitSnapshot?.whyNotAlternatives?.length) ? (
                 <section style={{ borderTop: "1px solid var(--border)", borderBottom: "1px solid var(--border)", padding: "1rem 0", marginBottom: "1.25rem" }}>
-                  <h3 style={{ fontSize: "0.9rem", color: "var(--text)", marginBottom: "0.65rem" }}>Personalised fit snapshot</h3>
+                  <h3 style={{ fontSize: "var(--font-size-sm)", color: "var(--text)", marginBottom: "0.65rem" }}>Personalised fit snapshot</h3>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
                     {selected.fitSnapshot.whyThisFits?.length > 0 && (
                       <div>
-                        <h4 style={{ fontSize: "0.8rem", color: "var(--primary-dim)", marginBottom: "0.3rem" }}>Why this roadmap fits</h4>
-                        <ul style={{ paddingLeft: "1.1rem", color: "var(--text-dim)", fontSize: "0.78rem" }}>
+                        <h4 style={{ fontSize: "var(--font-size-xs)", color: "var(--primary-dim)", marginBottom: "0.3rem" }}>Why this roadmap fits</h4>
+                        <ul style={{ paddingLeft: "1.1rem", color: "var(--text-dim)", fontSize: "var(--font-size-xs)" }}>
                           {selected.fitSnapshot.whyThisFits.map((r, i) => <li key={i}>{r}</li>)}
                         </ul>
                       </div>
                     )}
                     <div>
-                      <h4 style={{ fontSize: "0.8rem", color: "var(--text)", marginBottom: "0.3rem" }}>Why this path over alternatives</h4>
+                      <h4 style={{ fontSize: "var(--font-size-xs)", color: "var(--text)", marginBottom: "0.3rem" }}>Why this path over alternatives</h4>
                       {selected.fitSnapshot.whyNotAlternatives?.length > 0 ? (
-                        <ul style={{ paddingLeft: "1.1rem", color: "var(--text-dim)", fontSize: "0.78rem" }}>
+                        <ul style={{ paddingLeft: "1.1rem", color: "var(--text-dim)", fontSize: "var(--font-size-xs)" }}>
                           {selected.fitSnapshot.whyNotAlternatives.map((a, i) => (
                             <li key={i}><strong>{a.path}:</strong> {a.tradeoff}</li>
                           ))}
                         </ul>
                       ) : (
-                        <p style={{ color: "var(--text-muted)", fontSize: "0.78rem" }}>No alternative comparison available.</p>
+                        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-xs)" }}>No alternative comparison available.</p>
                       )}
                     </div>
                   </div>
                   {selected.fitSnapshot.basedOn?.length > 0 && (
-                    <p style={{ color: "var(--text-muted)", fontSize: "0.72rem", marginTop: "0.65rem" }}>
+                    <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-xs)", marginTop: "0.65rem" }}>
                       Based on: {selected.fitSnapshot.basedOn.join(" · ")}
                     </p>
                   )}
@@ -261,7 +261,7 @@ export default function MyRoadmaps() {
                     <div className="roadmap-node-marker"></div>
                     <div className="roadmap-node-content" onClick={() => setExpanded((p) => ({ ...p, [si]: !p[si] }))}>
                       <div className="roadmap-node-header">
-                        <div style={{ fontWeight: 700, fontSize: "0.9rem", color: "var(--text)" }}>{section.title}</div>
+                        <div style={{ fontWeight: 700, fontSize: "var(--font-size-sm)", color: "var(--text)" }}>{section.title}</div>
                         {expanded[si] ? <FaChevronUp /> : <FaChevronDown />}
                       </div>
                       {expanded[si] && (

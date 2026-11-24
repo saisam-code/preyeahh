@@ -7,11 +7,11 @@ import BranchGate from "../components/BranchGate.jsx";
 import ContributorLabel from "../components/ContributorLabel.jsx";
 
 const CAT_META = {
-  college: { label: "In College", icon: "fa-school", color: "#8b5cf6" },
-  startup: { label: "Startup", icon: "fa-rocket", color: "#f97316" },
-  gate: { label: "GATE & Higher Studies", icon: "fa-graduation-cap", color: "#7c3aed" },
-  national: { label: "National", icon: "fa-flag", color: "#1a56db" },
-  international: { label: "International", icon: "fa-globe", color: "#059669" },
+  college: { label: "In College", icon: "fa-school", color: "var(--info-text)" },
+  startup: { label: "Startup", icon: "fa-rocket", color: "var(--warning-text)" },
+  gate: { label: "GATE & Higher Studies", icon: "fa-graduation-cap", color: "var(--info-text)" },
+  national: { label: "National", icon: "fa-flag", color: "var(--info-text)" },
+  international: { label: "International", icon: "fa-globe", color: "var(--success)" },
 };
 
 function parseResource(str) {
@@ -95,7 +95,7 @@ export default function Beyond() {
               return (
                 <div key={l._id} className="role-card" onClick={() => setSelected(l)}>
                   <div className="role-card-top">
-                    <span className="type-badge" style={{ background: `${m.color}18`, color: m.color, borderRadius: 20, padding: "0.22rem 0.65rem" }}>
+                    <span className="type-badge" style={{ background: `${m.color}18`, color: m.color, borderRadius: "var(--radius)", padding: "0.22rem 0.65rem" }}>
                       <i className={`fa ${m.icon}`} /> {m.label}
                     </span>
                     {isAll && <span className="cross-branch-badge">All Branches</span>}

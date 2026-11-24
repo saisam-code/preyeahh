@@ -78,7 +78,7 @@ export default function GoogleCallback() {
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
-      <p style={{ color: "var(--text-dim, #888)" }}>Signing you in with Google…</p>
+      <p style={{ color: "var(--text-dim, var(--text-muted))" }}>Signing you in with Google…</p>
     </div>
   );
 }

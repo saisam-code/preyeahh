@@ -169,13 +169,13 @@ export default function Register() {
       <div style={{ maxWidth: 1300, margin: "0 auto" }}>
         {/* Title Bar */}
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <span style={{ fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: 1.2, color: "var(--primary)", fontWeight: 700 }}>
+          <span style={{ fontSize: "var(--font-size-sm)", textTransform: "uppercase", letterSpacing: 1.2, color: "var(--primary)", fontWeight: 700 }}>
             DISCOVER · CHOOSE · REGISTER
           </span>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 800, margin: "0.25rem 0", color: "var(--text)" }}>
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(var(--font-size-2xl), 4vw, var(--font-size-4xl))", fontWeight: 800, margin: "0.25rem 0", color: "var(--text)" }}>
             Explore Career Orbit &amp; Create Account
           </h1>
-          <p style={{ color: "var(--text-muted)", fontSize: "1rem", maxWidth: 680, margin: "0 auto" }}>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", maxWidth: 680, margin: "0 auto" }}>
             Spin through 12 major career domains, discover specialized roles, and create your account to synchronize your personalized career roadmap.
           </p>
         </div>
@@ -186,7 +186,7 @@ export default function Register() {
             style={{
               background: "var(--surface)",
               border: "1.5px solid var(--primary)",
-              borderRadius: "1rem",
+              borderRadius: "var(--radius)",
               padding: "0.85rem 1.25rem",
               marginBottom: "2rem",
               display: "flex",
@@ -197,16 +197,16 @@ export default function Register() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-              <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--primary)" }}>Selected Interests:</span>
+              <span style={{ fontSize: "var(--font-size-sm)", fontWeight: 700, color: "var(--primary)" }}>Selected Interests:</span>
               {selectedDomainInterests.map((d) => (
                 <span
                   key={d}
                   style={{
                     background: "var(--primary-bg)",
                     color: "var(--primary)",
-                    borderRadius: "2rem",
+                    borderRadius: "var(--radius)",
                     padding: "0.2rem 0.65rem",
-                    fontSize: "0.8rem",
+                    fontSize: "var(--font-size-xs)",
                     fontWeight: 600,
                     display: "inline-flex",
                     alignItems: "center",
@@ -223,9 +223,9 @@ export default function Register() {
                   style={{
                     background: "var(--surface-mid)",
                     color: "var(--text)",
-                    borderRadius: "2rem",
+                    borderRadius: "var(--radius)",
                     padding: "0.2rem 0.65rem",
-                    fontSize: "0.8rem",
+                    fontSize: "var(--font-size-xs)",
                     fontWeight: 600,
                     display: "inline-flex",
                     alignItems: "center",
@@ -238,7 +238,7 @@ export default function Register() {
                 </span>
               ))}
             </div>
-            <span style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: 600 }}>
+            <span style={{ fontSize: "var(--font-size-xs)", color: "var(--primary)", fontWeight: 600 }}>
               ✓ Will sync to your profile
             </span>
           </div>
@@ -251,19 +251,19 @@ export default function Register() {
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: "1.5rem",
+              borderRadius: "var(--radius)",
               padding: "2rem 1.5rem",
-              boxShadow: "0 8px 30px rgba(0,0,0,0.03)",
+              boxShadow: "0 8px 30px color-mix(in srgb, var(--ink-900) 3%, transparent)",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
             }}
           >
             <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-              <div style={{ fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: 1, color: "var(--primary)", fontWeight: 700 }}>
+              <div style={{ fontSize: "var(--font-size-xs)", textTransform: "uppercase", letterSpacing: 1, color: "var(--primary)", fontWeight: 700 }}>
                 Interactive Radial Wheel
               </div>
-              <h3 style={{ margin: "0.15rem 0", fontSize: "1.2rem", fontWeight: 700 }}>Click Any Domain Segment</h3>
+              <h3 style={{ margin: "0.15rem 0", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>Click Any Domain Segment</h3>
             </div>
 
             <CareerWheel
@@ -275,7 +275,7 @@ export default function Register() {
               ).filter(Boolean)}
             />
 
-            <div style={{ marginTop: "1rem", textAlign: "center", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+            <div style={{ marginTop: "1rem", textAlign: "center", fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
               Active Selection: <strong style={{ color: selectedDomain?.color }}>{selectedDomain?.title}</strong>
             </div>
           </div>
@@ -296,16 +296,16 @@ export default function Register() {
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: "1.5rem",
+              borderRadius: "var(--radius)",
               padding: "2rem",
-              boxShadow: "0 8px 30px rgba(0,0,0,0.03)",
+              boxShadow: "0 8px 30px color-mix(in srgb, var(--ink-900) 3%, transparent)",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1rem" }}>
               <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 36, height: 36, objectFit: "contain" }} />
               <div>
-                <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800 }}>Create an Account</h3>
-                <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>Join the Preyeahh Career Universe</span>
+                <h3 style={{ margin: 0, fontSize: "var(--font-size-lg)", fontWeight: 800 }}>Create an Account</h3>
+                <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>Join the Preyeahh Career Universe</span>
               </div>
             </div>
 
@@ -321,7 +321,7 @@ export default function Register() {
                   key={id}
                   type="button"
                   className={`ulm-rt-btn ${role === id ? "active" : ""}`}
-                  style={{ fontSize: "0.78rem", padding: "0.45rem 0.2rem" }}
+                  style={{ fontSize: "var(--font-size-xs)", padding: "0.45rem 0.2rem" }}
                   onClick={() => handleRoleChange(id)}
                 >
                   {label}
@@ -334,15 +334,15 @@ export default function Register() {
                 style={{
                   background: "var(--primary-bg)",
                   border: "1px solid var(--primary)",
-                  borderRadius: "0.75rem",
+                  borderRadius: "var(--radius)",
                   padding: "1.25rem",
                   textAlign: "center",
                   color: "var(--primary)",
                   marginBottom: "1.5rem",
                 }}
               >
-                <FaCheck style={{ fontSize: "1.5rem", marginBottom: "0.5rem" }} />
-                <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem" }}>{successMsg}</p>
+                <FaCheck style={{ fontSize: "var(--font-size-xl)", marginBottom: "0.5rem" }} />
+                <p style={{ margin: 0, fontWeight: 600, fontSize: "var(--font-size-md)" }}>{successMsg}</p>
                 <div style={{ marginTop: "1rem" }}>
                   <Link to={`/login?role=${role}`} className="btn btn-primary btn-sm">
                     Proceed to Login <FaArrowRight />
@@ -543,17 +543,17 @@ export default function Register() {
                 <div className="lp-or"><span>OR</span></div>
                 <a href={`${API_BASE}/auth/google?role=${role}`} className="btn btn-outline lp-full lp-google">
                   <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
-                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                    <path fill="var(--google-red)" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="var(--google-blue)" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="var(--google-yellow)" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="var(--google-green)" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                   </svg>
                   Sign up with Google
                 </a>
               </>
             )}
 
-            <div style={{ marginTop: "1.25rem", textAlign: "center", fontSize: "0.85rem", color: "var(--text-muted)" }}>
+            <div style={{ marginTop: "1.25rem", textAlign: "center", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
               Already have an account?{" "}
               <Link to={`/login?role=${role}`} style={{ color: "var(--primary)", fontWeight: 600 }}>
                 Sign In

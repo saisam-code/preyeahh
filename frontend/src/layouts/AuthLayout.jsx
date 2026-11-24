@@ -20,7 +20,7 @@ export default function AuthLayout() {
       >
         <Link to="/" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
           <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 32, height: 32, objectFit: "contain" }} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", fontWeight: 800, color: "var(--text)" }}>
+          <span style={{ fontFamily: "var(--font-display)", fontSize: "var(--font-size-lg)", fontWeight: 800, color: "var(--text)" }}>
             Pre<span style={{ color: "var(--primary)" }}>yeahh</span>
           </span>
         </Link>
@@ -32,14 +32,14 @@ export default function AuthLayout() {
             style={{
               color: "var(--text-muted)",
               textDecoration: "none",
-              fontSize: "0.88rem",
+              fontSize: "var(--font-size-sm)",
               display: "inline-flex",
               alignItems: "center",
               gap: "0.35rem",
               fontWeight: 600,
             }}
           >
-            <FaArrowLeft style={{ fontSize: "0.75rem" }} /> Back to Home
+            <FaArrowLeft style={{ fontSize: "var(--font-size-xs)" }} /> Back to Home
           </Link>
         </div>
       </header>

@@ -67,16 +67,16 @@ export default function GuideLayout() {
         <div style={{ maxWidth: 1300, width: "100%", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <Link to="/guide-panel" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
             <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 34, height: 34, objectFit: "contain" }} />
-            <span style={{ fontFamily: "var(--font-display)", fontSize: "1.25rem", fontWeight: 800, color: "var(--text)" }}>
+            <span style={{ fontFamily: "var(--font-display)", fontSize: "var(--font-size-lg)", fontWeight: 800, color: "var(--text)" }}>
               Pre<span style={{ color: "var(--primary)" }}>yeahh</span>
               <span
                 style={{
-                  fontSize: "0.7rem",
+                  fontSize: "var(--font-size-xs)",
                   marginLeft: "0.4rem",
-                  background: "rgba(37,99,235,0.1)",
-                  color: "#2563eb",
+                  background: "color-mix(in srgb, var(--info) 10%, transparent)",
+                  color: "var(--info-text)",
                   padding: "0.15rem 0.45rem",
-                  borderRadius: "1rem",
+                  borderRadius: "var(--radius)",
                   fontWeight: 700,
                   verticalAlign: "middle",
                 }}
@@ -95,11 +95,11 @@ export default function GuideLayout() {
                 alignItems: "center",
                 gap: "0.4rem",
                 padding: "0.45rem 0.8rem",
-                borderRadius: "0.5rem",
-                fontSize: "0.88rem",
+                borderRadius: "var(--radius)",
+                fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "#fff" : "var(--text)",
+                color: isActive ? "var(--white)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
@@ -114,17 +114,17 @@ export default function GuideLayout() {
                 alignItems: "center",
                 gap: "0.4rem",
                 padding: "0.45rem 0.8rem",
-                borderRadius: "0.5rem",
-                fontSize: "0.88rem",
+                borderRadius: "var(--radius)",
+                fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "#fff" : "var(--text)",
+                color: isActive ? "var(--white)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
               <FaCommentDots /> Mentorship Inbox
               {unreadCount > 0 && (
-                <span style={{ background: "#e11d48", color: "#fff", borderRadius: "1rem", padding: "0.1rem 0.4rem", fontSize: "0.72rem" }}>
+                <span style={{ background: "var(--danger)", color: "var(--on-danger)", borderRadius: "var(--radius)", padding: "0.1rem 0.4rem", fontSize: "var(--font-size-xs)" }}>
                   {unreadCount}
                 </span>
               )}
@@ -138,11 +138,11 @@ export default function GuideLayout() {
                 alignItems: "center",
                 gap: "0.4rem",
                 padding: "0.45rem 0.8rem",
-                borderRadius: "0.5rem",
-                fontSize: "0.88rem",
+                borderRadius: "var(--radius)",
+                fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "#fff" : "var(--text)",
+                color: isActive ? "var(--white)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
@@ -157,11 +157,11 @@ export default function GuideLayout() {
                 alignItems: "center",
                 gap: "0.4rem",
                 padding: "0.45rem 0.8rem",
-                borderRadius: "0.5rem",
-                fontSize: "0.88rem",
+                borderRadius: "var(--radius)",
+                fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "#fff" : "var(--text)",
+                color: isActive ? "var(--white)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
@@ -176,11 +176,11 @@ export default function GuideLayout() {
                 alignItems: "center",
                 gap: "0.4rem",
                 padding: "0.45rem 0.8rem",
-                borderRadius: "0.5rem",
-                fontSize: "0.88rem",
+                borderRadius: "var(--radius)",
+                fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "#fff" : "var(--text)",
+                color: isActive ? "var(--white)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
@@ -200,17 +200,17 @@ export default function GuideLayout() {
                   gap: "0.5rem",
                   background: "var(--surface-mid)",
                   border: "1px solid var(--border)",
-                  borderRadius: "2rem",
+                  borderRadius: "var(--radius)",
                   padding: "0.35rem 0.8rem",
                   cursor: "pointer",
                   color: "var(--text)",
-                  fontSize: "0.85rem",
+                  fontSize: "var(--font-size-sm)",
                   fontWeight: 600,
                 }}
               >
-                <FaCircleUser style={{ fontSize: "1.1rem", color: "#2563eb" }} />
+                <FaCircleUser style={{ fontSize: "var(--font-size-md)", color: "var(--info-text)" }} />
                 <span>{user?.name?.split(" ")[0] || "Guide"}</span>
-                <FaChevronDown style={{ fontSize: "0.7rem", opacity: 0.7 }} />
+                <FaChevronDown style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
               </button>
 
               {menuOpen && (
@@ -222,8 +222,8 @@ export default function GuideLayout() {
                     width: 170,
                     background: "var(--surface)",
                     border: "1px solid var(--border)",
-                    borderRadius: "0.75rem",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
+                    borderRadius: "var(--radius)",
+                    boxShadow: "0 10px 30px color-mix(in srgb, var(--ink-900) 10%, transparent)",
                     padding: "0.5rem",
                     zIndex: 200,
                   }}
@@ -235,9 +235,9 @@ export default function GuideLayout() {
                       alignItems: "center",
                       gap: "0.5rem",
                       padding: "0.6rem 0.8rem",
-                      borderRadius: "0.4rem",
-                      fontSize: "0.85rem",
-                      color: "var(--error, #e11d48)",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-sm)",
+                      color: "var(--error, var(--danger))",
                       background: "transparent",
                       border: "none",
                       cursor: "pointer",

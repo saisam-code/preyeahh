@@ -68,7 +68,7 @@ export default function GuidePanel() {
           <div className="admin-header">
             <h2>Students following your roles</h2>
             <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-              <span style={{ color: "var(--text-muted)", fontSize: "0.82rem" }}>{overview.students?.length || 0} tracked</span>
+              <span style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>{overview.students?.length || 0} tracked</span>
               <button type="button" className="btn btn-outline btn-sm" onClick={() => navigate("/chat")}><FaComments /> Open chat</button>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function GuidePanel() {
                   <td>
                     <strong>{student.name}</strong>
                     {student.profile && (
-                      <details style={{ marginTop: "0.35rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                      <details style={{ marginTop: "0.35rem", fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
                         <summary style={{ cursor: "pointer" }}>Profile basics</summary>
                         <div style={{ marginTop: "0.35rem" }}>
                           <p>Skills: {student.profile.skills?.join(", ") || "Not listed"}</p>

@@ -51,6 +51,8 @@ export function normalizeEducationStages(stages) {
 
 export function getEducationMaturityStage(stage) {
   const normalized = normalizeEducationStage(stage);
+  if (normalized === "Class 6-8") return "junior";
+  if (normalized === "Class 9-10") return "teen";
   const classMatch = /^Class (\d+)$/.exec(normalized);
   if (classMatch) {
     const grade = Number(classMatch[1]);

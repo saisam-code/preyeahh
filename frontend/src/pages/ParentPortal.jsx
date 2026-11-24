@@ -67,26 +67,26 @@ export default function ParentPortal() {
       {/* ── HEADER ── */}
       <div style={{ marginBottom: "2rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
-          <span style={{ fontSize: "0.82rem", textTransform: "uppercase", letterSpacing: 1.2, color: "var(--primary)", fontWeight: 700 }}>
+          <span style={{ fontSize: "var(--font-size-sm)", textTransform: "uppercase", letterSpacing: 1.2, color: "var(--primary)", fontWeight: 700 }}>
             Parent &amp; Guardian Command Hub
           </span>
           <span
             style={{
-              fontSize: "0.72rem",
+              fontSize: "var(--font-size-xs)",
               background: "var(--primary-bg)",
               color: "var(--primary)",
               padding: "0.15rem 0.5rem",
-              borderRadius: "1rem",
+              borderRadius: "var(--radius)",
               fontWeight: 700,
             }}
           >
             ACTIVE GUARDIAN SESSION
           </span>
         </div>
-        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "2.2rem", fontWeight: 800, margin: "0.2rem 0 0.5rem" }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "var(--font-size-3xl)", fontWeight: 800, margin: "0.2rem 0 0.5rem" }}>
           Student Career Trajectory &amp; Verified Progress
         </h1>
-        <p style={{ color: "var(--text-muted)", fontSize: "1rem", margin: 0 }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", margin: 0 }}>
           Welcome back, {user?.name || "Guardian"}. Monitor verified academic milestones, entrance examination preparation, and realistic degree ROI with absolute privacy boundaries.
         </p>
       </div>
@@ -95,8 +95,8 @@ export default function ParentPortal() {
       <div
         style={{
           background: "var(--primary-bg)",
-          border: "1px solid rgba(37,99,235,0.2)",
-          borderRadius: "1rem",
+          border: "1px solid color-mix(in srgb, var(--info) 20%, transparent)",
+          borderRadius: "var(--radius)",
           padding: "1.25rem 1.5rem",
           display: "flex",
           alignItems: "center",
@@ -104,14 +104,14 @@ export default function ParentPortal() {
           marginBottom: "2rem",
         }}
       >
-        <div style={{ color: "var(--primary)", fontSize: "1.6rem", flexShrink: 0 }}>
+        <div style={{ color: "var(--primary)", fontSize: "var(--font-size-xl)", flexShrink: 0 }}>
           <FaShieldHalved />
         </div>
         <div>
-          <strong style={{ display: "block", fontSize: "0.95rem", color: "var(--text)", marginBottom: "0.2rem" }}>
+          <strong style={{ display: "block", fontSize: "var(--font-size-md)", color: "var(--text)", marginBottom: "0.2rem" }}>
             Privacy-First Consent Architecture
           </strong>
-          <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", lineHeight: 1.45, display: "block" }}>
+          <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", lineHeight: 1.45, display: "block" }}>
             As a guardian, you have transparent visibility into verified career milestones, entrance exam deadlines, and institutional placement drives. Personal student reflections and private mentor chat remain confidential to foster honest exploration.
           </span>
         </div>
@@ -119,7 +119,7 @@ export default function ParentPortal() {
 
       {/* ── LINKED STUDENT DOSSIER ── */}
       <div style={{ marginBottom: "2.5rem" }}>
-        <h2 style={{ fontSize: "1.35rem", fontWeight: 700, marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 700, marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <FaUserGraduate style={{ color: "var(--primary)" }} /> Linked Student Trajectory
         </h2>
 
@@ -129,7 +129,7 @@ export default function ParentPortal() {
               style={{
                 background: "var(--surface)",
                 border: "1px dashed var(--border)",
-                borderRadius: "1.25rem",
+                borderRadius: "var(--radius)",
                 padding: "2.5rem 1.5rem",
                 textAlign: "center",
                 display: "flex",
@@ -138,9 +138,9 @@ export default function ParentPortal() {
                 justifyContent: "center",
               }}
             >
-              <FaUserGraduate style={{ fontSize: "2.5rem", color: "var(--text-muted)", marginBottom: "0.75rem" }} />
-              <h3 style={{ margin: "0 0 0.5rem", fontSize: "1.2rem", fontWeight: 700 }}>No Student Linked Yet</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", maxWidth: 440, margin: "0 auto 1.25rem", lineHeight: 1.5 }}>
+              <FaUserGraduate style={{ fontSize: "var(--font-size-3xl)", color: "var(--text-muted)", marginBottom: "0.75rem" }} />
+              <h3 style={{ margin: "0 0 0.5rem", fontSize: "var(--font-size-lg)", fontWeight: 700 }}>No Student Linked Yet</h3>
+              <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", maxWidth: 440, margin: "0 auto 1.25rem", lineHeight: 1.5 }}>
                 Connect your ward's student account to view verified milestones, upcoming entrance examination schedules, and career roadmaps with mutual consent.
               </p>
               <button
@@ -158,30 +158,30 @@ export default function ParentPortal() {
                 style={{
                   background: "var(--surface)",
                   border: "1px solid var(--border)",
-                  borderRadius: "1.25rem",
+                  borderRadius: "var(--radius)",
                   padding: "1.75rem",
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+                  boxShadow: "0 4px 20px color-mix(in srgb, var(--ink-900) 3%, transparent)",
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
                   <div>
-                    <h3 style={{ margin: "0 0 0.25rem", fontSize: "1.25rem", fontWeight: 800 }}>
+                    <h3 style={{ margin: "0 0 0.25rem", fontSize: "var(--font-size-lg)", fontWeight: 800 }}>
                       {st.name || "Student"}
                     </h3>
-                    <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", display: "block" }}>
+                    <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", display: "block" }}>
                       {st.branch || "General"} • {st.year || "Enrolled"}
                     </span>
-                    <span style={{ fontSize: "0.82rem", color: "var(--primary)", fontWeight: 600 }}>
+                    <span style={{ fontSize: "var(--font-size-sm)", color: "var(--primary)", fontWeight: 600 }}>
                       {st.institution || "Educational Institution"}
                     </span>
                   </div>
                   <span
                     style={{
-                      fontSize: "0.75rem",
+                      fontSize: "var(--font-size-xs)",
                       background: "var(--primary-bg)",
                       color: "var(--primary)",
                       padding: "0.25rem 0.65rem",
-                      borderRadius: "1rem",
+                      borderRadius: "var(--radius)",
                       fontWeight: 700,
                       display: "inline-flex",
                       alignItems: "center",
@@ -193,34 +193,34 @@ export default function ParentPortal() {
                 </div>
 
                 {/* Target Career & Readiness Bar */}
-                <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1rem", marginBottom: "1.25rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "0.35rem" }}>
+                <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem", marginBottom: "1.25rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--font-size-sm)", marginBottom: "0.35rem" }}>
                     <span style={{ color: "var(--text-muted)" }}>Target Pathway:</span>
                     <strong style={{ color: "var(--text)" }}>{st.targetCareer || "Exploring Careers"}</strong>
                   </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", marginBottom: "0.5rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--font-size-sm)", marginBottom: "0.5rem" }}>
                     <span style={{ color: "var(--text-muted)" }}>Planner Readiness Completion:</span>
                     <strong style={{ color: "var(--primary)" }}>{st.plannerProgress || 0}%</strong>
                   </div>
-                  <div style={{ height: 8, background: "rgba(0,0,0,0.08)", borderRadius: 4, overflow: "hidden" }}>
-                    <div style={{ width: `${st.plannerProgress || 0}%`, height: "100%", background: "var(--primary)", borderRadius: 4 }} />
+                  <div style={{ height: 8, background: "color-mix(in srgb, var(--ink-900) 8%, transparent)", borderRadius: "var(--radius)", overflow: "hidden" }}>
+                    <div style={{ width: `${st.plannerProgress || 0}%`, height: "100%", background: "var(--primary)", borderRadius: "var(--radius)" }} />
                   </div>
                 </div>
 
                 {/* Recent Verified Milestones */}
-                <h4 style={{ margin: "0 0 0.75rem", fontSize: "0.92rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)" }}>
+                <h4 style={{ margin: "0 0 0.75rem", fontSize: "var(--font-size-sm)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "var(--text-muted)" }}>
                   Recent Verified Milestones
                 </h4>
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
                   {st.milestones?.length ? (
                     st.milestones.map((m, mIdx) => (
-                      <div key={mIdx} style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.85rem" }}>
+                      <div key={mIdx} style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "var(--font-size-sm)" }}>
                         <FaCircleCheck style={{ color: "var(--primary)", flexShrink: 0 }} />
                         <span><strong>{m.title}:</strong> {m.status || "Completed"}</span>
                       </div>
                     ))
                   ) : (
-                    <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>No verified milestones recorded yet.</span>
+                    <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>No verified milestones recorded yet.</span>
                   )}
                 </div>
               </div>
@@ -232,9 +232,9 @@ export default function ParentPortal() {
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: "1.25rem",
+              borderRadius: "var(--radius)",
               padding: "1.75rem",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+              boxShadow: "0 4px 20px color-mix(in srgb, var(--ink-900) 3%, transparent)",
               display: "flex",
               flexDirection: "column",
               justifyContent: "space-between",
@@ -243,9 +243,9 @@ export default function ParentPortal() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
                 <FaLock style={{ color: "var(--primary)" }} />
-                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700 }}>Guardian Privacy &amp; Consent Toggles</h3>
+                <h3 style={{ margin: 0, fontSize: "var(--font-size-lg)", fontWeight: 700 }}>Guardian Privacy &amp; Consent Toggles</h3>
               </div>
-              <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "1.25rem", lineHeight: 1.4 }}>
+              <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "1.25rem", lineHeight: 1.4 }}>
                 Control which communications and institutional placement announcements you receive directly.
               </p>
 
@@ -253,19 +253,19 @@ export default function ParentPortal() {
                 {/* Toggle 1 */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <strong style={{ fontSize: "0.88rem", display: "block" }}>Placement Cell Announcements</strong>
-                    <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Receive alerts when on-campus interview drives begin.</span>
+                    <strong style={{ fontSize: "var(--font-size-sm)", display: "block" }}>Placement Cell Announcements</strong>
+                    <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>Receive alerts when on-campus interview drives begin.</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleToggleConsent(setConsentPlacement, "Placement Drive Alerts", consentPlacement)}
                     style={{
                       background: consentPlacement ? "var(--primary)" : "var(--border)",
-                      color: "#fff",
+                      color: "var(--white)",
                       border: "none",
                       padding: "0.3rem 0.8rem",
-                      borderRadius: "1rem",
-                      fontSize: "0.78rem",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-xs)",
                       fontWeight: 700,
                       cursor: "pointer",
                     }}
@@ -277,19 +277,19 @@ export default function ParentPortal() {
                 {/* Toggle 2 */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <strong style={{ fontSize: "0.88rem", display: "block" }}>Monthly Trajectory Digest</strong>
-                    <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Summary email of completed roadmap milestones.</span>
+                    <strong style={{ fontSize: "var(--font-size-sm)", display: "block" }}>Monthly Trajectory Digest</strong>
+                    <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>Summary email of completed roadmap milestones.</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleToggleConsent(setConsentDigest, "Monthly Digest", consentDigest)}
                     style={{
                       background: consentDigest ? "var(--primary)" : "var(--border)",
-                      color: "#fff",
+                      color: "var(--white)",
                       border: "none",
                       padding: "0.3rem 0.8rem",
-                      borderRadius: "1rem",
-                      fontSize: "0.78rem",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-xs)",
                       fontWeight: 700,
                       cursor: "pointer",
                     }}
@@ -301,19 +301,19 @@ export default function ParentPortal() {
                 {/* Toggle 3 */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <strong style={{ fontSize: "0.88rem", display: "block" }}>Alumni Mentorship Sharing</strong>
-                    <span style={{ fontSize: "0.78rem", color: "var(--text-muted)" }}>Share academic milestones with verified alumni.</span>
+                    <strong style={{ fontSize: "var(--font-size-sm)", display: "block" }}>Alumni Mentorship Sharing</strong>
+                    <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>Share academic milestones with verified alumni.</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleToggleConsent(setConsentMentorSharing, "Alumni Sharing", consentMentorSharing)}
                     style={{
                       background: consentMentorSharing ? "var(--primary)" : "var(--border)",
-                      color: "#fff",
+                      color: "var(--white)",
                       border: "none",
                       padding: "0.3rem 0.8rem",
-                      borderRadius: "1rem",
-                      fontSize: "0.78rem",
+                      borderRadius: "var(--radius)",
+                      fontSize: "var(--font-size-xs)",
                       fontWeight: 700,
                       cursor: "pointer",
                     }}
@@ -324,7 +324,7 @@ export default function ParentPortal() {
               </div>
             </div>
 
-            <div style={{ marginTop: "1.25rem", padding: "0.75rem", background: "var(--surface-mid)", borderRadius: "0.6rem", fontSize: "0.78rem", color: "var(--text-muted)" }}>
+            <div style={{ marginTop: "1.25rem", padding: "0.75rem", background: "var(--surface-mid)", borderRadius: "var(--radius)", fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
               🛡️ All consent settings conform to student data protection guidelines and are auditable by the institution.
             </div>
           </div>
@@ -336,27 +336,27 @@ export default function ParentPortal() {
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
-          borderRadius: "1.25rem",
+          borderRadius: "var(--radius)",
           padding: "2rem",
           marginBottom: "2.5rem",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+          boxShadow: "0 4px 20px color-mix(in srgb, var(--ink-900) 3%, transparent)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.4rem" }}>
-          <FaScaleBalanced style={{ color: "var(--primary)", fontSize: "1.3rem" }} />
-          <h2 style={{ fontSize: "1.35rem", fontWeight: 700, margin: 0 }}>Interactive Educational ROI &amp; Payback Intelligence</h2>
+          <FaScaleBalanced style={{ color: "var(--primary)", fontSize: "var(--font-size-lg)" }} />
+          <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 700, margin: 0 }}>Interactive Educational ROI &amp; Payback Intelligence</h2>
         </div>
-        <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", marginBottom: "1.5rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "1.5rem" }}>
           Simulate education investments against realistic entry-level compensation to evaluate debt recovery windows without false promises.
         </p>
 
         {/* Sliders Grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.75rem", marginBottom: "1.75rem" }}>
           {/* Slider 1: Total Degree Investment */}
-          <div style={{ background: "var(--surface-mid)", padding: "1.25rem", borderRadius: "0.75rem", border: "1px solid var(--border)" }}>
+          <div style={{ background: "var(--surface-mid)", padding: "1.25rem", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <label style={{ fontSize: "0.85rem", fontWeight: 600 }}>Total Degree Investment (Tuition + Living):</label>
-              <strong style={{ color: "var(--primary)", fontSize: "1rem" }}>₹{(tuitionInvestment / 100000).toFixed(1)} Lakhs</strong>
+              <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600 }}>Total Degree Investment (Tuition + Living):</label>
+              <strong style={{ color: "var(--primary)", fontSize: "var(--font-size-md)" }}>₹{(tuitionInvestment / 100000).toFixed(1)} Lakhs</strong>
             </div>
             <input
               type="range"
@@ -367,7 +367,7 @@ export default function ParentPortal() {
               onChange={(e) => setTuitionInvestment(Number(e.target.value))}
               style={{ width: "100%", accentColor: "var(--primary)", cursor: "pointer" }}
             />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.3rem" }}>
               <span>₹2 Lakhs</span>
               <span>₹12 Lakhs</span>
               <span>₹25 Lakhs</span>
@@ -375,10 +375,10 @@ export default function ParentPortal() {
           </div>
 
           {/* Slider 2: Realistic Starting Annual CTC */}
-          <div style={{ background: "var(--surface-mid)", padding: "1.25rem", borderRadius: "0.75rem", border: "1px solid var(--border)" }}>
+          <div style={{ background: "var(--surface-mid)", padding: "1.25rem", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <label style={{ fontSize: "0.85rem", fontWeight: 600 }}>Target Entry Compensation (CTC):</label>
-              <strong style={{ color: "#10b981", fontSize: "1rem" }}>₹{(expectedCtc / 100000).toFixed(1)} LPA</strong>
+              <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600 }}>Target Entry Compensation (CTC):</label>
+              <strong style={{ color: "var(--success)", fontSize: "var(--font-size-md)" }}>₹{(expectedCtc / 100000).toFixed(1)} LPA</strong>
             </div>
             <input
               type="range"
@@ -387,9 +387,9 @@ export default function ParentPortal() {
               step="50000"
               value={expectedCtc}
               onChange={(e) => setExpectedCtc(Number(e.target.value))}
-              style={{ width: "100%", accentColor: "#10b981", cursor: "pointer" }}
+              style={{ width: "100%", accentColor: "var(--success)", cursor: "pointer" }}
             />
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.3rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.3rem" }}>
               <span>₹3.5 LPA</span>
               <span>₹12 LPA</span>
               <span>₹24 LPA</span>
@@ -399,38 +399,38 @@ export default function ParentPortal() {
 
         {/* Dynamic Calculations Bar */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1.25rem", marginBottom: "1.25rem" }}>
-          <div style={{ background: "var(--primary-bg)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-            <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>
+          <div style={{ background: "var(--primary-bg)", border: "1px solid color-mix(in srgb, var(--info) 20%, transparent)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+            <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>
               Estimated Recovery Window
             </span>
-            <strong style={{ fontSize: "1.5rem", color: "var(--primary)" }}>~{paybackMonths} Months</strong>
-            <small style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+            <strong style={{ fontSize: "var(--font-size-xl)", color: "var(--primary)" }}>~{paybackMonths} Months</strong>
+            <small style={{ display: "block", fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.2rem" }}>
               (~{(paybackMonths / 12).toFixed(1)} years post graduation)
             </small>
           </div>
 
-          <div style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.2)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-            <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>
+          <div style={{ background: "color-mix(in srgb, var(--info) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--info) 20%, transparent)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+            <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>
               Estimated 5-Year Loan EMI
             </span>
-            <strong style={{ fontSize: "1.5rem", color: "#2563eb" }}>₹{loanMonthlyEmi.toLocaleString("en-IN")}/mo</strong>
-            <small style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+            <strong style={{ fontSize: "var(--font-size-xl)", color: "var(--info-text)" }}>₹{loanMonthlyEmi.toLocaleString("en-IN")}/mo</strong>
+            <small style={{ display: "block", fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.2rem" }}>
               Based on standard 8.5% education loan
             </small>
           </div>
 
-          <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-            <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>
+          <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+            <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", display: "block", marginBottom: "0.3rem" }}>
               Estimated Year 1 In-Hand Take-home
             </span>
-            <strong style={{ fontSize: "1.5rem", color: "var(--text)" }}>₹{Math.round(expectedCtc * 0.78 / 12).toLocaleString("en-IN")}/mo</strong>
-            <small style={{ display: "block", fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.2rem" }}>
+            <strong style={{ fontSize: "var(--font-size-xl)", color: "var(--text)" }}>₹{Math.round(expectedCtc * 0.78 / 12).toLocaleString("en-IN")}/mo</strong>
+            <small style={{ display: "block", fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.2rem" }}>
               After typical PF &amp; tax deductions
             </small>
           </div>
         </div>
 
-        <small style={{ color: "var(--text-muted)", fontSize: "0.78rem", display: "block" }}>
+        <small style={{ color: "var(--text-muted)", fontSize: "var(--font-size-xs)", display: "block" }}>
           *Disclaimer: ROI estimates are statistical projections based on university outcomes and industry baseline compensation. Preyeahh does not guarantee compensation or recruitment outcomes.
         </small>
       </div>
@@ -440,27 +440,27 @@ export default function ParentPortal() {
         style={{
           background: "var(--surface)",
           border: "1px solid var(--border)",
-          borderRadius: "1.25rem",
+          borderRadius: "var(--radius)",
           padding: "2rem",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+          boxShadow: "0 4px 20px color-mix(in srgb, var(--ink-900) 3%, transparent)",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "0.4rem" }}>
-          <FaPaperPlane style={{ color: "var(--primary)", fontSize: "1.2rem" }} />
-          <h2 style={{ fontSize: "1.35rem", fontWeight: 700, margin: 0 }}>Direct Inquiry to Institution Counselor &amp; Placement Cell</h2>
+          <FaPaperPlane style={{ color: "var(--primary)", fontSize: "var(--font-size-lg)" }} />
+          <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 700, margin: 0 }}>Direct Inquiry to Institution Counselor &amp; Placement Cell</h2>
         </div>
-        <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", marginBottom: "1.5rem" }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "1.5rem" }}>
           Have a question about campus placement eligibility, entrance exam coaching schedules, or academic progress? Send an inquiry directly to the student's designated advisor.
         </p>
 
         <form onSubmit={handleSendInquiry} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "1rem" }}>
             <div>
-              <label style={{ fontSize: "0.85rem", fontWeight: 600, display: "block", marginBottom: "0.4rem" }}>Inquiry Topic</label>
+              <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, display: "block", marginBottom: "0.4rem" }}>Inquiry Topic</label>
               <select
                 value={inquirySubject}
                 onChange={(e) => setInquirySubject(e.target.value)}
-                style={{ width: "100%", padding: "0.6rem 0.8rem", borderRadius: "0.5rem", border: "1px solid var(--border)", background: "var(--surface-mid)", color: "var(--text)" }}
+                style={{ width: "100%", padding: "0.6rem 0.8rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface-mid)", color: "var(--text)" }}
               >
                 <option value="Placement Preparation Schedule">Placement Preparation &amp; Mock Interviews</option>
                 <option value="Higher Studies & GATE/UPSC Guidance">Higher Studies, GATE, or UPSC Coaching</option>
@@ -469,24 +469,24 @@ export default function ParentPortal() {
               </select>
             </div>
             <div>
-              <label style={{ fontSize: "0.85rem", fontWeight: 600, display: "block", marginBottom: "0.4rem" }}>Recipient Desk</label>
+              <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, display: "block", marginBottom: "0.4rem" }}>Recipient Desk</label>
               <input
                 type="text"
                 readOnly
                 value="Training & Placement Cell · NBKRIST"
-                style={{ width: "100%", padding: "0.6rem 0.8rem", borderRadius: "0.5rem", border: "1px solid var(--border)", background: "var(--surface-mid)", color: "var(--text-muted)", cursor: "not-allowed" }}
+                style={{ width: "100%", padding: "0.6rem 0.8rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface-mid)", color: "var(--text-muted)", cursor: "not-allowed" }}
               />
             </div>
           </div>
 
           <div>
-            <label style={{ fontSize: "0.85rem", fontWeight: 600, display: "block", marginBottom: "0.4rem" }}>Your Message / Question</label>
+            <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, display: "block", marginBottom: "0.4rem" }}>Your Message / Question</label>
             <textarea
               rows={3}
               value={inquiryText}
               onChange={(e) => setInquiryText(e.target.value)}
               placeholder="e.g. Could you share the schedule for the upcoming campus recruitment preparation bootcamps?"
-              style={{ width: "100%", padding: "0.75rem", borderRadius: "0.5rem", border: "1px solid var(--border)", background: "var(--surface-mid)", color: "var(--text)", resize: "vertical" }}
+              style={{ width: "100%", padding: "0.75rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--surface-mid)", color: "var(--text)", resize: "vertical" }}
             />
           </div>
 

@@ -196,13 +196,13 @@ export default function CareerDiscovery() {
     <div style={{ maxWidth: 1150, margin: "0 auto", padding: "1.5rem 0" }}>
       {/* ── HEADER ── */}
       <div style={{ marginBottom: "1.5rem" }}>
-        <span style={{ fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: 1, color: "var(--primary)", fontWeight: 700 }}>
+        <span style={{ fontSize: "var(--font-size-xs)", textTransform: "uppercase", letterSpacing: 1, color: "var(--primary)", fontWeight: 700 }}>
           PREYEAHH CAREER INTELLIGENCE SUITE
         </span>
-        <h1 style={{ fontSize: "2rem", fontWeight: 800, margin: "0.2rem 0" }}>
+        <h1 style={{ fontSize: "var(--font-size-2xl)", fontWeight: 800, margin: "0.2rem 0" }}>
           Explore Careers & Reality Intelligence
         </h1>
-        <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "0.95rem" }}>
+        <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "var(--font-size-md)" }}>
           Understand verified market realities, compare career paths, calculate real ROI, and experiment safely before committing.
         </p>
       </div>
@@ -245,7 +245,7 @@ export default function CareerDiscovery() {
                 placeholder="Search role, domain..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                style={{ padding: "0.4rem 0.8rem", borderRadius: "0.5rem", border: "1px solid var(--border)", background: "var(--card-bg)" }}
+                style={{ padding: "0.4rem 0.8rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)" }}
               />
               <button type="submit" className="btn btn-outline btn-sm">
                 <FaMagnifyingGlass />
@@ -255,7 +255,7 @@ export default function CareerDiscovery() {
 
           {/* Compare Prompt Bar */}
           {selectedForCompare.length > 0 && (
-            <div style={{ background: "var(--primary-bg)", border: "1.5px solid var(--primary)", padding: "0.75rem 1.25rem", borderRadius: "0.75rem", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+            <div style={{ background: "var(--primary-bg)", border: "1.5px solid var(--primary)", padding: "0.75rem 1.25rem", borderRadius: "var(--radius)", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div><strong>{selectedForCompare.length} careers selected</strong> (Compare side-by-side)</div>
               <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button className="btn btn-outline btn-sm" onClick={() => setSelectedForCompare([])}>Clear</button>
@@ -277,9 +277,9 @@ export default function CareerDiscovery() {
                   <div
                     key={role._id}
                     style={{
-                      background: "var(--card-bg, #fff)",
+                      background: "var(--card-bg, var(--white))",
                       border: isSelected ? "2px solid var(--primary)" : "1px solid var(--border)",
-                      borderRadius: "0.85rem",
+                      borderRadius: "var(--radius)",
                       padding: "1.25rem",
                       display: "flex",
                       flexDirection: "column",
@@ -293,11 +293,11 @@ export default function CareerDiscovery() {
                           onClick={() => toggleCompare(role._id)}
                           style={{
                             background: isSelected ? "var(--primary)" : "transparent",
-                            color: isSelected ? "#fff" : "var(--text-muted)",
+                            color: isSelected ? "var(--white)" : "var(--text-muted)",
                             border: "1px solid var(--border)",
-                            borderRadius: "0.35rem",
+                            borderRadius: "var(--radius)",
                             padding: "0.2rem 0.5rem",
-                            fontSize: "0.75rem",
+                            fontSize: "var(--font-size-xs)",
                             cursor: "pointer",
                           }}
                         >
@@ -305,12 +305,12 @@ export default function CareerDiscovery() {
                         </button>
                       </div>
 
-                      <h3 style={{ margin: "0.2rem 0", fontSize: "1.15rem" }}>{role.title}</h3>
-                      <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
+                      <h3 style={{ margin: "0.2rem 0", fontSize: "var(--font-size-lg)" }}>{role.title}</h3>
+                      <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "0.75rem" }}>
                         {role.domain || "Engineering & Tech"}
                       </div>
 
-                      <div style={{ background: "rgba(0,0,0,0.02)", border: "1px solid var(--border)", borderRadius: "0.5rem", padding: "0.75rem", fontSize: "0.82rem", display: "flex", flexDirection: "column", gap: "0.35rem", marginBottom: "1rem" }}>
+                      <div style={{ background: "color-mix(in srgb, var(--ink-900) 2%, transparent)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.75rem", fontSize: "var(--font-size-sm)", display: "flex", flexDirection: "column", gap: "0.35rem", marginBottom: "1rem" }}>
                         <div style={{ display: "flex", justifyContent: "space-between" }}>
                           <span style={{ color: "var(--text-muted)" }}>Starting Salary:</span>
                           <strong>{formatRealityFact(role.reality?.salaryRange?.starting)}</strong>
@@ -335,9 +335,9 @@ export default function CareerDiscovery() {
 
       {/* ── 2. CAREER SWITCHING TAB ── */}
       {activeTab === "switch" && (
-        <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.75rem" }}>
-          <h2 style={{ fontSize: "1.3rem", margin: "0 0 0.5rem" }}>Career Switching & Skill-Gap Analysis</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", margin: "0 0 1.5rem" }}>
+        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem" }}>
+          <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Career Switching & Skill-Gap Analysis</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
             Identify transferable skills, missing prerequisites, and realistic timelines when pivoting to a new domain.
           </p>
 
@@ -356,7 +356,7 @@ export default function CareerDiscovery() {
           </form>
 
           {switchAnalysis && (
-            <div style={{ padding: "1.25rem", background: "var(--primary-bg)", borderRadius: "0.75rem", fontSize: "0.92rem", lineHeight: 1.6, whiteSpace: "pre-line" }}>
+            <div style={{ padding: "1.25rem", background: "var(--primary-bg)", borderRadius: "var(--radius)", fontSize: "var(--font-size-sm)", lineHeight: 1.6, whiteSpace: "pre-line" }}>
               {switchAnalysis}
             </div>
           )}
@@ -366,17 +366,17 @@ export default function CareerDiscovery() {
       {/* ── 3. CAREER EXPERIMENTS TAB ── */}
       {activeTab === "experiments" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
-            <h2 style={{ fontSize: "1.3rem", margin: "0 0 0.5rem" }}>Hands-on Career Experiments</h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", margin: "0 0 1rem" }}>
+          <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
+            <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Hands-on Career Experiments</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1rem" }}>
               Experience a micro version of a career before committing education or finances.
             </p>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem" }}>
-              <div style={{ border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
+              <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
                 <span className="branch-tag">Software / Tech</span>
                 <h4 style={{ margin: "0.4rem 0" }}>Build a Responsive Web App</h4>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: "0 0 1rem" }}>
+                <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", margin: "0 0 1rem" }}>
                   Develop a simple task manager or portfolio page using HTML, CSS, and modern JavaScript.
                 </p>
                 <button className="btn btn-primary btn-sm" onClick={() => handleStartExp("Build a Responsive Web App", "Technology")}>
@@ -384,10 +384,10 @@ export default function CareerDiscovery() {
                 </button>
               </div>
 
-              <div style={{ border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
+              <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
                 <span className="branch-tag">Creative / Media</span>
                 <h4 style={{ margin: "0.4rem 0" }}>Produce a 60-Second Short Film</h4>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: "0 0 1rem" }}>
+                <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", margin: "0 0 1rem" }}>
                   Write a 1-page script, shoot on a phone camera, and edit using basic cutting software.
                 </p>
                 <button className="btn btn-primary btn-sm" onClick={() => handleStartExp("Produce a 60-Second Short Film", "Filmmaking")}>
@@ -395,10 +395,10 @@ export default function CareerDiscovery() {
                 </button>
               </div>
 
-              <div style={{ border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
+              <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
                 <span className="branch-tag">Design / UI</span>
                 <h4 style={{ margin: "0.4rem 0" }}>Figma Mobile App Redesign</h4>
-                <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", margin: "0 0 1rem" }}>
+                <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", margin: "0 0 1rem" }}>
                   Redesign your favorite food ordering or ride-sharing app with improved usability.
                 </p>
                 <button className="btn btn-primary btn-sm" onClick={() => handleStartExp("Figma Mobile App Redesign", "UI/UX Design")}>
@@ -412,9 +412,9 @@ export default function CareerDiscovery() {
 
       {/* ── 4. FINANCIAL ROI TAB ── */}
       {activeTab === "financial" && (
-        <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.75rem" }}>
-          <h2 style={{ fontSize: "1.3rem", margin: "0 0 0.5rem" }}>Career Financial & Payback Estimator</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", margin: "0 0 1.5rem" }}>
+        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem" }}>
+          <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Career Financial & Payback Estimator</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
             Compare approximate education costs against realistic starting salary projections.
           </p>
 
@@ -433,18 +433,18 @@ export default function CareerDiscovery() {
           </form>
 
           {roiResult && (
-            <div style={{ padding: "1.25rem", background: "rgba(16,185,129,0.06)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: "0.75rem" }}>
+            <div style={{ padding: "1.25rem", background: "color-mix(in srgb, var(--success) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--success) 20%, transparent)", borderRadius: "var(--radius)" }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
                 <div>
-                  <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>Total Investment:</span>
-                  <div style={{ fontSize: "1.4rem", fontWeight: 700 }}>₹{roiResult.totalEstimatedInvestment?.toLocaleString()}</div>
+                  <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>Total Investment:</span>
+                  <div style={{ fontSize: "var(--font-size-lg)", fontWeight: 700 }}>₹{roiResult.totalEstimatedInvestment?.toLocaleString()}</div>
                 </div>
                 <div>
-                  <span style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>Estimated Payback Window:</span>
-                  <div style={{ fontSize: "1.4rem", fontWeight: 700, color: "#10b981" }}>~{roiResult.estimatedPaybackMonths} months</div>
+                  <span style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>Estimated Payback Window:</span>
+                  <div style={{ fontSize: "var(--font-size-lg)", fontWeight: 700, color: "var(--success)" }}>~{roiResult.estimatedPaybackMonths} months</div>
                 </div>
               </div>
-              <p style={{ fontSize: "0.82rem", color: "var(--text-muted)", margin: 0 }}>{roiResult.disclaimer}</p>
+              <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", margin: 0 }}>{roiResult.disclaimer}</p>
             </div>
           )}
         </div>
@@ -452,9 +452,9 @@ export default function CareerDiscovery() {
 
       {/* ── 5. ALUMNI & OUTCOMES TAB ── */}
       {activeTab === "outcomes" && (
-        <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
-          <h2 style={{ fontSize: "1.3rem", margin: "0 0 0.5rem" }}>Verified Alumni & Career Outcomes</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", margin: "0 0 1.5rem" }}>
+        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
+          <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Verified Alumni & Career Outcomes</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
             Real achievements, admissions, and offers recorded by students on Preyeahh.
           </p>
 
@@ -463,15 +463,15 @@ export default function CareerDiscovery() {
               <p style={{ color: "var(--text-muted)" }}>No public outcomes published yet.</p>
             ) : (
               outcomes.map((o) => (
-                <div key={o._id} style={{ border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div key={o._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <span className="branch-tag">{o.outcomeType}</span>
                     <h4 style={{ margin: "0.3rem 0" }}>{o.title}</h4>
-                    <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                    <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                       {o.organizationOrInstitution} • {o.student?.name || "Verified Student"}
                     </div>
                   </div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                  <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                     {new Date(o.outcomeDate).toLocaleDateString()}
                   </div>
                 </div>
@@ -483,9 +483,9 @@ export default function CareerDiscovery() {
 
       {/* ── 6. TRUST & SAFETY TAB ── */}
       {activeTab === "safety" && (
-        <div style={{ background: "var(--card-bg, #fff)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.75rem", maxWidth: 650 }}>
-          <h2 style={{ fontSize: "1.3rem", margin: "0 0 0.5rem" }}>Trust, Safety & Moderation Center</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", margin: "0 0 1.5rem" }}>
+        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", maxWidth: 650 }}>
+          <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Trust, Safety & Moderation Center</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
             File a confidential moderation report regarding inappropriate conduct, false advice, or credentials.
           </p>
 
@@ -529,9 +529,9 @@ export default function CareerDiscovery() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ padding: "0.85rem", background: "var(--primary-bg)", borderRadius: "0.5rem" }}>
+              <div style={{ padding: "0.85rem", background: "var(--primary-bg)", borderRadius: "var(--radius)" }}>
                 <strong>Salary & Income Trajectory (Estimated INR):</strong>
-                <div style={{ marginTop: "0.35rem", fontSize: "0.88rem", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
+                <div style={{ marginTop: "0.35rem", fontSize: "var(--font-size-sm)", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
                   <div>Entry: <strong>{formatRealityFact(selectedRole.reality?.salaryRange?.starting)}</strong></div>
                   <div>Mid-Level: <strong>{formatRealityFact(selectedRole.reality?.salaryRange?.mid)}</strong></div>
                   <div>Senior: <strong>{formatRealityFact(selectedRole.reality?.salaryRange?.experienced)}</strong></div>
@@ -540,14 +540,14 @@ export default function CareerDiscovery() {
 
               <div>
                 <strong>Practical Entry Timeline:</strong>
-                <p style={{ margin: "0.25rem 0", fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                <p style={{ margin: "0.25rem 0", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
                   Estimated ~{selectedRole.reality?.timeToEmployabilityMonths || 48} months of education and skill preparation.
                 </p>
               </div>
 
               <div>
                 <strong>Career Risks & Honest Realities:</strong>
-                <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", fontSize: "0.88rem" }}>
+                <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", fontSize: "var(--font-size-sm)" }}>
                   {selectedRole.reality?.careerRisks?.length ? (
                     selectedRole.reality.careerRisks.map((r, i) => <li key={i}>{r}</li>)
                   ) : (

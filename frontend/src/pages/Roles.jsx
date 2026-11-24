@@ -244,9 +244,9 @@ export default function Roles() {
       {/* COMMIT PROMPT */}
       <div className={`modal-overlay ${commitRole ? "open" : ""}`} onClick={(e) => e.target === e.currentTarget && setCommitRole(null)}>
         <div className="modal" style={{ maxWidth: 400, textAlign: "center" }}>
-          <div style={{ fontSize: "2.2rem", marginBottom: "0.75rem" }}><i className="fa fa-crosshairs" /></div>
-          <h2 style={{ fontSize: "1.2rem", fontWeight: 800, marginBottom: "0.5rem" }}>Quick check-in</h2>
-          <p style={{ color: "var(--text-dim)", fontSize: "0.9rem", lineHeight: 1.6, marginBottom: "1rem" }}>
+          <div style={{ fontSize: "var(--font-size-3xl)", marginBottom: "0.75rem" }}><i className="fa fa-crosshairs" /></div>
+          <h2 style={{ fontSize: "var(--font-size-lg)", fontWeight: 800, marginBottom: "0.5rem" }}>Quick check-in</h2>
+          <p style={{ color: "var(--text-dim)", fontSize: "var(--font-size-sm)", lineHeight: 1.6, marginBottom: "1rem" }}>
             Are you seriously considering <strong>{commitRole?.title}</strong> as a long-term career, or just exploring?
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
@@ -377,8 +377,8 @@ export default function Roles() {
               />
             </div>
           )}
-          {requestErr && <p style={{ color: "var(--danger, #ef4444)", fontSize: "0.83rem", marginBottom: "0.5rem" }}>{requestErr}</p>}
-          {requestOk && <p style={{ color: "#16a34a", fontSize: "0.83rem", marginBottom: "0.5rem" }}>Request submitted! Admin will review it.</p>}
+          {requestErr && <p style={{ color: "var(--danger, var(--danger))", fontSize: "var(--font-size-sm)", marginBottom: "0.5rem" }}>{requestErr}</p>}
+          {requestOk && <p style={{ color: "var(--success)", fontSize: "var(--font-size-sm)", marginBottom: "0.5rem" }}>Request submitted! Admin will review it.</p>}
           <div className="modal-actions">
             <button className="btn btn-outline" onClick={() => setRequestOpen(false)}>Cancel</button>
             <button className="btn btn-primary" onClick={submitRequest}><FaPaperPlane /> Submit Request</button>

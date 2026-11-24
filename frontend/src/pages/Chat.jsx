@@ -174,7 +174,7 @@ export default function Chat() {
           <select
             value={roleId}
             onChange={(e) => setRoleId(e.target.value)}
-            style={{ padding: "0.5rem 0.75rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "999px", color: "var(--text)" }}
+            style={{ padding: "0.5rem 0.75rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--r-full)", color: "var(--text)" }}
           >
             <option value="">{branch ? `Any ${branch} role (optional)` : "Pick a branch on Roles to choose a role"}</option>
             {roles.map((r) => <option key={r._id} value={r._id}>{r.title}</option>)}
@@ -193,15 +193,15 @@ export default function Chat() {
                 key={chat.id}
                 onClick={() => handleSelectChat(chat)}
                 style={{
-                  padding: "0.75rem", borderRadius: "8px", cursor: "pointer", marginBottom: "0.25rem",
+                  padding: "0.75rem", borderRadius: "var(--radius)", cursor: "pointer", marginBottom: "0.25rem",
                   background: activeChat?.id === chat.id ? "var(--primary-bg)" : "transparent",
                   border: activeChat?.id === chat.id ? "1px solid var(--primary)" : "1px solid transparent",
                   display: "flex", justifyContent: "space-between", alignItems: "center",
                 }}
               >
                 <div style={{ flex: 1, overflow: "hidden" }}>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{chat.title}</div>
-                  {chat.topic && <div style={{ fontSize: "0.72rem", color: "var(--text-muted)", marginTop: "0.15rem" }}>{chat.topic}</div>}
+                  <div style={{ fontSize: "var(--font-size-sm)", fontWeight: 600, color: "var(--text)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{chat.title}</div>
+                  {chat.topic && <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginTop: "0.15rem" }}>{chat.topic}</div>}
                 </div>
                 <div style={{ display: "flex", gap: "0.25rem" }}>
                   <button
@@ -234,7 +234,7 @@ export default function Chat() {
             <div style={{ padding: "1rem 1.5rem", borderBottom: "1px solid var(--border)", background: "var(--surface)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontWeight: 700, color: "var(--text)" }}>{activeChat.title}</div>
-                <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
                   {[activeChat.branch, activeChat.topic].filter(Boolean).join(" · ")}
                 </div>
               </div>
@@ -257,7 +257,7 @@ export default function Chat() {
                     border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
                     padding: "0.75rem 1rem",
                     borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",
-                    fontSize: "0.9rem", lineHeight: 1.6,
+                    fontSize: "var(--font-size-sm)", lineHeight: 1.6,
                     overflowWrap: "break-word",
                   }}
                   className={msg.role === "assistant" ? "markdown-body" : ""}
@@ -271,7 +271,7 @@ export default function Chat() {
                   )}
                 </div>
               ))}
-              {sending && <div style={{ alignSelf: "flex-start", color: "var(--text-muted)", fontSize: "0.85rem" }}>AI is typing...</div>}
+              {sending && <div style={{ alignSelf: "flex-start", color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>AI is typing...</div>}
               <div ref={bottomRef} />
             </div>
 

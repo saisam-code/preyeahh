@@ -35,7 +35,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Tech & Engineering",
     icon: FaLaptopCode,
     color: WHEEL_DOMAIN_COLORS["tech-eng"],
-    bgLight: "rgba(37, 99, 235, 0.08)",
     description: "Build software, design intelligent systems, architecture, and shape the digital world.",
     careers: [
       { name: "Software Engineer", desc: "Design and build web, mobile, and cloud software systems." },
@@ -51,7 +50,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Healthcare",
     icon: FaHeartPulse,
     color: WHEEL_DOMAIN_COLORS["med-health"],
-    bgLight: "rgba(225, 29, 72, 0.08)",
     description: "Heal lives, study disease mechanisms, and improve physical and mental human well-being.",
     careers: [
       { name: "Physician / Doctor", desc: "Diagnose, treat, and heal patients in specialized medical branches." },
@@ -67,7 +65,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Arts & Media",
     icon: FaPalette,
     color: WHEEL_DOMAIN_COLORS["arts-media"],
-    bgLight: "rgba(147, 51, 234, 0.08)",
     description: "Express stories through visual design, cinema, sound, digital illustration, and media.",
     careers: [
       { name: "UI/UX Designer", desc: "Craft intuitive, accessible digital interfaces and products." },
@@ -83,7 +80,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Business",
     icon: FaBriefcase,
     color: WHEEL_DOMAIN_COLORS["business-ent"],
-    bgLight: "rgba(217, 119, 6, 0.08)",
     description: "Launch innovative ventures, drive financial growth, lead teams, and scale global organizations.",
     careers: [
       { name: "Startup Founder", desc: "Identify market opportunities and build high-growth businesses." },
@@ -99,7 +95,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Science & Research",
     icon: FaMicroscope,
     color: WHEEL_DOMAIN_COLORS["science-res"],
-    bgLight: "rgba(8, 145, 178, 0.08)",
     description: "Investigate cosmic mysteries, molecular physics, genetics, and fundamental scientific truths.",
     careers: [
       { name: "Astrophysicist", desc: "Study cosmological bodies, gravitational fields, and space missions." },
@@ -115,7 +110,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Law & Public",
     icon: FaScaleBalanced,
     color: WHEEL_DOMAIN_COLORS["law-public"],
-    bgLight: "rgba(71, 85, 105, 0.08)",
     description: "Uphold justice, craft public policy, defend civil rights, and govern societal institutions.",
     careers: [
       { name: "Corporate Lawyer", desc: "Navigate contracts, mergers, intellectual property, and compliance." },
@@ -131,7 +125,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Education",
     icon: FaBookOpen,
     color: WHEEL_DOMAIN_COLORS["edu-psych"],
-    bgLight: "rgba(234, 88, 12, 0.08)",
     description: "Inspire next generations, design pedagogical innovations, and explore human cognition.",
     careers: [
       { name: "Professor / Lecturer", desc: "Teach specialized academic disciplines and publish research." },
@@ -147,7 +140,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Sports & Fitness",
     icon: FaDumbbell,
     color: WHEEL_DOMAIN_COLORS["sports-fit"],
-    bgLight: "rgba(22, 163, 74, 0.08)",
     description: "Excel in athletic performance, sports analytics, biomechanics, and physical coaching.",
     careers: [
       { name: "Professional Athlete", desc: "Compete at national and international competitive sporting levels." },
@@ -163,7 +155,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Agriculture & Env",
     icon: FaSeedling,
     color: WHEEL_DOMAIN_COLORS["agri-env"],
-    bgLight: "rgba(101, 163, 13, 0.08)",
     description: "Sustain planetary ecosystems, advance regenerative agriculture, and fight climate change.",
     careers: [
       { name: "Agritech Specialist", desc: "Deploy IoT, drones, and precision technology in agriculture." },
@@ -179,7 +170,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Skilled Trades",
     icon: FaWrench,
     color: WHEEL_DOMAIN_COLORS["trades-voc"],
-    bgLight: "rgba(180, 83, 9, 0.08)",
     description: "Master craft expertise, precision engineering, architectural builds, and technical mastery.",
     careers: [
       { name: "Precision CNC Machinist", desc: "Fabricate aerospace-grade metal and precision mechanisms." },
@@ -195,7 +185,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Aviation & Defence",
     icon: FaPlaneDeparture,
     color: WHEEL_DOMAIN_COLORS["aviation-def"],
-    bgLight: "rgba(3, 105, 161, 0.08)",
     description: "Pilot commercial aircraft, navigate flight operations, aerospace engineering, and national security.",
     careers: [
       { name: "Commercial Pilot", desc: "Fly passenger and cargo aircraft across global routes." },
@@ -211,7 +200,6 @@ export const CAREER_DOMAINS = [
     shortTitle: "Emerging & Creative",
     icon: FaRocket,
     color: WHEEL_DOMAIN_COLORS["emerging-unconv"],
-    bgLight: "rgba(219, 39, 119, 0.08)",
     description: "Pioneer new frontiers in content creation, esports, metaverse, culinary arts, and web3.",
     careers: [
       { name: "Content Creator / Streamer", desc: "Build independent media brands and digital communities." },

@@ -179,13 +179,13 @@ export default function GovernmentCareers() {
     <div style={{ maxWidth: 1260, margin: "1.5rem auto", padding: "0 1.25rem" }}>
       {/* ── BREADCRUMB & HEADER ── */}
       <div style={{ marginBottom: "2rem" }}>
-        <div style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: "0.4rem" }}>
+        <div style={{ fontSize: "var(--font-size-xs)", color: "var(--primary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: "0.4rem" }}>
           DISCOVER → CAREER PATHS → GOVERNMENT CAREERS
         </div>
-        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(2rem, 4vw, 2.7rem)", fontWeight: 800, margin: "0.2rem 0 0.5rem" }}>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(var(--font-size-2xl), 4vw, var(--font-size-3xl))", fontWeight: 800, margin: "0.2rem 0 0.5rem" }}>
           India Government Careers &amp; Public Service Intelligence
         </h1>
-        <p style={{ color: "var(--text-muted)", fontSize: "1.05rem", maxWidth: 840, margin: 0, lineHeight: 1.5 }}>
+        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", maxWidth: 840, margin: 0, lineHeight: 1.5 }}>
           Explore official central and state government posts, pay matrix scales, multi-stage examination patterns,
           verified syllabus libraries, and integrate competitive preparation into your Personal Career Planner.
         </p>
@@ -236,11 +236,11 @@ export default function GovernmentCareers() {
                     alignItems: "center",
                     gap: "0.45rem",
                     padding: "0.5rem 0.9rem",
-                    borderRadius: "2rem",
+                    borderRadius: "var(--radius)",
                     border: isSelected ? "1.5px solid var(--primary)" : "1px solid var(--border)",
                     background: isSelected ? "var(--primary-bg)" : "var(--surface)",
                     color: isSelected ? "var(--primary)" : "var(--text)",
-                    fontSize: "0.85rem",
+                    fontSize: "var(--font-size-sm)",
                     fontWeight: 600,
                     cursor: "pointer",
                     whiteSpace: "nowrap",
@@ -258,7 +258,7 @@ export default function GovernmentCareers() {
             style={{
               background: "var(--surface)",
               border: "1px solid var(--border)",
-              borderRadius: "1rem",
+              borderRadius: "var(--radius)",
               padding: "1.25rem",
               marginBottom: "1.75rem",
               display: "grid",
@@ -274,20 +274,20 @@ export default function GovernmentCareers() {
                 placeholder="Search job title, ministry, exam..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: "100%", padding: "0.6rem 0.8rem 0.6rem 2.2rem", borderRadius: "0.5rem", border: "1px solid var(--border)", background: "var(--bg)" }}
+                style={{ width: "100%", padding: "0.6rem 0.8rem 0.6rem 2.2rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--bg)" }}
               />
-              <FaMagnifyingGlass style={{ position: "absolute", left: 10, top: 13, color: "var(--text-muted)", fontSize: "0.9rem" }} />
+              <FaMagnifyingGlass style={{ position: "absolute", left: 10, top: 13, color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }} />
             </div>
 
             {/* Minimum Education Filter */}
             <div>
-              <label style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block", marginBottom: "0.2rem", fontWeight: 600 }}>
+              <label style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", display: "block", marginBottom: "0.2rem", fontWeight: 600 }}>
                 MINIMUM QUALIFICATION
               </label>
               <select
                 value={selectedQualification}
                 onChange={(e) => setSelectedQualification(e.target.value)}
-                style={{ width: "100%", padding: "0.55rem", borderRadius: "0.5rem", border: "1px solid var(--border)", background: "var(--bg)" }}
+                style={{ width: "100%", padding: "0.55rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--bg)" }}
               >
                 {QUALIFICATIONS.map((q) => (
                   <option key={q} value={q}>{q === "all" ? "All Qualifications" : q}</option>
@@ -297,13 +297,13 @@ export default function GovernmentCareers() {
 
             {/* Stage Awareness */}
             <div>
-              <label style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block", marginBottom: "0.2rem", fontWeight: 600 }}>
+              <label style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", display: "block", marginBottom: "0.2rem", fontWeight: 600 }}>
                 STUDENT STAGE AWARENESS
               </label>
               <select
                 value={selectedStage}
                 onChange={(e) => setSelectedStage(e.target.value)}
-                style={{ width: "100%", padding: "0.55rem", borderRadius: "0.5rem", border: "1px solid var(--border)", background: "var(--bg)" }}
+                style={{ width: "100%", padding: "0.55rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--bg)" }}
               >
                 {EDUCATION_STAGES.map((s) => (
                   <option key={s} value={s}>{s === "all" ? "All Stages (Class 6 to PhD)" : s}</option>
@@ -328,7 +328,7 @@ export default function GovernmentCareers() {
           {loading ? (
             <div style={{ textAlign: "center", padding: "4rem 0" }}>Loading verified government careers...</div>
           ) : jobs.length === 0 ? (
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "3rem", textAlign: "center" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "3rem", textAlign: "center" }}>
               <p style={{ color: "var(--text-muted)" }}>No government posts found matching the selected filters.</p>
               <button
                 className="btn btn-outline btn-sm"
@@ -347,7 +347,7 @@ export default function GovernmentCareers() {
                     style={{
                       background: "var(--surface)",
                       border: "1px solid var(--border)",
-                      borderRadius: "1rem",
+                      borderRadius: "var(--radius)",
                       padding: "1.5rem",
                       display: "flex",
                       flexDirection: "column",
@@ -358,26 +358,26 @@ export default function GovernmentCareers() {
                     <div>
                       {/* Top Badges */}
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem", gap: "0.5rem" }}>
-                        <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                        <span style={{ fontSize: "var(--font-size-xs)", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "var(--radius)", fontWeight: 700 }}>
                           {job.category}
                         </span>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                          <span style={{ fontSize: "0.72rem", border: "1px solid var(--border)", borderRadius: "1rem", padding: "0.15rem 0.5rem", color: "var(--text-muted)" }}>
+                          <span style={{ fontSize: "var(--font-size-xs)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.15rem 0.5rem", color: "var(--text-muted)" }}>
                             {job.group} · {job.gazettedStatus}
                           </span>
                         </div>
                       </div>
 
                       {/* Title */}
-                      <h3 style={{ fontSize: "1.25rem", margin: "0 0 0.35rem", fontWeight: 800 }}>
+                      <h3 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.35rem", fontWeight: 800 }}>
                         {job.title}
                       </h3>
-                      <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
+                      <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "1rem" }}>
                         {job.department}
                       </div>
 
                       {/* Key Metrics Strip */}
-                      <div style={{ background: "var(--surface-mid)", borderRadius: "0.6rem", padding: "0.75rem 1rem", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.5rem", fontSize: "0.82rem", marginBottom: "1rem" }}>
+                      <div style={{ background: "var(--surface-mid)", borderRadius: "var(--radius)", padding: "0.75rem 1rem", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "0.5rem", fontSize: "var(--font-size-sm)", marginBottom: "1rem" }}>
                         <div>
                           <span style={{ color: "var(--text-muted)", display: "block" }}>Pay Level &amp; Scale</span>
                           <strong style={{ color: "var(--primary)" }}>{job.salary?.payLevel || "Level 7"}</strong>
@@ -396,7 +396,7 @@ export default function GovernmentCareers() {
                         </div>
                       </div>
 
-                      <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                      <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "1rem", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                         <FaCircleCheck style={{ color: "var(--primary)" }} />
                         <span>Recruitment Exam: <strong>{job.examination?.examName}</strong> ({job.examination?.conductingBody})</span>
                       </div>
@@ -408,11 +408,11 @@ export default function GovernmentCareers() {
                         onClick={() => handleToggleCompare(job.slug)}
                         style={{
                           background: isCompared ? "var(--primary)" : "transparent",
-                          color: isCompared ? "#fff" : "var(--text)",
+                          color: isCompared ? "var(--white)" : "var(--text)",
                           border: isCompared ? "none" : "1px solid var(--border)",
-                          borderRadius: "0.4rem",
+                          borderRadius: "var(--radius)",
                           padding: "0.4rem 0.75rem",
-                          fontSize: "0.8rem",
+                          fontSize: "var(--font-size-xs)",
                           cursor: "pointer",
                           fontWeight: 600,
                           display: "inline-flex",
@@ -428,7 +428,7 @@ export default function GovernmentCareers() {
                         onClick={() => handleOpenJobProfile(job.slug)}
                         style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.45rem 1rem" }}
                       >
-                        Detailed Profile <FaArrowRight style={{ fontSize: "0.75rem" }} />
+                        Detailed Profile <FaArrowRight style={{ fontSize: "var(--font-size-xs)" }} />
                       </button>
                     </div>
                   </div>
@@ -443,10 +443,10 @@ export default function GovernmentCareers() {
       {activeTab === "syllabus" && (
         <div>
           <div style={{ marginBottom: "1.5rem" }}>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 800, margin: "0 0 0.4rem" }}>
+            <h2 style={{ fontSize: "var(--font-size-xl)", fontWeight: 800, margin: "0 0 0.4rem" }}>
               Multi-Level Examination Syllabus Library
             </h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", margin: 0 }}>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", margin: 0 }}>
               Examination outlines appear here when verified source records are available.
             </p>
           </div>
@@ -455,14 +455,14 @@ export default function GovernmentCareers() {
             {exams.length === 0 ? (
               <p style={{ color: "var(--text-muted)" }}>No verified examination syllabus records have been published yet.</p>
             ) : exams.map((ex) => (
-              <div key={ex._id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
+              <div key={ex._id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem", flexWrap: "wrap", gap: "0.5rem" }}>
                   <div>
-                    <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                    <span style={{ fontSize: "var(--font-size-xs)", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "var(--radius)", fontWeight: 700 }}>
                       {ex.examination?.conductingBody}
                     </span>
-                    <h3 style={{ fontSize: "1.3rem", margin: "0.3rem 0 0.2rem", fontWeight: 800 }}>{ex.examination?.examName}</h3>
-                    <div style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>Target Post: {ex.title} · {ex.department}</div>
+                    <h3 style={{ fontSize: "var(--font-size-lg)", margin: "0.3rem 0 0.2rem", fontWeight: 800 }}>{ex.examination?.examName}</h3>
+                    <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>Target Post: {ex.title} · {ex.department}</div>
                   </div>
 
                   <button
@@ -476,25 +476,25 @@ export default function GovernmentCareers() {
                 {/* Papers Grid */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1rem", marginTop: "1rem" }}>
                   {ex.syllabus?.papers?.map((paper, pi) => (
-                    <div key={pi} style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1rem" }}>
+                    <div key={pi} style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.4rem" }}>
-                        <strong style={{ fontSize: "0.95rem" }}>{paper.paperName}</strong>
-                        <span style={{ fontSize: "0.75rem", background: "var(--badge-bg)", padding: "0.15rem 0.5rem", borderRadius: "0.4rem", fontWeight: 700 }}>
+                        <strong style={{ fontSize: "var(--font-size-md)" }}>{paper.paperName}</strong>
+                        <span style={{ fontSize: "var(--font-size-xs)", background: "var(--badge-bg)", padding: "0.15rem 0.5rem", borderRadius: "var(--radius)", fontWeight: 700 }}>
                           {paper.totalMarks} Marks
                         </span>
                       </div>
-                      <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+                      <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
                         Type: {paper.questionType} · Negative: {paper.negativeMarking}
                       </div>
 
                       {/* Subjects & Topics */}
                       <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                         {paper.subjects?.map((sub, si) => (
-                          <div key={si} style={{ fontSize: "0.82rem", borderTop: "1px solid var(--border)", paddingTop: "0.4rem" }}>
+                          <div key={si} style={{ fontSize: "var(--font-size-sm)", borderTop: "1px solid var(--border)", paddingTop: "0.4rem" }}>
                             <span style={{ fontWeight: 600, color: "var(--primary)" }}>{sub.subjectName}</span>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginTop: "0.25rem" }}>
                               {sub.topics?.map((top, ti) => (
-                                <span key={ti} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "0.3rem", padding: "0.1rem 0.4rem", fontSize: "0.74rem" }}>
+                                <span key={ti} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.1rem 0.4rem", fontSize: "var(--font-size-xs)" }}>
                                   {top.topicName}
                                 </span>
                               ))}
@@ -515,10 +515,10 @@ export default function GovernmentCareers() {
       {activeTab === "notifications" && (
         <div>
           <div style={{ marginBottom: "1.5rem" }}>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 800, margin: "0 0 0.4rem" }}>
+            <h2 style={{ fontSize: "var(--font-size-xl)", fontWeight: 800, margin: "0 0 0.4rem" }}>
               Verified Recruitment Notifications &amp; Schedules
             </h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", margin: 0 }}>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", margin: 0 }}>
               Recruitment notices appear here when current official records have been verified.
             </p>
           </div>
@@ -527,29 +527,29 @@ export default function GovernmentCareers() {
             {notifications.length === 0 ? (
               <p style={{ color: "var(--text-muted)" }}>No verified recruitment notifications have been published yet.</p>
             ) : notifications.map((notif) => (
-              <div key={notif._id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.5rem" }}>
+              <div key={notif._id} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.75rem" }}>
-                  <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                  <span style={{ fontSize: "var(--font-size-xs)", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "var(--radius)", fontWeight: 700 }}>
                     {notif.conductingBody}
                   </span>
-                  <span style={{ fontSize: "0.75rem", background: notif.status === "APPLICATIONS_OPEN" ? "#10b981" : "#f59e0b", color: "#fff", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                  <span style={{ fontSize: "var(--font-size-xs)", background: notif.status === "APPLICATIONS_OPEN" ? "var(--success)" : "var(--warning)", color: "var(--on-success)", padding: "0.2rem 0.6rem", borderRadius: "var(--radius)", fontWeight: 700 }}>
                     {notif.status.replace(/_/g, " ")}
                   </span>
                 </div>
 
-                <h3 style={{ fontSize: "1.2rem", margin: "0 0 0.4rem", fontWeight: 800 }}>{notif.title}</h3>
-                <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
+                <h3 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.4rem", fontWeight: 800 }}>{notif.title}</h3>
+                <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "1rem" }}>
                   Notification No: {notif.notificationNumber || "Official Gazette"} · Year: {notif.recruitmentYear}
                 </div>
 
                 {/* Dates Box */}
-                <div style={{ background: "var(--surface-mid)", borderRadius: "0.6rem", padding: "0.75rem", fontSize: "0.82rem", marginBottom: "1rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                <div style={{ background: "var(--surface-mid)", borderRadius: "var(--radius)", padding: "0.75rem", fontSize: "var(--font-size-sm)", marginBottom: "1rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                   <div><strong>Application Window:</strong> {new Date(notif.importantDates?.applicationStartDate).toLocaleDateString()} to {new Date(notif.importantDates?.applicationEndDate).toLocaleDateString()}</div>
                   <div><strong>Exam Date:</strong> {new Date(notif.importantDates?.examDate).toLocaleDateString()}</div>
                   {notif.totalVacancies && <div><strong>Total Vacancies:</strong> {notif.totalVacancies.toLocaleString("en-IN")} Posts</div>}
                 </div>
 
-                <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "1rem" }}>
+                <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "1rem" }}>
                   <strong>Eligibility:</strong> {notif.eligibilitySummary}
                 </div>
 
@@ -558,9 +558,9 @@ export default function GovernmentCareers() {
                     href={notif.officialWebsiteUrl}
                     target="_blank"
                     rel="noreferrer"
-                    style={{ fontSize: "0.8rem", color: "var(--primary)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.3rem", textDecoration: "none" }}
+                    style={{ fontSize: "var(--font-size-xs)", color: "var(--primary)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.3rem", textDecoration: "none" }}
                   >
-                    Official Portal <FaArrowUpRightFromSquare style={{ fontSize: "0.7rem" }} />
+                    Official Portal <FaArrowUpRightFromSquare style={{ fontSize: "var(--font-size-xs)" }} />
                   </a>
 
                   {notif.applyOnlineUrl && (
@@ -569,7 +569,7 @@ export default function GovernmentCareers() {
                       target="_blank"
                       rel="noreferrer"
                       className="btn btn-primary btn-sm"
-                      style={{ fontSize: "0.8rem", textDecoration: "none" }}
+                      style={{ fontSize: "var(--font-size-xs)", textDecoration: "none" }}
                     >
                       Apply Online
                     </a>
@@ -585,16 +585,16 @@ export default function GovernmentCareers() {
       {activeTab === "compare" && (
         <div>
           <div style={{ marginBottom: "1.5rem" }}>
-            <h2 style={{ fontSize: "1.5rem", fontWeight: 800, margin: "0 0 0.4rem" }}>
+            <h2 style={{ fontSize: "var(--font-size-xl)", fontWeight: 800, margin: "0 0 0.4rem" }}>
               Side-by-Side Government Career Comparison
             </h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "0.95rem", margin: 0 }}>
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", margin: 0 }}>
               Compare pay matrix scales, examination difficulty, posting stability, and promotional ladders across sectors.
             </p>
           </div>
 
           {!comparisonData ? (
-            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "3rem", textAlign: "center" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "3rem", textAlign: "center" }}>
               <p style={{ color: "var(--text-muted)", margin: "0 0 1rem" }}>
                 Select 2 to 4 roles from the Government Posts tab to generate a side-by-side analytical comparison.
               </p>
@@ -605,15 +605,15 @@ export default function GovernmentCareers() {
           ) : (
             <div>
               {/* Comparison Matrix Table */}
-              <div style={{ overflowX: "auto", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "1rem", marginBottom: "2rem" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.88rem", textAlign: "left" }}>
+              <div style={{ overflowX: "auto", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", marginBottom: "2rem" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--font-size-sm)", textAlign: "left" }}>
                   <thead>
                     <tr style={{ borderBottom: "2px solid var(--border)", background: "var(--surface-mid)" }}>
                       <th style={{ padding: "1rem", width: "20%" }}>Criterion</th>
                       {comparisonData.jobs?.map((j) => (
                         <th key={j.slug} style={{ padding: "1rem" }}>
-                          <strong style={{ fontSize: "1rem", display: "block" }}>{j.title}</strong>
-                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{j.department}</span>
+                          <strong style={{ fontSize: "var(--font-size-md)", display: "block" }}>{j.title}</strong>
+                          <span style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>{j.department}</span>
                         </th>
                       ))}
                     </tr>
@@ -676,11 +676,11 @@ export default function GovernmentCareers() {
 
               {/* AI Comparative Insights */}
               {comparisonData.aiAnalysis && (
-                <div style={{ background: "var(--primary-bg)", border: "1px solid rgba(37,99,235,0.2)", borderRadius: "1rem", padding: "1.5rem" }}>
+                <div style={{ background: "var(--primary-bg)", border: "1px solid color-mix(in srgb, var(--info) 20%, transparent)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem", color: "var(--primary)", fontWeight: 700 }}>
                     <FaScaleBalanced /> AI Career Trade-off Analysis
                   </div>
-                  <p style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.6, color: "var(--text)" }}>
+                  <p style={{ margin: 0, fontSize: "var(--font-size-sm)", lineHeight: 1.6, color: "var(--text)" }}>
                     {comparisonData.aiAnalysis}
                   </p>
                 </div>
@@ -693,7 +693,7 @@ export default function GovernmentCareers() {
       {/* ── DETAILED JOB PROFILE MODAL ── */}
       {selectedJob && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}>
-          <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.6)" }} onClick={() => setSelectedJob(null)} />
+          <div style={{ position: "absolute", inset: 0, background: "color-mix(in srgb, var(--ink-900) 60%, transparent)" }} onClick={() => setSelectedJob(null)} />
           <div
             style={{
               position: "relative",
@@ -702,9 +702,9 @@ export default function GovernmentCareers() {
               maxHeight: "90vh",
               overflowY: "auto",
               background: "var(--surface)",
-              borderRadius: "1.5rem",
+              borderRadius: "var(--radius)",
               padding: "2rem",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+              boxShadow: "0 20px 60px color-mix(in srgb, var(--ink-900) 30%, transparent)",
               zIndex: 1001,
             }}
           >
@@ -712,23 +712,23 @@ export default function GovernmentCareers() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1.5rem" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.3rem" }}>
-                  <span style={{ fontSize: "0.75rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "1rem", fontWeight: 700 }}>
+                  <span style={{ fontSize: "var(--font-size-xs)", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.2rem 0.6rem", borderRadius: "var(--radius)", fontWeight: 700 }}>
                     {selectedJob.category}
                   </span>
-                  <span style={{ fontSize: "0.75rem", border: "1px solid var(--border)", borderRadius: "1rem", padding: "0.15rem 0.5rem" }}>
+                  <span style={{ fontSize: "var(--font-size-xs)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.15rem 0.5rem" }}>
                     {selectedJob.group} · {selectedJob.gazettedStatus}
                   </span>
-                  <span style={{ fontSize: "0.72rem", background: "#10b981", color: "#fff", padding: "0.15rem 0.5rem", borderRadius: "1rem", fontWeight: 700 }}>
+                  <span style={{ fontSize: "var(--font-size-xs)", background: "var(--success)", color: "var(--on-success)", padding: "0.15rem 0.5rem", borderRadius: "var(--radius)", fontWeight: 700 }}>
                     VERIFIED OFFICIAL
                   </span>
                 </div>
-                <h2 style={{ fontSize: "1.8rem", margin: "0 0 0.2rem", fontWeight: 800 }}>{selectedJob.title}</h2>
-                <div style={{ fontSize: "0.9rem", color: "var(--text-muted)" }}>{selectedJob.department} · {selectedJob.ministry}</div>
+                <h2 style={{ fontSize: "var(--font-size-2xl)", margin: "0 0 0.2rem", fontWeight: 800 }}>{selectedJob.title}</h2>
+                <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>{selectedJob.department} · {selectedJob.ministry}</div>
               </div>
 
               <button
                 onClick={() => setSelectedJob(null)}
-                style={{ background: "transparent", border: "none", fontSize: "1.3rem", cursor: "pointer", color: "var(--text-muted)" }}
+                style={{ background: "transparent", border: "none", fontSize: "var(--font-size-lg)", cursor: "pointer", color: "var(--text-muted)" }}
               >
                 <FaXmark />
               </button>
@@ -736,38 +736,38 @@ export default function GovernmentCareers() {
 
             {/* Overview */}
             <div style={{ marginBottom: "1.5rem" }}>
-              <h3 style={{ fontSize: "1.1rem", fontWeight: 700, marginBottom: "0.4rem" }}>Role Overview &amp; Mandate</h3>
-              <p style={{ color: "var(--text)", fontSize: "0.94rem", lineHeight: 1.6, margin: 0 }}>
+              <h3 style={{ fontSize: "var(--font-size-md)", fontWeight: 700, marginBottom: "0.4rem" }}>Role Overview &amp; Mandate</h3>
+              <p style={{ color: "var(--text)", fontSize: "var(--font-size-md)", lineHeight: 1.6, margin: 0 }}>
                 {selectedJob.overview}
               </p>
             </div>
 
             {/* Salary Breakdown Card */}
-            <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "1rem", padding: "1.25rem", marginBottom: "1.5rem" }}>
+            <div style={{ background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem", marginBottom: "1.5rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem", flexWrap: "wrap", gap: "0.5rem" }}>
-                <strong style={{ fontSize: "1.05rem", color: "var(--primary)" }}>
+                <strong style={{ fontSize: "var(--font-size-md)", color: "var(--primary)" }}>
                   7th CPC Pay Structure: {selectedJob.salary?.payLevel}
                 </strong>
-                <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>Scale: {selectedJob.salary?.payScale}</span>
+                <span style={{ fontSize: "var(--font-size-sm)", fontWeight: 600 }}>Scale: {selectedJob.salary?.payScale}</span>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem", fontSize: "0.85rem", marginBottom: "0.8rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0.75rem", fontSize: "var(--font-size-sm)", marginBottom: "0.8rem" }}>
                 <div><strong>Basic Pay:</strong> ₹{selectedJob.salary?.basicPay?.toLocaleString("en-IN")}</div>
                 <div><strong>In-Hand Monthly:</strong> ₹{selectedJob.salary?.approxInHandMonthly?.min?.toLocaleString("en-IN")} - ₹{selectedJob.salary?.approxInHandMonthly?.max?.toLocaleString("en-IN")}</div>
                 <div><strong>Class X City Gross:</strong> ₹{selectedJob.salary?.approxGrossMonthly?.classXCity?.toLocaleString("en-IN")}</div>
                 <div><strong>Class Z City Gross:</strong> ₹{selectedJob.salary?.approxGrossMonthly?.classZCity?.toLocaleString("en-IN")}</div>
               </div>
 
-              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", borderTop: "1px solid var(--border)", paddingTop: "0.6rem" }}>
+              <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", borderTop: "1px solid var(--border)", paddingTop: "0.6rem" }}>
                 <strong>Allowances &amp; Benefits:</strong> {selectedJob.salary?.allowances?.join(" • ")}
               </div>
             </div>
 
             {/* Eligibility & Exam Procedure */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "1.25rem", marginBottom: "1.5rem" }}>
-              <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-                <h4 style={{ margin: "0 0 0.5rem", fontSize: "0.95rem", color: "var(--primary)" }}>Statutory Eligibility</h4>
-                <ul style={{ margin: 0, paddingLeft: "1.2rem", fontSize: "0.85rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+                <h4 style={{ margin: "0 0 0.5rem", fontSize: "var(--font-size-md)", color: "var(--primary)" }}>Statutory Eligibility</h4>
+                <ul style={{ margin: 0, paddingLeft: "1.2rem", fontSize: "var(--font-size-sm)", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                   <li><strong>Education:</strong> {selectedJob.eligibility?.minimumEducation} ({selectedJob.eligibility?.requiredSpecialization})</li>
                   <li><strong>Age Limit:</strong> {selectedJob.eligibility?.minAge} to {selectedJob.eligibility?.maxAge} years</li>
                   <li><strong>Final Year Students:</strong> {selectedJob.eligibility?.finalYearEligible ? "Eligible to appear" : "Degree required at application"}</li>
@@ -775,9 +775,9 @@ export default function GovernmentCareers() {
                 </ul>
               </div>
 
-              <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "0.75rem", padding: "1.25rem" }}>
-                <h4 style={{ margin: "0 0 0.5rem", fontSize: "0.95rem", color: "var(--primary)" }}>Selection Stages ({selectedJob.examination?.conductingBody})</h4>
-                <ul style={{ margin: 0, paddingLeft: "1.2rem", fontSize: "0.85rem", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+                <h4 style={{ margin: "0 0 0.5rem", fontSize: "var(--font-size-md)", color: "var(--primary)" }}>Selection Stages ({selectedJob.examination?.conductingBody})</h4>
+                <ul style={{ margin: 0, paddingLeft: "1.2rem", fontSize: "var(--font-size-sm)", display: "flex", flexDirection: "column", gap: "0.3rem" }}>
                   {selectedJob.examination?.selectionStages?.map((st, i) => (
                     <li key={i}>{st}</li>
                   ))}
@@ -787,10 +787,10 @@ export default function GovernmentCareers() {
 
             {/* Career Progression Ladder */}
             <div style={{ marginBottom: "1.5rem" }}>
-              <h3 style={{ fontSize: "1.05rem", fontWeight: 700, marginBottom: "0.6rem" }}>Promotion Hierarchy</h3>
+              <h3 style={{ fontSize: "var(--font-size-md)", fontWeight: 700, marginBottom: "0.6rem" }}>Promotion Hierarchy</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                 {selectedJob.careerProgression?.map((p) => (
-                  <div key={p.levelOrder} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--surface-mid)", padding: "0.5rem 0.8rem", borderRadius: "0.5rem", fontSize: "0.85rem" }}>
+                  <div key={p.levelOrder} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--surface-mid)", padding: "0.5rem 0.8rem", borderRadius: "var(--radius)", fontSize: "var(--font-size-sm)" }}>
                     <span><strong>Stage {p.levelOrder}:</strong> {p.designation}</span>
                     <span style={{ color: "var(--text-muted)" }}>{p.typicalTimeYears} · {p.payLevel}</span>
                   </div>
@@ -799,19 +799,19 @@ export default function GovernmentCareers() {
             </div>
 
             {/* Official Source & Verification Citation */}
-            <div style={{ background: "rgba(0,0,0,0.03)", borderRadius: "0.6rem", padding: "0.75rem 1rem", fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
+            <div style={{ background: "color-mix(in srgb, var(--ink-900) 3%, transparent)", borderRadius: "var(--radius)", padding: "0.75rem 1rem", fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginBottom: "1.5rem" }}>
               Verified Source: <a href={selectedJob.verification?.sourceUrl} target="_blank" rel="noreferrer" style={{ color: "var(--primary)" }}>{selectedJob.verification?.sourceName}</a> · Recruitment Year: {selectedJob.verification?.recruitmentYear} · Verified By: {selectedJob.verification?.verifiedByAdmin}
             </div>
 
             {/* Action Bar: Add to Planner */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", borderTop: "1px solid var(--border)", paddingTop: "1rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <label style={{ fontSize: "0.85rem", fontWeight: 600 }}>Target Exam Date (Optional):</label>
+                <label style={{ fontSize: "var(--font-size-sm)", fontWeight: 600 }}>Target Exam Date (Optional):</label>
                 <input
                   type="date"
                   value={targetExamDate}
                   onChange={(e) => setTargetExamDate(e.target.value)}
-                  style={{ padding: "0.4rem 0.6rem", borderRadius: "0.4rem", border: "1px solid var(--border)", fontSize: "0.85rem" }}
+                  style={{ padding: "0.4rem 0.6rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", fontSize: "var(--font-size-sm)" }}
                 />
               </div>
 

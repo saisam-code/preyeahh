@@ -1,15 +1,15 @@
 .lp-wrap { min-height: calc(100vh - 70px); display: flex; align-items: center; justify-content: center; padding: 2rem 1rem; }
-.lp-card { width: 100%; max-width: 440px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 2.25rem 2rem; box-shadow: var(--shadow-float); color: var(--text); }
+.lp-card { width: 100%; max-width: 440px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2.25rem 2rem; box-shadow: var(--shadow-float); color: var(--text); }
 .lp-logo { height: 40px; margin-bottom: .75rem; }
-.lp-card h1 { margin: 0 0 .25rem; font-size: 1.6rem; color: var(--text); }
-.lp-sub { margin: 0 0 1.25rem; color: var(--text-muted); font-size: .9rem; }
+.lp-card h1 { margin: 0 0 .25rem; font-size: var(--font-size-xl); color: var(--text); }
+.lp-sub { margin: 0 0 1.25rem; color: var(--text-muted); font-size: var(--font-size-sm); }
 .lp-toggle { margin-bottom: 1.25rem; }
 .lp-full { width: 100%; }
 .lp-err { color: var(--error); display: block; margin-top: .25rem; }
-.lp-or { display: flex; align-items: center; gap: .6rem; margin: 1.1rem 0; color: var(--text-muted); font-size: .75rem; }
+.lp-or { display: flex; align-items: center; gap: .6rem; margin: 1.1rem 0; color: var(--text-muted); font-size: var(--font-size-xs); }
 .lp-or::before, .lp-or::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 .lp-google { display: flex; align-items: center; justify-content: center; gap: .6rem; text-decoration: none; }
-.lp-note { display: block; text-align: center; margin-top: .75rem; font-size: .75rem; color: var(--text-muted); }
-.lp-foot { text-align: center; margin: 1.25rem 0 0; font-size: .9rem; color: var(--text-muted); }
+.lp-note { display: block; text-align: center; margin-top: .75rem; font-size: var(--font-size-xs); color: var(--text-muted); }
+.lp-foot { text-align: center; margin: 1.25rem 0 0; font-size: var(--font-size-sm); color: var(--text-muted); }
 .lp-foot a { color: var(--primary); font-weight: 600; text-decoration: underline; }
 @media (max-width: 480px) { .lp-card { padding: 1.75rem 1.25rem; } }

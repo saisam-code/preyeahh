@@ -22,7 +22,7 @@ createRoot(document.getElementById("root")).render(
                 duration: 3500,
                 style: {
                   fontFamily: "'Inter', system-ui, sans-serif",
-                  fontSize: "0.875rem",
+                  fontSize: "var(--font-size-sm)",
                 },
               }}
             />

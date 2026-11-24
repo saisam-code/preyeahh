@@ -116,7 +116,7 @@ export default function GoogleOnboarding() {
   if (!ready) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
-        <p style={{ color: "var(--text-dim, #888)" }}>Setting up your account…</p>
+        <p style={{ color: "var(--text-dim, var(--text-muted))" }}>Setting up your account…</p>
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function GoogleOnboarding() {
       <div className="login-card" style={{ maxWidth: 420 }}>
         <img src={preyeahhLogo} alt="PREYEAHH Logo" className="modal-logo" style={{ height: "40px", marginBottom: "0.5rem" }} />
         <h2 style={{ marginBottom: "0.5rem" }}>One last step</h2>
-        <p style={{ color: "var(--text-dim, #888)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
+        <p style={{ color: "var(--text-dim, var(--text-muted))", fontSize: "var(--font-size-sm)", marginBottom: "1.5rem" }}>
           Your Google account is verified. Just tell us your engineering branch so we can personalise
           your experience.
         </p>
@@ -167,13 +167,13 @@ export default function GoogleOnboarding() {
                 maxLength={20}
               />
             )}
-            <small style={{ fontSize: "0.75rem", color: "var(--muted, #888)", marginTop: "0.25rem", display: "block" }}>
+            <small style={{ fontSize: "var(--font-size-xs)", color: "var(--muted, var(--text-muted))", marginTop: "0.25rem", display: "block" }}>
               Only @gmail.com and @nbkrist.org accounts are supported.
             </small>
           </div>
 
           {error && (
-            <p style={{ color: "#ef4444", fontSize: "0.85rem", marginBottom: "0.75rem" }}>{error}</p>
+            <p style={{ color: "var(--danger)", fontSize: "var(--font-size-sm)", marginBottom: "0.75rem" }}>{error}</p>
           )}
 
           <button
