@@ -21,6 +21,7 @@ import {
   getDashboardRecent,
   getAllInstitutions,
   updateInstitutionStatus,
+  getAdminAuditLogs,
 } from "../controllers/adminController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
@@ -62,6 +63,7 @@ router.get("/students/:studentId/roadmaps", protect, authorize("admin"), getStud
 router.get("/chats", protect, authorize("admin"), getAllChats);
 router.get("/roadmaps", protect, authorize("admin"), getAllRoadmaps);
 router.get("/messages", protect, authorize("admin"), getAllMessages);
+router.get("/audit-logs", protect, authorize("admin"), getAdminAuditLogs);
 
 // ── Institution management (admin-only) (Phase 1.4) ─────────────────────────
 router.get("/institutions", protect, authorize("admin"), getAllInstitutions);

@@ -21,6 +21,8 @@ import {
   FaChevronDown,
   FaChevronRight,
   FaCompass,
+  FaBuilding,
+  FaClipboardList,
 } from "react-icons/fa6";
 
 import AdminLogin from "../components/admin/AdminLogin.jsx";
@@ -38,6 +40,8 @@ import AdminGuidance from "../components/admin/AdminGuidance.jsx";
 import AdminRequests from "../components/admin/AdminRequests.jsx";
 import AdminInterest from "../components/admin/AdminInterest.jsx";
 import AdminGuides from "../components/admin/AdminGuides.jsx";
+import AdminInstitutions from "../components/admin/AdminInstitutions.jsx";
+import AdminAuditLogs from "../components/admin/AdminAuditLogs.jsx";
 
 import {
   fetchAdminMe,
@@ -77,6 +81,7 @@ export default function Admin() {
     pendingRequests: 0,
     pendingGuides: 0,
     unverifiedStudents: 0,
+    pendingInstitutions: 0,
   });
 
   // Check initial admin session
@@ -114,10 +119,13 @@ export default function Admin() {
             pendingRequests: res.data.pending.pendingRoleRequests || 0,
             pendingGuides: res.data.pending.pendingGuideRequests || 0,
             unverifiedStudents: res.data.pending.unverifiedStudents || 0,
+            pendingInstitutions: res.data.pending.pendingInstitutions || 0,
           });
         }
       })
-      .catch(() => {});
+      .catch((error) => {
+        toast.error(error.response?.data?.message || "Could not load admin notification counts");
+      });
   }, [admin]);
 
   useEffect(() => {
@@ -246,6 +254,10 @@ export default function Admin() {
         onBack={handleBackToStudents}
       />
     );
+  } else if (section === "institutions") {
+    ActivePanel = <AdminInstitutions onUpdated={loadBadges} />;
+  } else if (section === "audit-logs") {
+    ActivePanel = <AdminAuditLogs />;
   } else {
     const LegacyComponents = {
       roles: AdminRoles,
@@ -466,6 +478,30 @@ export default function Admin() {
                     {pendingBadges.pendingGuides}
                   </span>
                 )}
+              </button>
+
+              <button
+                className={`sidebar-nav-item ${section === "institutions" ? "active" : ""}`}
+                onClick={() => navigateTo("institutions")}
+              >
+                <FaBuilding className="nav-item-icon" />
+                <span>Institutions</span>
+                {pendingBadges.pendingInstitutions > 0 && (
+                  <span className="sidebar-badge-count badge-warning">
+                    {pendingBadges.pendingInstitutions}
+                  </span>
+                )}
+              </button>
+            </div>
+
+            <div className="nav-group-section">
+              <span className="nav-group-title">SECURITY</span>
+              <button
+                className={`sidebar-nav-item ${section === "audit-logs" ? "active" : ""}`}
+                onClick={() => navigateTo("audit-logs")}
+              >
+                <FaClipboardList className="nav-item-icon" />
+                <span>Admin Audit Log</span>
               </button>
             </div>
           </div>

@@ -15,6 +15,7 @@ import {
   FaUser,
   FaCircle,
   FaRegClock,
+  FaBuilding,
 } from "react-icons/fa6";
 import AdminCard from "./AdminCard.jsx";
 import {
@@ -49,6 +50,9 @@ export default function AdminDashboard({
       if (recentRes.status === "fulfilled") {
         setRecentData(recentRes.value.data);
       }
+      if (overviewRes.status === "rejected" || recentRes.status === "rejected") {
+        toast.error("Some dashboard data could not be loaded. Please refresh to retry.");
+      }
     } catch {
       toast.error("Failed to load dashboard data");
     } finally {
@@ -77,18 +81,22 @@ export default function AdminDashboard({
     totalChats: 0,
     totalRoadmaps: 0,
     totalMessages: 0,
+    totalInstitutions: 0,
+    pendingInstitutions: 0,
   };
 
   const pending = recentData?.pending || {
     pendingGuideRequests: 0,
     pendingRoleRequests: 0,
     unverifiedStudents: s.unverifiedStudents || 0,
+    pendingInstitutions: s.pendingInstitutions || 0,
   };
 
   const hasAttentionNeeded =
     pending.pendingGuideRequests > 0 ||
     pending.pendingRoleRequests > 0 ||
-    pending.unverifiedStudents > 0;
+    pending.unverifiedStudents > 0 ||
+    pending.pendingInstitutions > 0;
 
   return (
     <div className="admin-dashboard-container">
@@ -154,6 +162,15 @@ export default function AdminDashboard({
                 onClick={() => onNavigate("guides")}
               >
                 <span>{pending.pendingGuideRequests} Pending Guide Request{pending.pendingGuideRequests !== 1 ? "s" : ""}</span>
+                <FaArrowRight />
+              </button>
+            )}
+            {pending.pendingInstitutions > 0 && (
+              <button
+                className="attention-chip chip-warning"
+                onClick={() => onNavigate("institutions")}
+              >
+                <span>{pending.pendingInstitutions} Institution Application{pending.pendingInstitutions !== 1 ? "s" : ""} to Review</span>
                 <FaArrowRight />
               </button>
             )}
@@ -239,6 +256,17 @@ export default function AdminDashboard({
             badgeType="neutral"
             variant="neutral"
             onClick={() => onNavigate("messages")}
+          />
+
+          <AdminCard
+            icon={FaBuilding}
+            label="Institutions"
+            value={s.totalInstitutions}
+            subtext={`${s.pendingInstitutions} awaiting review`}
+            badgeText={s.pendingInstitutions > 0 ? "Review" : "Managed"}
+            badgeType={s.pendingInstitutions > 0 ? "warning" : "neutral"}
+            variant={s.pendingInstitutions > 0 ? "warning" : "neutral"}
+            onClick={() => onNavigate("institutions")}
           />
         </div>
       </section>

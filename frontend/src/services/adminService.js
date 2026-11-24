@@ -73,3 +73,15 @@ export function fetchAllRoadmaps(params = {}) {
 export function fetchAllMessages(params = {}) {
   return api.get("/admin/messages", { params }).then((r) => r.data);
 }
+
+export function fetchAllInstitutions() {
+  return api.get("/admin/institutions").then((r) => r.data);
+}
+
+export function updateInstitutionStatus(institutionId, status) {
+  return api.put(`/admin/institutions/${institutionId}/status`, { status }).then((r) => r.data);
+}
+
+export function fetchAdminAuditLogs(params = {}) {
+  return api.get("/admin/audit-logs", { params }).then((r) => r.data);
+}

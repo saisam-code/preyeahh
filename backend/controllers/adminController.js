@@ -8,6 +8,8 @@ import Guide from "../models/Guide.js";
 import RoleRequest from "../models/RoleRequest.js";
 import RoleInterest from "../models/RoleInterest.js";
 import Student from "../models/Student.js";
+import AuditLog from "../models/AuditLog.js";
+import { Institution } from "../models/Institution.js";
 import escapeRegex from "../utils/escapeRegex.js";
 import Chat from "../models/Chat.js";
 import AIRoadmap from "../models/AIRoadmap.js";
@@ -233,12 +235,14 @@ export const getStudentRoadmaps = asyncHandler(async (req, res) => {
 });
 
 export const getAdminOverviewStats = asyncHandler(async (req, res) => {
-  const [totalStudents, verifiedStudents, totalChats, totalRoadmaps, totalMessages] = await Promise.all([
+  const [totalStudents, verifiedStudents, totalChats, totalRoadmaps, totalMessages, totalInstitutions, pendingInstitutions] = await Promise.all([
     Student.countDocuments(),
     Student.countDocuments({ isVerified: true }),
     Chat.countDocuments(),
     AIRoadmap.countDocuments(),
     Chat.aggregate([{ $project: { count: { $size: "$messages" } } }, { $group: { _id: null, total: { $sum: "$count" } } }]),
+    Institution.countDocuments(),
+    Institution.countDocuments({ status: { $in: ["PENDING", "UNDER_REVIEW"] } }),
   ]);
 
   res.status(200).json(
@@ -249,6 +253,8 @@ export const getAdminOverviewStats = asyncHandler(async (req, res) => {
       totalChats,
       totalRoadmaps,
       totalMessages: totalMessages[0]?.total || 0,
+      totalInstitutions,
+      pendingInstitutions,
     }, "Overview stats fetched")
   );
 });
@@ -396,13 +402,14 @@ export const getAllMessages = asyncHandler(async (req, res) => {
 });
 
 export const getDashboardRecent = asyncHandler(async (req, res) => {
-  const [recentStudents, recentChats, recentRoadmaps, pendingGuideRequests, pendingRoleRequests, unverifiedCount] = await Promise.all([
+  const [recentStudents, recentChats, recentRoadmaps, pendingGuideRequests, pendingRoleRequests, unverifiedCount, pendingInstitutions] = await Promise.all([
     Student.find().sort({ createdAt: -1 }).limit(5).select("name email branch isVerified createdAt"),
     Chat.find().sort({ updatedAt: -1 }).limit(5).populate("studentId", "name email branch isVerified").populate("roleId", "title branch"),
     AIRoadmap.find().sort({ updatedAt: -1 }).limit(5).populate("studentId", "name email branch isVerified").populate("roleId", "title branch"),
     Guide.countDocuments({ status: "pending" }),
     RoleRequest.countDocuments({ status: "pending" }),
     Student.countDocuments({ isVerified: false }),
+    Institution.countDocuments({ status: { $in: ["PENDING", "UNDER_REVIEW"] } }),
   ]);
 
   const recentMessagesAgg = await Chat.aggregate([
@@ -441,6 +448,7 @@ export const getDashboardRecent = asyncHandler(async (req, res) => {
         pendingGuideRequests,
         pendingRoleRequests,
         unverifiedStudents: unverifiedCount,
+        pendingInstitutions,
       },
     }, "Recent dashboard activity fetched")
   );
@@ -449,23 +457,54 @@ export const getDashboardRecent = asyncHandler(async (req, res) => {
 // ── Institution management (admin-only) (Phase 1.4) ─────────────────────────
 
 export const getAllInstitutions = asyncHandler(async (req, res) => {
-  const { Institution } = await import("../models/Institution.js");
-  const institutions = await Institution.find().sort({ createdAt: -1 });
+  const institutions = await Institution.find()
+    .select("name code category location website contactEmail contactPerson designation phone studentCountApprox status isActive createdAt")
+    .sort({ createdAt: -1 })
+    .lean();
   res.status(200).json(new ApiResponse(200, institutions, "All institutions fetched"));
 });
 
 export const updateInstitutionStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
-  if (!["PENDING", "APPROVED", "REJECTED", "SUSPENDED"].includes(status)) {
+  if (!["PENDING", "UNDER_REVIEW", "APPROVED", "REJECTED", "SUSPENDED"].includes(status)) {
     throw ApiError.badRequest("Invalid institution status");
   }
 
-  const { Institution } = await import("../models/Institution.js");
-  const inst = await Institution.findById(req.params.id);
+  const inst = await Institution.findById(req.params.id).select("-password -associationCodeHash -refreshTokenVersion");
   if (!inst) throw ApiError.notFound("Institution not found");
 
   inst.status = status;
   await inst.save();
 
   res.status(200).json(new ApiResponse(200, inst, `Institution status updated to ${status}`));
+});
+
+export const getAdminAuditLogs = asyncHandler(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 25));
+  const filter = {};
+
+  if (typeof req.query.action === "string" && req.query.action) filter.action = req.query.action;
+  if (typeof req.query.search === "string" && req.query.search.trim()) {
+    const search = new RegExp(escapeRegex(req.query.search.trim()), "i");
+    filter.$or = [{ adminEmail: search }, { action: search }, { reason: search }];
+  }
+
+  const [total, logs] = await Promise.all([
+    AuditLog.countDocuments(filter),
+    AuditLog.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("adminEmail action targetId targetType reason createdAt"),
+  ]);
+
+  res.status(200).json(
+    new ApiResponse(200, logs, "Audit logs fetched", {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    })
+  );
 });

@@ -48,6 +48,9 @@ const protect = asyncHandler(async (req, res, next) => {
   if (decoded.role === "guide" && user.status !== "approved") {
     throw ApiError.forbidden("Guide account is not approved yet");
   }
+  if (decoded.role === "institution" && user.status !== "APPROVED") {
+    throw ApiError.forbidden("Institution account is not approved");
+  }
 
   req.user = {
     id: user._id.toString(),
