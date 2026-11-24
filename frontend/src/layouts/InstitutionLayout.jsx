@@ -7,6 +7,8 @@ import {
   FaCircleUser,
   FaChevronDown,
   FaRightFromBracket,
+  FaBars,
+  FaXmark,
 } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -16,6 +18,7 @@ export default function InstitutionLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleSignOut = async () => {
     setMenuOpen(false);
@@ -143,9 +146,40 @@ export default function InstitutionLayout() {
                 </div>
               )}
             </div>
+            <button
+              className="nav-hamburger institution-menu-toggle"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open institution navigation"
+            >
+              <FaBars />
+            </button>
           </div>
         </div>
       </nav>
+
+      {drawerOpen && (
+        <div className="role-mobile-drawer">
+          <button
+            className="role-mobile-drawer-backdrop"
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close institution navigation"
+          />
+          <aside className="role-mobile-drawer-panel" aria-label="Institution navigation">
+            <div className="role-mobile-drawer-heading">
+              <strong>Institution Navigation</strong>
+              <button onClick={() => setDrawerOpen(false)} aria-label="Close institution navigation">
+                <FaXmark />
+              </button>
+            </div>
+            <NavLink to="/institution-portal" onClick={() => setDrawerOpen(false)}>
+              <FaBuildingColumns /> Command Center
+            </NavLink>
+            <button className="role-mobile-signout" onClick={handleSignOut}>
+              <FaRightFromBracket /> Sign Out
+            </button>
+          </aside>
+        </div>
+      )}
 
       <main style={{ flex: 1 }}>
         <Outlet />

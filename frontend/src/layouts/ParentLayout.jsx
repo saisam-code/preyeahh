@@ -8,6 +8,8 @@ import {
   FaChevronDown,
   FaRightFromBracket,
   FaShieldHalved,
+  FaBars,
+  FaXmark,
 } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -17,6 +19,7 @@ export default function ParentLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleSignOut = async () => {
     setMenuOpen(false);
@@ -144,9 +147,40 @@ export default function ParentLayout() {
                 </div>
               )}
             </div>
+            <button
+              className="nav-hamburger parent-menu-toggle"
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Open parent navigation"
+            >
+              <FaBars />
+            </button>
           </div>
         </div>
       </nav>
+
+      {drawerOpen && (
+        <div className="role-mobile-drawer">
+          <button
+            className="role-mobile-drawer-backdrop"
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close parent navigation"
+          />
+          <aside className="role-mobile-drawer-panel" aria-label="Parent navigation">
+            <div className="role-mobile-drawer-heading">
+              <strong>Parent Navigation</strong>
+              <button onClick={() => setDrawerOpen(false)} aria-label="Close parent navigation">
+                <FaXmark />
+              </button>
+            </div>
+            <NavLink to="/parent-portal" onClick={() => setDrawerOpen(false)}>
+              <FaCalendarCheck /> Student Milestones &amp; Planning
+            </NavLink>
+            <button className="role-mobile-signout" onClick={handleSignOut}>
+              <FaRightFromBracket /> Sign Out
+            </button>
+          </aside>
+        </div>
+      )}
 
       <main style={{ flex: 1 }}>
         <Outlet />
