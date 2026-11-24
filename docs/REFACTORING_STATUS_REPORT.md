@@ -58,7 +58,7 @@ These changes compile and pass tests, but require a real MongoDB migration/run t
 
 `StudentGoal` exists but legacy sources remain in `Student.preferences`, `PersonalCareerPlan.primaryCareer/alternativeCareer/goals`, and `RoleInterest`. Previous code used all of these. This work only begins the convergence; it does not remove or migrate legacy fields or add migration enforcement.
 
-Onboarding and manual profile updates now synchronize selected primary/alternative career goals, pausing replaced goals instead of leaving them active. Discovery, roadmaps, and planner consumers still need a canonical end-to-end read path.
+Onboarding and manual profile updates synchronize selected primary/alternative career goals, pausing replaced goals instead of leaving them active. Planner responses prefer active canonical goals. The authenticated `GET /api/students/goals` endpoint returns the current student's active goals, and signed-in onboarding uses them to prefill primary and alternative goals when no local draft or career-wheel selection takes precedence. Existing profile preferences remain the fallback when the canonical collection is empty. Discovery and roadmap consumers still need a canonical read path, and older accounts may not yet have canonical records because the migration has not been run.
 
 ### Education and onboarding
 
@@ -239,7 +239,7 @@ Institution membership status behavior changed at one live API: association code
 ### P1
 
 - Run and verify the career-goal migration in MongoDB.
-- Complete one canonical career-intent read/write path across discovery, roadmaps, and planner.
+- Extend canonical goal reads to discovery and roadmap consumers after migration verification; planner responses already prefer active StudentGoal records.
 - Add concurrent-safe primary-goal enforcement if strong database-level guarantees are required.
 - Add live integration tests for protected profile fields and institution approval.
 
@@ -269,6 +269,6 @@ Institution membership status behavior changed at one live API: association code
 
 1. Run the career-goal migration in a backup/restored environment.
 2. Verify StudentGoal primary/alternative records.
-3. Update frontend goal consumers to read a dedicated StudentGoal API.
+3. Extend the dedicated StudentGoal API to discovery and roadmap consumers after migration verification.
 4. Archive legacy field writes after compatibility period.
 5. Add live integration tests for institution, project privacy, and profile permissions.

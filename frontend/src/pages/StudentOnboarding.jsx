@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -13,7 +13,7 @@ import {
   FaCheck,
 } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
-import { updatePreferences } from "../services/studentService.js";
+import { getStudentGoals, updatePreferences } from "../services/studentService.js";
 import { STUDENT_EDUCATION_STAGES, normalizeEducationStage } from "../constants/educationStages.js";
 
 const STAGES = STUDENT_EDUCATION_STAGES;
@@ -91,6 +91,7 @@ export default function StudentOnboarding() {
   });
   const [primaryGoal, setPrimaryGoal] = useState(() => initialValue("primaryCareerGoal", ""));
   const [alternativeGoal, setAlternativeGoal] = useState(() => initialValue("alternativeCareerGoal", ""));
+  const careerGoalsEdited = useRef(false);
   const [careerPreference, setCareerPreference] = useState(() => initialValue("careerPreference", "unsure"));
   const [selectedSkills, setSelectedSkills] = useState(() => {
     const saved = draft.skills || preferences.skills || [];
@@ -155,6 +156,32 @@ export default function StudentOnboarding() {
       }
     }
   }, [draft, location.state]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    if (
+      Object.hasOwn(draft, "primaryCareerGoal")
+      || Object.hasOwn(draft, "alternativeCareerGoal")
+      || location.state?.preselectedRoles?.length
+    ) return;
+
+    let active = true;
+    getStudentGoals()
+      .then((goals) => {
+        if (!active || careerGoalsEdited.current) return;
+        const primary = goals.find((goal) => goal.type === "PRIMARY");
+        const alternative = goals.find((goal) => goal.type === "ALTERNATIVE");
+        if (primary) setPrimaryGoal(primary.goalTitle);
+        if (alternative) setAlternativeGoal(alternative.goalTitle);
+      })
+      .catch(() => {
+        if (active) toast.error("Saved career goals could not be loaded. Existing profile values are unchanged.");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id, draft, location.state?.preselectedRoles]);
 
   const toggleInterest = (item) => {
     if (selectedInterests.includes(item)) {
@@ -458,7 +485,10 @@ export default function StudentOnboarding() {
               <input
                 type="text"
                 value={primaryGoal}
-                onChange={(e) => setPrimaryGoal(e.target.value)}
+                onChange={(e) => {
+                  careerGoalsEdited.current = true;
+                  setPrimaryGoal(e.target.value);
+                }}
                 placeholder="e.g. Software Engineer, Filmmaker, Architect..."
                 style={{ width: "100%", padding: "0.6rem 0.85rem", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}
               />
@@ -469,7 +499,10 @@ export default function StudentOnboarding() {
               <input
                 type="text"
                 value={alternativeGoal}
-                onChange={(e) => setAlternativeGoal(e.target.value)}
+                onChange={(e) => {
+                  careerGoalsEdited.current = true;
+                  setAlternativeGoal(e.target.value);
+                }}
                 placeholder="e.g. UX Designer, Data Analyst, Photographer..."
                 style={{ width: "100%", padding: "0.6rem 0.85rem", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}
               />

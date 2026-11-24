@@ -128,6 +128,14 @@ export const getMe = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, req.user.doc.toSafeJSON(), "Profile fetched"));
 });
 
+export const getStudentGoals = asyncHandler(async (req, res) => {
+  const goals = await StudentGoal.find({ student: req.user.id, status: "ACTIVE" })
+    .select("goalTitle type status roleId createdAt updatedAt")
+    .sort({ type: 1, updatedAt: -1 })
+    .lean();
+  res.status(200).json(new ApiResponse(200, goals, "Career goals fetched"));
+});
+
 export const getInterestForRole = asyncHandler(async (req, res) => {
   const interest = await RoleInterest.findOne({ student: req.user.id, role: req.params.roleId });
   res.status(200).json(new ApiResponse(200, interest ? { committed: interest.committed } : null, "Interest checked"));

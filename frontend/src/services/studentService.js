@@ -8,6 +8,10 @@ export function recordInterest(roleId, committed) {
   return api.post("/students/interest", { roleId, committed }).then((r) => r.data.data);
 }
 
+export function getStudentGoals() {
+  return api.get("/students/goals").then((r) => r.data.data);
+}
+
 // ── AI learning profile ──
 export function extractProfile(text) {
   return api.post("/students/profile/extract", { text }).then((r) => r.data.data);

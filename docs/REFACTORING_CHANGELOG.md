@@ -2,6 +2,14 @@
 
 ## 2026-11-24
 
+### Added authenticated canonical career-goal reads
+
+- **Files:** `backend/controllers/studentController.js`, `backend/routes/studentRoutes.js`, `frontend/src/services/studentService.js`, `frontend/src/pages/StudentOnboarding.jsx`
+- **Reason:** Let signed-in onboarding prefill primary and alternative goals from the canonical StudentGoal collection.
+- **Privacy:** The endpoint requires student authentication and only queries active goals owned by the requesting student.
+- **Compatibility:** Existing local drafts and career-wheel selections take precedence; profile preferences remain available when no canonical goal exists.
+- **Tests:** Added route authorization and student-scoped query regression coverage; full backend suite, frontend lint/build, design audit, and encoding check passed.
+
 ### Corrected project portfolio privacy defaults
 
 - **Files:** `backend/controllers/studentDevelopmentController.js`, `backend/tests/phase1Security.test.js`

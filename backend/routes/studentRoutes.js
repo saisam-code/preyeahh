@@ -12,6 +12,7 @@ import {
   recordInterest,
   refreshToken,
   logoutStudent,
+  getStudentGoals,
   extractProfile,
   updatePreferences,
   skipOnboarding,
@@ -74,6 +75,7 @@ router.post("/refresh", refreshLimiter, refreshToken);
 router.post("/logout", logoutStudent);
 
 router.get("/me", protect, authorize("student"), getMe);
+router.get("/goals", protect, authorize("student"), getStudentGoals);
 router.get("/interest/:roleId", protect, authorize("student"), roleIdParamRule, validate, getInterestForRole);
 router.post("/interest", protect, authorize("student"), interestRules, validate, recordInterest);
 
