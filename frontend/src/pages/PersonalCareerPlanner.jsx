@@ -370,6 +370,57 @@ export default function PersonalCareerPlanner() {
                 Click <strong>AI Adaptive Timetable</strong> to generate your weekly plan or <strong>Add Task</strong> above.
               </p>
             </div>
+          ) : activeTab === "proof" ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                <div>
+                  <h3 style={{ margin: 0 }}>Build & Proof</h3>
+                  <p style={{ margin: "0.25rem 0 0", color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>
+                    Keep projects and experiment evidence connected to career goals.
+                  </p>
+                </div>
+                <button className="btn btn-primary btn-sm" onClick={() => setShowProjectModal(true)}>
+                  <FaPlus /> Add Project or Proof
+                </button>
+              </div>
+
+              {(plan?.projects || []).length === 0 && (plan?.experiments || []).length === 0 ? (
+                <div className="empty" style={{ padding: "3rem 1rem", textAlign: "center", border: "1px solid var(--border)", borderRadius: "var(--radius)", background: "var(--card-bg, var(--white))" }}>
+                  <FaAward style={{ fontSize: "var(--font-size-3xl)", color: "var(--text-muted)", marginBottom: "0.75rem" }} />
+                  <h4 style={{ margin: "0 0 0.25rem" }}>No proof records yet</h4>
+                  <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Add a project or complete a career experiment to document demonstrated ability.</p>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: "0.75rem" }}>
+                  {(plan?.projects || []).map((project) => (
+                    <div key={project._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem", background: "var(--card-bg, var(--white))" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
+                        <strong>{project.title}</strong>
+                        <span className="branch-tag">{project.projectType}</span>
+                      </div>
+                      {project.description && <p style={{ margin: "0.35rem 0", color: "var(--text-dim)", fontSize: "var(--font-size-sm)" }}>{project.description}</p>}
+                      {project.careerRelevance && <div style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Career relevance: {project.careerRelevance}</div>}
+                      {project.skillsUsed?.length > 0 && <div style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Skills: {project.skillsUsed.join(", ")}</div>}
+                      <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginTop: "0.5rem", fontSize: "var(--font-size-sm)" }}>
+                        {project.liveUrl && <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">Live project</a>}
+                        {project.repoUrl && <a href={project.repoUrl} target="_blank" rel="noopener noreferrer">Repository</a>}
+                        {project.isPublicOnPortfolio && <span style={{ color: "var(--success)" }}>Explicitly public</span>}
+                      </div>
+                    </div>
+                  ))}
+                  {(plan?.experiments || []).map((experiment) => (
+                    <div key={experiment._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem", background: "var(--card-bg, var(--white))" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
+                        <strong>{experiment.experimentTitle}</strong>
+                        <span className="branch-tag">{experiment.status.replaceAll("_", " ")}</span>
+                      </div>
+                      {experiment.reflectionNotes && <p style={{ margin: "0.35rem 0", color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>{experiment.reflectionNotes}</p>}
+                      {experiment.skillsGained?.length > 0 && <div style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Skills gained: {experiment.skillsGained.join(", ")}</div>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           ) : (
             (activeTab === "today" ? todayTasks : weekTasks).map((t) => (
               <div
