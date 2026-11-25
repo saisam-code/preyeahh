@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaUserGraduate,
   FaUsers,
@@ -49,75 +49,65 @@ export default function GetStarted() {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "2rem auto", padding: "1.5rem" }}>
-      <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+    <div className="get-started-page">
+      <div className="get-started-heading">
         <span style={{ fontSize: "var(--font-size-sm)", textTransform: "uppercase", letterSpacing: 1.2, color: "var(--primary)", fontWeight: 700 }}>
           Welcome to Preyeahh
         </span>
-        <h1 style={{ fontSize: "var(--font-size-3xl)", fontWeight: 800, margin: "0.5rem 0" }}>
+        <h1>
           How would you like to use Preyeahh?
         </h1>
-        <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-md)", maxWidth: 620, margin: "0 auto" }}>
+        <p>
           Choose your role to get a tailored career development experience designed specifically for your goals.
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "1.25rem", marginBottom: "2.5rem" }}>
+      <div className="get-started-role-grid">
         {ROLES.map((r) => {
           const Icon = r.icon;
           const isSelected = selectedRole === r.id;
           return (
-            <div
+            <button
+              type="button"
               key={r.id}
               onClick={() => setSelectedRole(r.id)}
-              style={{
-                background: "var(--surface)",
-                border: isSelected ? "2.5px solid var(--primary)" : "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                padding: "1.5rem",
-                cursor: "pointer",
-                position: "relative",
-                transition: "all 0.2s ease",
-                boxShadow: isSelected ? "0 8px 24px color-mix(in srgb, var(--info) 12%, transparent)" : "none",
-              }}
+              className={`get-started-role-card${isSelected ? " selected" : ""}`}
+              aria-pressed={isSelected}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
-                <div style={{ width: 44, height: 44, borderRadius: "var(--radius)", background: isSelected ? "var(--primary)" : "var(--badge-bg)", color: isSelected ? "var(--on-primary)" : "var(--primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--font-size-lg)" }}>
+              <div className="get-started-role-card-top">
+                <div className="get-started-role-icon">
                   <Icon />
                 </div>
                 {isSelected && (
-                  <div style={{ width: 22, height: 22, borderRadius: "var(--r-full)", background: "var(--primary)", color: "var(--on-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "var(--font-size-xs)" }}>
-                    <FaCheck />
+                  <div className="get-started-role-check" aria-label="Selected">
+                    <FaCheck aria-hidden="true" />
                   </div>
                 )}
               </div>
 
-              <h3 style={{ margin: "0 0 0.4rem", fontSize: "var(--font-size-lg)" }}>{r.title}</h3>
-              <p style={{ margin: 0, fontSize: "var(--font-size-sm)", color: "var(--text-muted)", lineHeight: 1.5 }}>
+              <span className="get-started-role-title">{r.title}</span>
+              <span className="get-started-role-description">
                 {r.description}
-              </p>
-            </div>
+              </span>
+              <span className="get-started-role-badge">{r.badge}</span>
+            </button>
           );
         })}
       </div>
 
-      <div style={{ textAlign: "center" }}>
+      <div className="get-started-actions">
         <button
           className="btn btn-primary"
           onClick={handleProceed}
-          style={{ padding: "0.75rem 2rem", fontSize: "var(--font-size-md)", borderRadius: "var(--radius)", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
         >
           Continue to Registration <FaArrowRight />
         </button>
 
-        <div style={{ marginTop: "1.25rem", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
+        <div className="get-started-signin">
           Already have a Preyeahh account?{" "}
-          <span
-            onClick={() => navigate(`/login?role=${selectedRole}`)}
-            style={{ color: "var(--primary)", fontWeight: 600, cursor: "pointer", textDecoration: "underline" }}
-          >
+          <Link to={`/login?role=${selectedRole}`}>
             Sign In here
-          </span>
+          </Link>
         </div>
       </div>
     </div>

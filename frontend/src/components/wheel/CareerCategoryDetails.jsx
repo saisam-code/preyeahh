@@ -1,4 +1,5 @@
 import { FaCheck, FaPlus, FaArrowRight } from "react-icons/fa6";
+import { Link } from "react-router-dom";
 import { wheelLabelPresentation } from "../../utils/contrast.js";
 
 export default function CareerCategoryDetails({
@@ -28,6 +29,7 @@ export default function CareerCategoryDetails({
 
   return (
     <div
+      className="career-domain-details"
       style={{
         background: "var(--surface)",
         border: `2px solid ${domain.color}`,
@@ -38,7 +40,7 @@ export default function CareerCategoryDetails({
       }}
     >
       {/* Domain Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
+      <div className="career-domain-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "1rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <div
             style={{
@@ -60,7 +62,7 @@ export default function CareerCategoryDetails({
               {domain.title}
             </h2>
             <span style={{ fontSize: "var(--font-size-sm)", color: "var(--ink-600)", fontWeight: 700 }}>
-              {domain.careers.length} Core Career Paths
+              {domain.careers.length} Career Paths
             </span>
           </div>
         </div>
@@ -89,6 +91,12 @@ export default function CareerCategoryDetails({
       <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", lineHeight: 1.55, margin: "0 0 1.25rem" }}>
         {domain.description}
       </p>
+
+      {domain.id === "law-public" && (
+        <Link to="/government-careers" className="btn btn-outline domain-government-link">
+          Explore Government Careers <FaArrowRight aria-hidden="true" />
+        </Link>
+      )}
 
       {/* Career Roles Grid */}
       <div style={{ marginBottom: "1.25rem" }}>

@@ -176,7 +176,7 @@ export default function GovernmentCareers() {
   };
 
   return (
-    <div style={{ maxWidth: 1260, margin: "1.5rem auto", padding: "0 1.25rem" }}>
+    <div className="government-careers-page" style={{ maxWidth: 1260, margin: "1.5rem auto", padding: "0 1.25rem" }}>
       {/* ── BREADCRUMB & HEADER ── */}
       <div style={{ marginBottom: "2rem" }}>
         <div style={{ fontSize: "var(--font-size-xs)", color: "var(--primary)", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.2, marginBottom: "0.4rem" }}>
@@ -338,7 +338,7 @@ export default function GovernmentCareers() {
               </button>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "1.25rem" }}>
+            <div className="government-careers-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 360px), 1fr))", gap: "1.25rem" }}>
               {jobs.map((job) => {
                 const isCompared = selectedForCompare.includes(job.slug);
                 return (
@@ -605,7 +605,7 @@ export default function GovernmentCareers() {
           ) : (
             <div>
               {/* Comparison Matrix Table */}
-              <div style={{ overflowX: "auto", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", marginBottom: "2rem" }}>
+              <div className="government-comparison-table" style={{ overflowX: "auto", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", marginBottom: "2rem" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "var(--font-size-sm)", textAlign: "left" }}>
                   <thead>
                     <tr style={{ borderBottom: "2px solid var(--border)", background: "var(--surface-mid)" }}>
