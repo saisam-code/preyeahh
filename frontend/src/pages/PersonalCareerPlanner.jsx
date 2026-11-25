@@ -184,6 +184,41 @@ export default function PersonalCareerPlanner() {
     }
   };
 
+  const handleCreateProject = async (event) => {
+    event.preventDefault();
+    if (!projectForm.title.trim()) return toast.error("Project title is required");
+    try {
+      const project = await addStudentProject({
+        title: projectForm.title.trim(),
+        description: projectForm.description.trim(),
+        careerRelevance: projectForm.careerRelevance.trim(),
+        skillsUsed: projectForm.skillsUsed.split(",").map((skill) => skill.trim()).filter(Boolean),
+        projectType: projectForm.projectType,
+        liveUrl: projectForm.liveUrl.trim(),
+        repoUrl: projectForm.repoUrl.trim(),
+        isPublicOnPortfolio: projectForm.isPublicOnPortfolio,
+      });
+      setPlan((previous) => ({
+        ...previous,
+        projects: [project, ...(previous.projects || [])],
+      }));
+      setShowProjectModal(false);
+      setProjectForm({
+        title: "",
+        description: "",
+        careerRelevance: "",
+        skillsUsed: "",
+        projectType: "Personal",
+        liveUrl: "",
+        repoUrl: "",
+        isPublicOnPortfolio: false,
+      });
+      toast.success("Project or proof record added.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not add project.");
+    }
+  };
+
   const handleGenerateAiSchedule = async () => {
     setGenerating(true);
     try {
@@ -271,6 +306,13 @@ export default function PersonalCareerPlanner() {
             style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}
           >
             <FaBullseye /> Add Goal
+          </button>
+          <button
+            className="btn btn-outline btn-sm"
+            onClick={() => setShowProjectModal(true)}
+            style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}
+          >
+            <FaAward /> Add Proof
           </button>
         </div>
       </div>
