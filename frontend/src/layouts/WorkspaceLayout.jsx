@@ -18,11 +18,11 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   useEffect(() => {
-    setMobileOpen(false);
+    setQuickMenuOpen(false);
     setAccountMenuOpen(false);
   }, [location.pathname]);
 
@@ -35,16 +35,8 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
 
   return (
     <div className="workspace-shell">
-      {mobileOpen && (
-        <button
-          type="button"
-          className="workspace-sidebar-backdrop"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Close navigation menu"
-        />
-      )}
       <aside
-        className={`workspace-sidebar${collapsed ? " workspace-sidebar--collapsed" : ""}${mobileOpen ? " workspace-sidebar--mobile-open" : ""}`}
+        className={`workspace-sidebar${collapsed ? " workspace-sidebar--collapsed" : ""}`}
         aria-label={`${roleLabel} navigation`}
       >
         <div className="workspace-sidebar-brand">
@@ -55,14 +47,6 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
               <small>{roleLabel}</small>
             </span>
           </Link>
-          <button
-            type="button"
-            className="workspace-sidebar-close"
-            onClick={() => setMobileOpen(false)}
-            aria-label="Close navigation menu"
-          >
-            <FaXmark />
-          </button>
         </div>
 
         <nav className="workspace-sidebar-nav" aria-label="Workspace pages">
@@ -75,7 +59,6 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
                 end={item.end}
                 title={item.label}
                 aria-label={item.label}
-                onClick={() => setMobileOpen(false)}
                 className={({ isActive }) => `workspace-sidebar-link${isActive ? " active" : ""}`}
               >
                 <Icon aria-hidden="true" />
@@ -123,6 +106,46 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
         </div>
       </main>
 
+      {quickMenuOpen && (
+        <>
+          <button
+            type="button"
+            className="workspace-quick-panel-backdrop"
+            onClick={() => setQuickMenuOpen(false)}
+            aria-label="Close quick menu"
+          />
+          <section className="workspace-quick-panel" aria-label="Quick navigation">
+            <div className="workspace-quick-panel-heading">
+              <strong>Quick actions</strong>
+              <button
+                type="button"
+                onClick={() => setQuickMenuOpen(false)}
+                aria-label="Close quick menu"
+              >
+                <FaXmark aria-hidden="true" />
+              </button>
+            </div>
+            <nav className="workspace-quick-grid" aria-label="Workspace pages">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={({ isActive }) => `workspace-quick-link${isActive ? " active" : ""}`}
+                    onClick={() => setQuickMenuOpen(false)}
+                  >
+                    <Icon aria-hidden="true" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </section>
+        </>
+      )}
+
       <nav className="workspace-mobile-dock" aria-label="Mobile quick actions">
         <div className="workspace-mobile-account">
           {accountMenuOpen && (
@@ -141,7 +164,10 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
           <button
             type="button"
             className={`workspace-mobile-dock-button${accountMenuOpen ? " active" : ""}`}
-            onClick={() => setAccountMenuOpen((open) => !open)}
+            onClick={() => {
+              setQuickMenuOpen(false);
+              setAccountMenuOpen((open) => !open);
+            }}
             aria-label="Open profile and account options"
             aria-expanded={accountMenuOpen}
           >
@@ -151,13 +177,13 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
         </div>
         <button
           type="button"
-          className={`workspace-mobile-dock-button${mobileOpen ? " active" : ""}`}
+          className={`workspace-mobile-dock-button${quickMenuOpen ? " active" : ""}`}
           onClick={() => {
             setAccountMenuOpen(false);
-            setMobileOpen(true);
+            setQuickMenuOpen((open) => !open);
           }}
           aria-label="Open navigation menu"
-          aria-expanded={mobileOpen}
+          aria-expanded={quickMenuOpen}
         >
           <FaBars aria-hidden="true" />
           <span>Menu</span>
