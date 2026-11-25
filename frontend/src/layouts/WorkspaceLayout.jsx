@@ -146,7 +146,10 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
         </>
       )}
 
-      <nav className="workspace-mobile-dock" aria-label="Mobile quick actions">
+      <nav
+        className={`workspace-mobile-dock${quickMenuOpen ? " workspace-mobile-dock--menu-open" : ""}`}
+        aria-label="Mobile quick actions"
+      >
         <div className="workspace-mobile-account">
           {accountMenuOpen && (
             <div className="workspace-mobile-account-menu">
