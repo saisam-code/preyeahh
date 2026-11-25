@@ -17,9 +17,7 @@ export const getCareerSubdomains = asyncHandler(async (req, res) => {
   if (req.query.branchId) filter.branchId = req.query.branchId;
   if (req.query.branchName) {
     const branch = await Branch.findOne({ name: req.query.branchName.trim().toUpperCase() });
-    if (!branch) {
-      return res.status(200).json(new ApiResponse(200, [], "Career subdomains fetched"));
-    }
+    if (!branch) throw ApiError.notFound("Branch not found");
     filter.branchId = branch._id;
   }
 
@@ -40,7 +38,14 @@ export const createCareerSubdomain = asyncHandler(async (req, res) => {
     throw ApiError.badRequest("Associate the branch with this domain before adding a subdomain");
   }
 
-  const subdomain = await CareerSubdomain.create(req.body);
+  const subdomain = await CareerSubdomain.create({
+    name: req.body.name,
+    slug: req.body.slug,
+    description: req.body.description,
+    domainId: req.body.domainId,
+    branchId: req.body.branchId,
+    displayOrder: req.body.displayOrder,
+  });
   const populated = await populateContext(CareerSubdomain.findById(subdomain._id));
   res.status(201).json(new ApiResponse(201, populated, "Career subdomain created"));
 });

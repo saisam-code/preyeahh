@@ -36,10 +36,25 @@ test("3.4: Role schema has optional type and domainId reference", async () => {
   const domainIdPath = Role.schema.path("domainId");
   assert.ok(domainIdPath, "Role must have domainId path");
   assert.equal(domainIdPath.options.ref, "CareerDomain");
+  assert.equal(Role.schema.path("subdomainId").options.ref, "CareerSubdomain");
   assert.equal(Role.schema.path("institution").options.ref, "Institution");
   assert.ok(
     Role.schema.indexes().some(([fields]) => fields.title === 1 && fields.branch === 1 && fields.institution === 1),
     "Role uniqueness must be scoped by institution"
+  );
+});
+
+test("Branches support multiple domain associations and subdomains are context-scoped", async () => {
+  const Branch = (await import("../models/Branch.js")).default;
+  const CareerSubdomain = (await import("../models/CareerSubdomain.js")).default;
+  assert.equal(Branch.schema.path("domainIds").caster.options.ref, "CareerDomain");
+  assert.equal(Branch.schema.path("domainIds").defaultValue.length, 0);
+  assert.equal(CareerSubdomain.schema.path("domainId").options.ref, "CareerDomain");
+  assert.equal(CareerSubdomain.schema.path("branchId").options.ref, "Branch");
+  assert.ok(
+    CareerSubdomain.schema.indexes().some(([fields, options]) =>
+      fields.domainId === 1 && fields.branchId === 1 && fields.slug === 1 && options.unique
+    )
   );
 });
 
@@ -100,6 +115,46 @@ test("Shared career domain catalog uses unique stable slugs", async () => {
   assert.equal(CAREER_DOMAIN_CATALOG.length, 12);
   assert.equal(new Set(CAREER_DOMAIN_CATALOG.map((domain) => domain.slug)).size, 12);
   assert.ok(CAREER_DOMAIN_CATALOG.every((domain) => domain.name && domain.description));
+});
+
+test("Branch and subdomain admin validators require valid domain relationships", async () => {
+  const { listBranchesRules, updateBranchDomainsRules } = await import("../validators/branchValidator.js");
+  const { createCareerSubdomainRules } = await import("../validators/careerSubdomainValidator.js");
+  const { discoverCareersRules } = await import("../validators/aiRequestValidator.js");
+  const validIds = {
+    domainIds: ["650000000000000000000001"],
+  };
+  const branchReq = { body: validIds, params: { name: "CSE" } };
+  await Promise.all(updateBranchDomainsRules.map((rule) => rule.run(branchReq)));
+  assert.deepEqual(validationResult(branchReq).array(), []);
+
+  const branchListReq = { query: { domainId: "650000000000000000000001" } };
+  await Promise.all(listBranchesRules.map((rule) => rule.run(branchListReq)));
+  assert.deepEqual(validationResult(branchListReq).array(), []);
+
+  const invalidBranchListReq = { query: { domainId: "not-an-id" } };
+  await Promise.all(listBranchesRules.map((rule) => rule.run(invalidBranchListReq)));
+  assert.ok(validationResult(invalidBranchListReq).array().some((error) => error.path === "domainId"));
+
+  const invalidDiscoveryReq = { query: { subdomainId: "not-an-id" } };
+  await Promise.all(discoverCareersRules.map((rule) => rule.run(invalidDiscoveryReq)));
+  assert.ok(validationResult(invalidDiscoveryReq).array().some((error) => error.path === "subdomainId"));
+
+  const subdomainReq = {
+    body: {
+      name: "Renewable Energy",
+      slug: "renewable-energy",
+      domainId: "650000000000000000000001",
+      branchId: "650000000000000000000002",
+    },
+    params: {},
+  };
+  await Promise.all(createCareerSubdomainRules.map((rule) => rule.run(subdomainReq)));
+  assert.deepEqual(validationResult(subdomainReq).array(), []);
+
+  const invalidReq = { body: { ...subdomainReq.body, slug: "Not valid!" }, params: {} };
+  await Promise.all(createCareerSubdomainRules.map((rule) => rule.run(invalidReq)));
+  assert.ok(validationResult(invalidReq).array().some((error) => error.path === "slug"));
 });
 
 test("3.4: CareerDomain model is registered in mongoose", async () => {
@@ -237,6 +292,7 @@ test("Career discovery computes explainable skill matches without inventing requ
   assert.match(source, /matchedSkills/);
   assert.match(source, /missingSkills/);
   assert.match(source, /explanation/);
+  assert.match(source, /filter\.subdomainId\s*=\s*subdomainId/);
 });
 
 test("Career reality does not invent a default employability timeline", async () => {

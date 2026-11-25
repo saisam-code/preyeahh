@@ -14,12 +14,13 @@ import * as resourceService from "../services/resourceService.js";
  * with educationStage, domain, and branch filters
  */
 export const discoverCareers = asyncHandler(async (req, res) => {
-  const { category, domain, branch, stage, search, skills, wantedSkills } = req.query;
+  const { category, domain, branch, subdomainId, stage, search, skills, wantedSkills } = req.query;
   const filter = {};
 
   if (category && category !== "all") filter.category = category;
   if (domain && domain !== "all") filter.domain = domain;
   if (branch && branch !== "all") filter.branch = branch.toUpperCase();
+  if (subdomainId) filter.subdomainId = subdomainId;
   if (stage && stage !== "all") filter.educationStages = stage;
   if (search) {
     const re = new RegExp(escapeRegex(search.trim()), "i");

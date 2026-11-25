@@ -4,12 +4,14 @@ import { fetchManagedRoles, fetchRoles, createRole, updateRole, deleteRole } fro
 import { fetchBranches } from "../../services/branchService.js";
 import { fetchGuidance, createGuidance, updateGuidance, deleteGuidance } from "../../services/guidanceService.js";
 import { fetchAllInstitutions } from "../../services/adminService.js";
+import { fetchCareerDomains } from "../../services/careerDomainService.js";
+import { fetchCareerSubdomains } from "../../services/careerSubdomainService.js";
 import { CAREER_DOMAINS } from "../../data/careerWheelData.js";
 import ContributorLabel from "../ContributorLabel.jsx";
 
 const emptyRole = {
   title: "", branch: "", type: "core", domain: CAREER_DOMAINS[0].title, institutionId: "", description: "",
-  overview: "", steps: "", skills: "", resources: "",
+  subdomainId: "", overview: "", steps: "", skills: "", resources: "",
 };
 
 function linesToArray(str) {
@@ -20,6 +22,8 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
   const [branches, setBranches] = useState([]);
   const [branchFilter, setBranchFilter] = useState(fixedBranch || "all");
   const [roles, setRoles] = useState([]);
+  const [careerDomains, setCareerDomains] = useState([]);
+  const [subdomains, setSubdomains] = useState([]);
   const [institutions, setInstitutions] = useState([]);
   const [scopeFilter, setScopeFilter] = useState("platform");
   const [search, setSearch] = useState("");
@@ -30,6 +34,7 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyRole);
   const [roadmap, setRoadmap] = useState([]); // [{ id: mongoId|null, title, points }]
+  const selectedDomainId = careerDomains.find((domain) => domain.name === form.domain)?._id || "";
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -52,6 +57,34 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
       .then(setBranches)
       .catch((error) => toast.error(error.response?.data?.message || "Failed to load branches"));
   }, [fixedBranch, institutionMode]);
+  useEffect(() => {
+    fetchCareerDomains()
+      .then(setCareerDomains)
+      .catch((error) => toast.error(error.response?.data?.message || "Failed to load career domains"));
+  }, []);
+  useEffect(() => {
+    if (!modalOpen || !selectedDomainId || !form.branch) {
+      setSubdomains([]);
+      return undefined;
+    }
+
+    let active = true;
+    fetchCareerSubdomains({ domainId: selectedDomainId, branchName: form.branch })
+      .then((list) => {
+        if (!active) return;
+        setSubdomains(list);
+        setForm((current) => (
+          current.subdomainId && !list.some((item) => item._id === current.subdomainId)
+            ? { ...current, subdomainId: "" }
+            : current
+        ));
+      })
+      .catch((error) => {
+        if (active) toast.error(error.response?.data?.message || "Failed to load subdomains");
+      });
+
+    return () => { active = false; };
+  }, [modalOpen, selectedDomainId, form.branch]);
   useEffect(() => {
     if (institutionMode) return;
     fetchAllInstitutions()
@@ -81,6 +114,7 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
       domain: CAREER_DOMAINS.some((domain) => domain.title === role.domain)
         ? role.domain
         : CAREER_DOMAINS[0].title,
+      subdomainId: role.subdomainId || "",
       institutionId: role.institution || "",
       description: role.description || "",
       overview: role.guidance?.overview || "",
@@ -117,6 +151,7 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
       branch: form.branch,
       type: form.type,
       domain: form.domain,
+      subdomainId: form.subdomainId || null,
       description: form.description.trim(),
     };
     if (!institutionMode) {
@@ -262,9 +297,26 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
             </div>
             <div className="form-group">
               <label>Career Domain</label>
-              <select className="filter-select" value={form.domain} onChange={(e) => setForm({ ...form, domain: e.target.value })}>
+              <select className="filter-select" value={form.domain} onChange={(e) => setForm({ ...form, domain: e.target.value, subdomainId: "" })}>
                 {CAREER_DOMAINS.map((domain) => <option key={domain.id} value={domain.title}>{domain.title}</option>)}
               </select>
+            </div>
+            <div className="form-group">
+              <label>Subdomain (optional)</label>
+              <select
+                className="filter-select"
+                value={form.subdomainId}
+                onChange={(event) => setForm({ ...form, subdomainId: event.target.value })}
+                disabled={!subdomains.length}
+              >
+                <option value="">No subdomain</option>
+                {subdomains.map((subdomain) => (
+                  <option key={subdomain._id} value={subdomain._id}>{subdomain.name}</option>
+                ))}
+              </select>
+              {!subdomains.length && (
+                <span className="label-hint">Add a subdomain for this domain and branch in Manage Subdomains.</span>
+              )}
             </div>
             <div className="form-row">
               <div className="form-group">

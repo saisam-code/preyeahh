@@ -106,6 +106,12 @@ export default function AdminBranches() {
       {loading ? (
         <div className="empty"><div className="icon"><i className="fa fa-spinner fa-spin" /></div><p>Loading...</p></div>
       ) : (
+        <>
+        {!domains.length && (
+          <div className="empty">
+            <p>No career domains are available. Run the career-domain migration before assigning domains to branches.</p>
+          </div>
+        )}
         <div className="admin-branch-table-wrap">
           <table className="admin-table">
             <thead><tr><th>Branch Name</th><th>Roles Count</th><th>Career Domains</th><th>Actions</th></tr></thead>
@@ -155,6 +161,7 @@ export default function AdminBranches() {
             </tbody>
           </table>
         </div>
+        </>
       )}
     </div>
   );

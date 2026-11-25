@@ -1,4 +1,8 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
+
+export const discoverCareersRules = [
+  query("subdomainId").optional().isMongoId().withMessage("Career subdomain id must be valid"),
+];
 
 export const compareGovernmentJobsRules = [
   body("slugs")

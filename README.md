@@ -76,7 +76,9 @@ in their portal.
 Before enabling domain-linked role management, run
 `npm run migrate:career-domains` once from `backend/`. This idempotently
 synchronizes the shared 12-domain catalog and links existing roles by their
-domain name; it does not delete or rewrite unmatched roles.
+domain name, adds the required taxonomy indexes, and associates branches with
+domains already used by their roles. It does not delete or rewrite unmatched
+roles. Subdomains are managed within a specific domain/branch association.
 
 ## Testing
 

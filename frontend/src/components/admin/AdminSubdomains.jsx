@@ -60,12 +60,17 @@ export default function AdminSubdomains() {
   useEffect(() => {
     if (!domainId || !branchId) {
       setSubdomains([]);
-      return;
+      return undefined;
     }
 
+    let active = true;
     fetchCareerSubdomains({ domainId, branchId })
-      .then(setSubdomains)
-      .catch((error) => toast.error(error.response?.data?.message || "Could not load subdomains"));
+      .then((list) => { if (active) setSubdomains(list); })
+      .catch((error) => {
+        if (active) toast.error(error.response?.data?.message || "Could not load subdomains");
+      });
+
+    return () => { active = false; };
   }, [domainId, branchId]);
 
   const handleCreate = async (event) => {

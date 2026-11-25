@@ -7604,3 +7604,88 @@ body.dark .hero-stat-card:hover {
     line-height: 1.5;
   }
 }
+
+.admin-branch-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.admin-branch-domain-select {
+  display: block;
+  width: min(100%, 20rem);
+  min-width: 15rem;
+  min-height: 7rem;
+  margin-bottom: 0.5rem;
+}
+
+.admin-subdomain-context,
+.admin-subdomain-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-subdomain-form {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr) auto;
+  align-items: end;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.admin-subdomain-form .form-group {
+  min-width: 0;
+  margin: 0;
+}
+
+.admin-subdomain-form input,
+.admin-subdomain-context select {
+  width: 100%;
+}
+
+.admin-subdomain-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.admin-subdomain-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.admin-subdomain-card h3 {
+  margin: 0 0 0.25rem;
+  font-size: var(--font-size-md);
+}
+
+.admin-subdomain-card p {
+  margin: 0 0 0.35rem;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+@media (max-width: 768px) {
+  .admin-subdomain-context,
+  .admin-subdomain-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .admin-subdomain-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .admin-subdomain-card .btn,
+  .admin-subdomain-form > .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

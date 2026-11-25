@@ -1,4 +1,8 @@
-import { body, param } from "express-validator";
+import { body, param, query } from "express-validator";
+
+export const listBranchesRules = [
+  query("domainId").optional().isMongoId().withMessage("Career domain id must be valid"),
+];
 
 export const createBranchRules = [
   body("name").trim().notEmpty().withMessage("Branch name is required").isLength({ min: 2, max: 20 }),

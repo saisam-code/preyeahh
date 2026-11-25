@@ -1,7 +1,7 @@
 import api from "./api.js";
 
-export function fetchBranches() {
-  return api.get("/branches").then((r) => r.data.data); // array of branch name strings
+export function fetchBranches(params = {}) {
+  return api.get("/branches", { params }).then((r) => r.data.data); // array of branch name strings
 }
 
 export function fetchManagedBranches() {

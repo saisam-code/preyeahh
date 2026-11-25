@@ -8,7 +8,8 @@ import asyncHandler from "../utils/asyncHandler.js";
 
 // GET /api/branches — public, powers index.html's branch cards & every register dropdown
 export const getBranches = asyncHandler(async (req, res) => {
-  const branches = await Branch.find().sort({ name: 1 });
+  const filter = req.query.domainId ? { domainIds: req.query.domainId } : {};
+  const branches = await Branch.find(filter).sort({ name: 1 });
   res.status(200).json(new ApiResponse(200, branches.map((b) => b.name), "Branches fetched"));
 });
 

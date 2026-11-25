@@ -26,6 +26,9 @@ import {
   completeExperiment,
   submitReport,
 } from "../services/careerIntelligenceService.js";
+import { fetchBranches } from "../services/branchService.js";
+import { fetchCareerDomains } from "../services/careerDomainService.js";
+import { fetchCareerSubdomains } from "../services/careerSubdomainService.js";
 import { useAuth } from "../context/AuthContext.jsx";
 import { CAREER_DOMAINS } from "../data/careerWheelData.js";
 import { EDUCATION_STAGES } from "../constants/educationStages.js";
@@ -66,7 +69,18 @@ export default function CareerDiscovery() {
   const [category, setCategory] = useState("all");
   const [search, setSearch] = useState("");
   const [domain, setDomain] = useState("all");
+  const [careerDomains, setCareerDomains] = useState([]);
+  const [branches, setBranches] = useState([]);
+  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [branch, setBranch] = useState("all");
+  const [subdomains, setSubdomains] = useState([]);
+  const [subdomainsLoading, setSubdomainsLoading] = useState(false);
+  const [subdomainId, setSubdomainId] = useState("all");
   const [stage, setStage] = useState("all");
+  const selectedDomainId = careerDomains.find((item) => item.name === domain)?._id || "";
+  const domainOptions = careerDomains.length
+    ? careerDomains.map((item) => ({ id: item._id, title: item.name }))
+    : CAREER_DOMAINS.map((item) => ({ id: item.id, title: item.title }));
   const [currentSkills, setCurrentSkills] = useState(() =>
     (user?.preferences?.skills || []).map((skill) => typeof skill === "string" ? skill : skill?.name).filter(Boolean).join(", ")
   );
@@ -110,6 +124,8 @@ export default function CareerDiscovery() {
         skills: currentSkills,
         wantedSkills,
         domain,
+        branch,
+        subdomainId: subdomainId === "all" ? undefined : subdomainId,
         stage,
       });
       setRoles(data || []);
@@ -121,10 +137,54 @@ export default function CareerDiscovery() {
   };
 
   useEffect(() => {
+    fetchCareerDomains()
+      .then(setCareerDomains)
+      .catch(() => toast.error("Career domains could not be loaded"));
+  }, []);
+
+  useEffect(() => {
+    setBranches([]);
+    if (!selectedDomainId) {
+      setBranchesLoading(false);
+      return undefined;
+    }
+
+    let active = true;
+    setBranchesLoading(true);
+    fetchBranches({ domainId: selectedDomainId })
+      .then((list) => { if (active) setBranches(list); })
+      .catch(() => {
+        if (active) toast.error("Branches for this career domain could not be loaded");
+      })
+      .finally(() => { if (active) setBranchesLoading(false); });
+
+    return () => { active = false; };
+  }, [selectedDomainId]);
+
+  useEffect(() => {
+    setSubdomains([]);
+    if (!selectedDomainId || branch === "all") {
+      setSubdomainsLoading(false);
+      return undefined;
+    }
+
+    let active = true;
+    setSubdomainsLoading(true);
+    fetchCareerSubdomains({ domainId: selectedDomainId, branchName: branch })
+      .then((list) => { if (active) setSubdomains(list); })
+      .catch(() => {
+        if (active) toast.error("Subdomains for this branch could not be loaded");
+      })
+      .finally(() => { if (active) setSubdomainsLoading(false); });
+
+    return () => { active = false; };
+  }, [selectedDomainId, branch]);
+
+  useEffect(() => {
     loadCareers();
     // Structured filters trigger automatically; search is submitted explicitly
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, domain, stage]);
+  }, [category, domain, branch, subdomainId, stage]);
 
   useEffect(() => {
     if (activeTab === "outcomes") {
@@ -304,14 +364,59 @@ export default function CareerDiscovery() {
 
             <select
               value={domain}
-              onChange={(e) => setDomain(e.target.value)}
+              onChange={(e) => {
+                setDomain(e.target.value);
+                setBranch("all");
+                setSubdomainId("all");
+              }}
               aria-label="Career domain"
               style={{ minWidth: 210, padding: "0.45rem 0.75rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)", color: "var(--text)" }}
             >
               <option value="all">All domains</option>
-              {CAREER_DOMAINS.map((item) => (
+              {domainOptions.map((item) => (
                 <option key={item.id} value={item.title}>{item.title}</option>
               ))}
+            </select>
+
+            <select
+              value={branch}
+              onChange={(e) => {
+                setBranch(e.target.value);
+                setSubdomainId("all");
+              }}
+              aria-label="Career branch"
+              disabled={!selectedDomainId || branchesLoading || branches.length === 0}
+              style={{ minWidth: 180, padding: "0.45rem 0.75rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)", color: "var(--text)" }}
+            >
+              <option value="all">
+                {!selectedDomainId
+                  ? "Choose a domain first"
+                  : branchesLoading
+                    ? "Loading branches..."
+                    : branches.length
+                      ? "All associated branches"
+                      : "No associated branches"}
+              </option>
+              {branches.map((item) => <option key={item} value={item}>{item}</option>)}
+            </select>
+
+            <select
+              value={subdomainId}
+              onChange={(e) => setSubdomainId(e.target.value)}
+              aria-label="Career subdomain"
+              disabled={branch === "all" || subdomainsLoading || subdomains.length === 0}
+              style={{ minWidth: 180, padding: "0.45rem 0.75rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)", color: "var(--text)" }}
+            >
+              <option value="all">
+                {branch === "all"
+                  ? "Choose a branch first"
+                  : subdomainsLoading
+                    ? "Loading subdomains..."
+                    : subdomains.length
+                      ? "All subdomains"
+                      : "No subdomains available"}
+              </option>
+              {subdomains.map((item) => <option key={item._id} value={item._id}>{item.name}</option>)}
             </select>
 
             <select

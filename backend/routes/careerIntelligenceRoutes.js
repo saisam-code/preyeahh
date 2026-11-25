@@ -24,11 +24,12 @@ import {
   calculateFinancialRoiRules,
   compareCareersRules,
   completeExperimentRules,
+  discoverCareersRules,
 } from "../validators/aiRequestValidator.js";
 
 const router = express.Router();
 
-router.get("/roles", discoverCareers);
+router.get("/roles", discoverCareersRules, validate, discoverCareers);
 router.get("/roles/:id/reality", getCareerReality);
 router.post("/compare", protect, aiLimiter, compareCareersRules, validate, compareCareers);
 router.post("/switch-analysis", protect, aiLimiter, analyzeCareerSwitchRules, validate, analyzeCareerSwitch);
