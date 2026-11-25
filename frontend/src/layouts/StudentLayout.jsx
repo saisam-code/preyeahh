@@ -1,93 +1,37 @@
-import { useState } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 import {
-  FaCircleUser,
-  FaChevronDown,
+  FaBookmark,
+  FaBullseye,
+  FaBuildingColumns,
+  FaCalendarCheck,
+  FaCommentDots,
+  FaCompass,
+  FaGraduationCap,
+  FaHouse,
+  FaMap,
   FaUser,
-  FaRightFromBracket,
 } from "react-icons/fa6";
-import ThemeToggle from "../components/ThemeToggle.jsx";
-import { useAuth } from "../context/AuthContext.jsx";
-import preyeahhLogo from "../assets/preyeahh-logo.png";
+import WorkspaceLayout from "./WorkspaceLayout.jsx";
+
+const STUDENT_NAV_ITEMS = [
+  { to: "/dashboard", label: "Dashboard", icon: FaHouse, end: true },
+  { to: "/discovery", label: "Career Discovery", icon: FaCompass },
+  { to: "/planner", label: "Career Planner", icon: FaCalendarCheck },
+  { to: "/roadmaps", label: "Roadmaps", icon: FaMap },
+  { to: "/quiz", label: "Quiz & Learn", icon: FaGraduationCap },
+  { to: "/resources", label: "Resources", icon: FaBookmark },
+  { to: "/chat", label: "Mentorship Chat", icon: FaCommentDots },
+  { to: "/roles", label: "Roles Catalog", icon: FaCompass },
+  { to: "/beyond", label: "Beyond Degree", icon: FaBullseye },
+  { to: "/government-careers", label: "Government Careers", icon: FaBuildingColumns },
+  { to: "/profile", label: "My Profile", icon: FaUser },
+];
 
 export default function StudentLayout() {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const handleSignOut = async () => {
-    setMenuOpen(false);
-    await logout();
-    toast.success("Signed out successfully");
-    navigate("/");
-  };
-
   return (
-    <div className="student-layout-root" style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <header
-        className="role-header-tint"
-        style={{
-          minHeight: 70,
-          background: "var(--surface)",
-          borderBottom: "1px solid var(--border)",
-          display: "flex",
-          alignItems: "center",
-          padding: "0 1.5rem",
-        }}
-      >
-        <div style={{ maxWidth: 1300, width: "100%", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}>
-          <Link to="/dashboard" style={{ display: "flex", alignItems: "center", gap: "0.6rem", textDecoration: "none" }}>
-            <img src={preyeahhLogo} alt="PREYEAHH Logo" style={{ width: 34, height: 34, objectFit: "contain" }} />
-            <span style={{ fontFamily: "var(--font-display)", fontSize: "var(--font-size-lg)", fontWeight: 800, color: "var(--text)" }}>
-              Pre<span style={{ color: "var(--primary)" }}>yeahh</span>
-              <span style={{ fontSize: "var(--font-size-xs)", marginLeft: "0.4rem", background: "var(--primary-bg)", color: "var(--primary)", padding: "0.15rem 0.45rem", borderRadius: "var(--radius)", fontWeight: 700, verticalAlign: "middle" }}>
-                STUDENT
-              </span>
-            </span>
-          </Link>
-
-          <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-            <ThemeToggle />
-            <div style={{ position: "relative" }}>
-              <button
-                className="user-chip-btn"
-                type="button"
-                onClick={() => setMenuOpen((open) => !open)}
-                aria-expanded={menuOpen}
-                style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "var(--surface-mid)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.35rem 0.8rem", cursor: "pointer", color: "var(--text)", fontSize: "var(--font-size-sm)", fontWeight: 600 }}
-              >
-                <FaCircleUser style={{ fontSize: "var(--font-size-md)", color: "var(--primary)" }} />
-                <span className="role-user-name">{user?.name?.split(" ")[0] || "Student"}</span>
-                <FaChevronDown className="role-user-chevron" style={{ fontSize: "var(--font-size-xs)", opacity: 0.7 }} />
-              </button>
-
-              {menuOpen && (
-                <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 190, background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", boxShadow: "0 10px 30px color-mix(in srgb, var(--ink-900) 10%, transparent)", padding: "0.5rem", zIndex: 200, display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                  <Link
-                    to="/profile"
-                    onClick={() => setMenuOpen(false)}
-                    style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 0.8rem", borderRadius: "var(--radius)", fontSize: "var(--font-size-sm)", color: "var(--text)", textDecoration: "none", fontWeight: 600 }}
-                  >
-                    <FaUser /> My Profile
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleSignOut}
-                    style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 0.8rem", borderRadius: "var(--radius)", fontSize: "var(--font-size-sm)", color: "var(--error, var(--danger))", background: "transparent", border: "none", cursor: "pointer", width: "100%", textAlign: "left", fontWeight: 600 }}
-                  >
-                    <FaRightFromBracket /> Sign Out
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="student-workspace-main" style={{ flex: 1, paddingBottom: "3rem" }}>
-        <Outlet />
-      </main>
-    </div>
+    <WorkspaceLayout
+      roleLabel="STUDENT"
+      homePath="/dashboard"
+      navItems={STUDENT_NAV_ITEMS}
+    />
   );
 }
