@@ -318,7 +318,7 @@ export default function StudentOnboarding() {
         </div>
       </div>
 
-      <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "2rem" }}>
+      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "2rem" }}>
         {/* Step 1: Education Stage */}
         {step === 1 && (
           <div>

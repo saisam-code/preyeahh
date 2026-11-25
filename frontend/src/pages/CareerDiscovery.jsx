@@ -382,7 +382,7 @@ export default function CareerDiscovery() {
                   <div
                     key={role._id}
                     style={{
-                      background: "var(--card-bg, var(--white))",
+                      background: "var(--surface)",
                       border: isSelected ? "2px solid var(--primary)" : "1px solid var(--border)",
                       borderRadius: "var(--radius)",
                       padding: "1.25rem",
@@ -398,7 +398,7 @@ export default function CareerDiscovery() {
                           onClick={() => toggleCompare(role._id)}
                           style={{
                             background: isSelected ? "var(--primary)" : "transparent",
-                            color: isSelected ? "var(--white)" : "var(--text-muted)",
+                            color: isSelected ? "var(--on-primary)" : "var(--text-muted)",
                             border: "1px solid var(--border)",
                             borderRadius: "var(--radius)",
                             padding: "0.2rem 0.5rem",
@@ -450,7 +450,7 @@ export default function CareerDiscovery() {
 
       {/* ── 2. CAREER SWITCHING TAB ── */}
       {activeTab === "switch" && (
-        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem" }}>
           <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Career Switching & Skill-Gap Analysis</h2>
           <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
             Identify transferable skills, missing prerequisites, and realistic timelines when pivoting to a new domain.
@@ -481,7 +481,7 @@ export default function CareerDiscovery() {
       {/* ── 3. CAREER EXPERIMENTS TAB ── */}
       {activeTab === "experiments" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
             <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Hands-on Career Experiments</h2>
             <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1rem" }}>
               Experience a micro version of a career before committing education or finances.
@@ -523,7 +523,7 @@ export default function CareerDiscovery() {
             </div>
 
             {user && (
-              <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
+              <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
                 <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.75rem" }}>My experiment reflections</h2>
                 {studentExperiments.length === 0 ? (
                   <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>No experiments started yet.</p>
@@ -579,7 +579,7 @@ export default function CareerDiscovery() {
 
       {/* ── 4. FINANCIAL ROI TAB ── */}
       {activeTab === "financial" && (
-        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem" }}>
           <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Career Financial & Payback Estimator</h2>
           <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
             Compare approximate education costs against realistic starting salary projections.
@@ -619,7 +619,7 @@ export default function CareerDiscovery() {
 
       {/* ── 5. ALUMNI & OUTCOMES TAB ── */}
       {activeTab === "outcomes" && (
-        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
           <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Verified Alumni & Career Outcomes</h2>
           <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
             Real achievements, admissions, and offers recorded by students on Preyeahh.
@@ -650,7 +650,7 @@ export default function CareerDiscovery() {
 
       {/* ── 6. TRUST & SAFETY TAB ── */}
       {activeTab === "safety" && (
-        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", maxWidth: 650 }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", maxWidth: 650 }}>
           <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Trust, Safety & Moderation Center</h2>
           <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
             File a confidential moderation report regarding inappropriate conduct, false advice, or credentials.

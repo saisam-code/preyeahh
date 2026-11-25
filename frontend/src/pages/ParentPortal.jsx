@@ -261,7 +261,7 @@ export default function ParentPortal() {
                     onClick={() => handleToggleConsent(setConsentPlacement, "Placement Drive Alerts", consentPlacement)}
                     style={{
                       background: consentPlacement ? "var(--primary)" : "var(--border)",
-                      color: "var(--white)",
+                      color: consentPlacement ? "var(--on-primary)" : "var(--text)",
                       border: "none",
                       padding: "0.3rem 0.8rem",
                       borderRadius: "var(--radius)",
@@ -285,7 +285,7 @@ export default function ParentPortal() {
                     onClick={() => handleToggleConsent(setConsentDigest, "Monthly Digest", consentDigest)}
                     style={{
                       background: consentDigest ? "var(--primary)" : "var(--border)",
-                      color: "var(--white)",
+                      color: consentDigest ? "var(--on-primary)" : "var(--text)",
                       border: "none",
                       padding: "0.3rem 0.8rem",
                       borderRadius: "var(--radius)",
@@ -309,7 +309,7 @@ export default function ParentPortal() {
                     onClick={() => handleToggleConsent(setConsentMentorSharing, "Alumni Sharing", consentMentorSharing)}
                     style={{
                       background: consentMentorSharing ? "var(--primary)" : "var(--border)",
-                      color: "var(--white)",
+                      color: consentMentorSharing ? "var(--on-primary)" : "var(--text)",
                       border: "none",
                       padding: "0.3rem 0.8rem",
                       borderRadius: "var(--radius)",

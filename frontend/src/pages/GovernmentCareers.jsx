@@ -408,7 +408,7 @@ export default function GovernmentCareers() {
                         onClick={() => handleToggleCompare(job.slug)}
                         style={{
                           background: isCompared ? "var(--primary)" : "transparent",
-                          color: isCompared ? "var(--white)" : "var(--text)",
+                          color: isCompared ? "var(--on-primary)" : "var(--text)",
                           border: isCompared ? "none" : "1px solid var(--border)",
                           borderRadius: "var(--radius)",
                           padding: "0.4rem 0.75rem",

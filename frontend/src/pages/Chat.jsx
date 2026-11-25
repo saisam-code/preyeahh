@@ -253,7 +253,7 @@ export default function Chat() {
                     maxWidth: "75%",
                     alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
                     background: msg.role === "user" ? "var(--primary)" : "var(--surface)",
-                    color: msg.role === "user" ? "white" : "var(--text)",
+                    color: msg.role === "user" ? "var(--on-primary)" : "var(--text)",
                     border: msg.role === "assistant" ? "1px solid var(--border)" : "none",
                     padding: "0.75rem 1rem",
                     borderRadius: msg.role === "user" ? "16px 16px 4px 16px" : "16px 16px 16px 4px",

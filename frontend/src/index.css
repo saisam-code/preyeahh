@@ -159,7 +159,7 @@ nav {
   padding: 0 0.25rem;
   border-radius: var(--r-full);
   background: var(--danger);
-  color: var(--white);
+  color: var(--on-danger);
   font-family: var(--font-display);
   font-size: var(--font-size-icon);
   font-weight: 800;
@@ -411,7 +411,7 @@ nav {
 
 .btn-primary {
   background: var(--primary);
-  color: white;
+  color: var(--on-primary);
   box-shadow: 0 4px 20px color-mix(in srgb, var(--info) 40%, transparent);
 }
 
@@ -422,7 +422,7 @@ nav {
 
 .btn-accent {
   background: var(--accent);
-  color: white;
+  color: var(--on-accent);
   box-shadow: 0 4px 20px color-mix(in srgb, var(--danger) 30%, transparent);
 }
 
@@ -473,7 +473,7 @@ body.dark .btn-accent:hover {
 
 .btn-danger:hover {
   background: var(--error);
-  color: white;
+  color: var(--on-danger);
   transform: translateY(-1px);
 }
 
@@ -865,7 +865,7 @@ body.dark .hero-stat-card:hover {
   top: var(--sp-md);
   right: var(--sp-md);
   background: linear-gradient(135deg, var(--accent), var(--accent-dim));
-  color: white;
+  color: var(--on-accent);
   padding: 0.25rem 0.75rem;
   border-radius: var(--r-full);
   font-family: var(--font-display);
@@ -2973,7 +2973,7 @@ tbody td {
 
 .type-tabs .tab.active {
   background: var(--primary);
-  color: white;
+  color: var(--on-primary);
   border-color: var(--primary);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--info) 30%, transparent);
 }
@@ -2991,7 +2991,7 @@ body.dark .type-tabs .tab:hover {
 
 body.dark .type-tabs .tab.active {
   background: linear-gradient(135deg, var(--primary), var(--primary-dim));
-  color: white;
+  color: var(--on-primary);
   border-color: var(--primary);
   box-shadow: 0 4px 16px color-mix(in srgb, var(--success) 30%, transparent);
 }
@@ -3532,7 +3532,7 @@ body.dark .type-tabs .tab.active {
   width: 40px;
   height: 40px;
   background: linear-gradient(135deg, var(--accent), var(--accent-dim));
-  color: white;
+  color: var(--on-accent);
   border-radius: var(--r-md);
   display: flex;
   align-items: center;
@@ -3637,7 +3637,7 @@ body.dark .type-tabs .tab.active {
   border-radius: var(--r-2xl);
   padding: var(--sp-3xl) var(--sp-xl);
   text-align: center;
-  color: white;
+  color: var(--on-primary);
 }
 
 .about-cta-inner {
@@ -3664,7 +3664,7 @@ body.dark .type-tabs .tab.active {
 }
 
 .about-cta h2 span {
-  color: color-mix(in srgb, var(--white) 90%, transparent);
+  color: var(--on-primary);
 }
 
 .about-cta p {
@@ -3676,8 +3676,8 @@ body.dark .type-tabs .tab.active {
 }
 
 .about-cta .btn {
-  background: white;
-  color: var(--primary);
+  background: var(--surface);
+  color: var(--text);
   box-shadow: 0 8px 32px color-mix(in srgb, var(--ink-900) 30%, transparent);
 }
 
@@ -4183,7 +4183,7 @@ body.dark .type-tabs .tab.active {
   width: 24px;
   height: 24px;
   background: linear-gradient(135deg, var(--accent), var(--accent-dim));
-  color: white;
+  color: var(--on-accent);
   border-radius: var(--r-sm);
   display: flex;
   align-items: center;
@@ -5209,7 +5209,7 @@ body.dark .hero-stat-card:hover {
 .chat-bubble-admin.user {
   align-self: flex-end;
   background: var(--primary);
-  color: var(--white);
+  color: var(--on-primary);
   border-bottom-right-radius: 4px;
 }
 

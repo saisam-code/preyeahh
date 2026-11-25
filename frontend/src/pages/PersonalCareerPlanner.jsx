@@ -319,7 +319,7 @@ export default function PersonalCareerPlanner() {
 
       {/* ── DESTINATION CARD ── */}
       {plan?.primaryCareer && (
-        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem 1.5rem", marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem 1.5rem", marginBottom: "1.5rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
           <div>
             <div style={{ fontSize: "var(--font-size-xs)", textTransform: "uppercase", letterSpacing: 1, color: "var(--primary)", fontWeight: 700 }}>
               Career Destination
@@ -363,7 +363,7 @@ export default function PersonalCareerPlanner() {
       ) : activeTab === "today" || activeTab === "week" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
           {((activeTab === "today" ? todayTasks : weekTasks)).length === 0 ? (
-            <div className="empty" style={{ padding: "3rem 1rem", textAlign: "center", background: "var(--card-bg, var(--white))", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
+            <div className="empty" style={{ padding: "3rem 1rem", textAlign: "center", background: "var(--surface)", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}>
               <FaCalendarDays style={{ fontSize: "var(--font-size-3xl)", color: "var(--text-muted)", marginBottom: "0.75rem" }} />
               <h4 style={{ margin: "0 0 0.25rem" }}>{activeTab === "today" ? "No tasks scheduled for today" : "No tasks scheduled for the next 7 days"}</h4>
               <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "var(--font-size-sm)" }}>
@@ -385,7 +385,7 @@ export default function PersonalCareerPlanner() {
               </div>
 
               {(plan?.projects || []).length === 0 && (plan?.experiments || []).length === 0 ? (
-                <div className="empty" style={{ padding: "3rem 1rem", textAlign: "center", border: "1px solid var(--border)", borderRadius: "var(--radius)", background: "var(--card-bg, var(--white))" }}>
+                <div className="empty" style={{ padding: "3rem 1rem", textAlign: "center", border: "1px solid var(--border)", borderRadius: "var(--radius)", background: "var(--surface)" }}>
                   <FaAward style={{ fontSize: "var(--font-size-3xl)", color: "var(--text-muted)", marginBottom: "0.75rem" }} />
                   <h4 style={{ margin: "0 0 0.25rem" }}>No proof records yet</h4>
                   <p style={{ margin: 0, color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>Add a project or complete a career experiment to document demonstrated ability.</p>
@@ -393,7 +393,7 @@ export default function PersonalCareerPlanner() {
               ) : (
                 <div style={{ display: "grid", gap: "0.75rem" }}>
                   {(plan?.projects || []).map((project) => (
-                    <div key={project._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem", background: "var(--card-bg, var(--white))" }}>
+                    <div key={project._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem", background: "var(--surface)" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
                         <strong>{project.title}</strong>
                         <span className="branch-tag">{project.projectType}</span>
@@ -409,7 +409,7 @@ export default function PersonalCareerPlanner() {
                     </div>
                   ))}
                   {(plan?.experiments || []).map((experiment) => (
-                    <div key={experiment._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem", background: "var(--card-bg, var(--white))" }}>
+                    <div key={experiment._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem", background: "var(--surface)" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
                         <strong>{experiment.experimentTitle}</strong>
                         <span className="branch-tag">{experiment.status.replaceAll("_", " ")}</span>
@@ -430,7 +430,7 @@ export default function PersonalCareerPlanner() {
                   alignItems: "center",
                   justifyContent: "space-between",
                   padding: "0.85rem 1.25rem",
-                  background: "var(--card-bg, var(--white))",
+                  background: "var(--surface)",
                   border: "1px solid var(--border)",
                   borderRadius: "var(--radius)",
                   textDecoration: t.isCompleted ? "line-through" : "none",
@@ -447,7 +447,7 @@ export default function PersonalCareerPlanner() {
                       borderRadius: "var(--radius)",
                       border: "1.5px solid var(--border)",
                       background: t.isCompleted ? "var(--success)" : "transparent",
-                      color: "var(--white)",
+                      color: t.isCompleted ? "var(--on-success)" : "var(--text)",
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
@@ -490,7 +490,7 @@ export default function PersonalCareerPlanner() {
         </div>
       ) : activeTab === "month" ? (
         /* Real Monthly Calendar Grid */
-        <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
+        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
             <h3 style={{ margin: 0, fontSize: "var(--font-size-lg)" }}>
               {new Date(ty, tm - 1).toLocaleString("default", { month: "long" })} {ty}
@@ -588,7 +588,7 @@ export default function PersonalCareerPlanner() {
       ) : activeTab === "milestones" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {plan?.milestones?.map((m, idx) => (
-            <div key={idx} style={{ padding: "1.25rem", background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", display: "flex", alignItems: "flex-start", gap: "1rem" }}>
+            <div key={idx} style={{ padding: "1.25rem", background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", display: "flex", alignItems: "flex-start", gap: "1rem" }}>
               <div style={{ width: 34, height: 34, borderRadius: "var(--r-full)", background: "var(--primary)", color: "var(--on-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, flexShrink: 0 }}>
                 {idx + 1}
               </div>
@@ -607,7 +607,7 @@ export default function PersonalCareerPlanner() {
       ) : activeTab === "goals" ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1.25rem" }}>
           {plan?.goals?.map((g, idx) => (
-            <div key={idx} style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+            <div key={idx} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
               <span className="branch-tag" style={{ marginBottom: "0.5rem" }}>{g.goalType} Goal</span>
               <h4 style={{ margin: "0.3rem 0", fontSize: "var(--font-size-lg)" }}>{g.title}</h4>
               <p style={{ margin: "0 0 1rem", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
@@ -623,17 +623,17 @@ export default function PersonalCareerPlanner() {
         /* Analytics View */
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1rem" }}>
-            <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
               <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Total Tasks Scheduled</div>
               <div style={{ fontSize: "var(--font-size-2xl)", fontWeight: 800 }}>{plan?.tasks?.length || 0}</div>
             </div>
-            <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
               <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Completed Tasks</div>
               <div style={{ fontSize: "var(--font-size-2xl)", fontWeight: 800, color: "var(--success)" }}>
                 {plan?.tasks?.filter((t) => t.isCompleted).length || 0}
               </div>
             </div>
-            <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
+            <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.25rem" }}>
               <div style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", marginBottom: "0.25rem" }}>Milestones in Progress</div>
               <div style={{ fontSize: "var(--font-size-2xl)", fontWeight: 800, color: "var(--primary)" }}>
                 {plan?.milestones?.length || 0}

@@ -100,7 +100,7 @@ export default function GuideLayout() {
                 fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "var(--white)" : "var(--text)",
+                color: isActive ? "var(--on-primary)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
@@ -119,7 +119,7 @@ export default function GuideLayout() {
                 fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "var(--white)" : "var(--text)",
+                color: isActive ? "var(--on-primary)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
@@ -143,7 +143,7 @@ export default function GuideLayout() {
                 fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "var(--white)" : "var(--text)",
+                color: isActive ? "var(--on-primary)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
@@ -162,7 +162,7 @@ export default function GuideLayout() {
                 fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "var(--white)" : "var(--text)",
+                color: isActive ? "var(--on-primary)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >
@@ -181,7 +181,7 @@ export default function GuideLayout() {
                 fontSize: "var(--font-size-sm)",
                 fontWeight: 600,
                 textDecoration: "none",
-                color: isActive ? "var(--white)" : "var(--text)",
+                color: isActive ? "var(--on-primary)" : "var(--text)",
                 background: isActive ? "var(--primary)" : "transparent",
               })}
             >

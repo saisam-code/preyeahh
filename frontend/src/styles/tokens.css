@@ -30,6 +30,7 @@
   --google-yellow: #fbbc05;
   --google-green: #34a853;
   --on-primary: #ffffff;
+  --on-accent: #12261e;
   --wheel-label-dark: #12261e;
   --wheel-label-light: #ffffff;
   --overlay-color: rgb(18 38 30 / 60%);
@@ -119,6 +120,8 @@
   --info-text: #9ab7ff;
   --on-info: #0e1712;
   --on-primary: #0e1712;
+  --on-accent: #0e1712;
+  --on-accent: #0e1712;
   --overlay-color: rgb(0 0 0 / 65%);
   --bg: var(--paper);
   --surface-mid: #1c2b21;

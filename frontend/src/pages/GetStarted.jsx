@@ -71,7 +71,7 @@ export default function GetStarted() {
               key={r.id}
               onClick={() => setSelectedRole(r.id)}
               style={{
-                background: "var(--card-bg, var(--white))",
+                background: "var(--surface)",
                 border: isSelected ? "2.5px solid var(--primary)" : "1px solid var(--border)",
                 borderRadius: "var(--radius)",
                 padding: "1.5rem",
