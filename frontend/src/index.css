@@ -8039,6 +8039,7 @@ body.dark .hero-stat-card:hover {
 
   .workspace-mobile-dock {
     position: fixed;
+    top: auto;
     right: 0;
     bottom: 0;
     left: 0;
