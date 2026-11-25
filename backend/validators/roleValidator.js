@@ -21,6 +21,7 @@ export const createRoleRules = [
   body("type").isIn(VALID_TYPES).withMessage("Type must be 'core' or 'non-core'"),
   body("description").optional().trim().isLength({ max: 500 }),
   body("domain").optional().trim().isLength({ max: 100 }),
+  body("domainId").optional({ values: "falsy" }).isMongoId().withMessage("Career domain id must be valid"),
   body("institutionId").optional({ values: "falsy" }).isMongoId().withMessage("Institution id must be valid"),
   ...guidanceRules,
 ];
@@ -32,6 +33,7 @@ export const updateRoleRules = [
   body("type").optional().isIn(VALID_TYPES).withMessage("Type must be 'core' or 'non-core'"),
   body("description").optional().trim().isLength({ max: 500 }),
   body("domain").optional().trim().isLength({ max: 100 }),
+  body("domainId").optional({ values: "falsy" }).isMongoId().withMessage("Career domain id must be valid"),
   body("institutionId").optional({ values: "falsy" }).isMongoId().withMessage("Institution id must be valid"),
   ...guidanceRules,
 ];
@@ -43,6 +45,7 @@ export const listQueryRules = [
   query("limit").optional().isInt({ min: 1, max: 100 }).withMessage("limit must be 1-100").toInt(),
   query("type").optional().isIn(VALID_TYPES).withMessage("type must be 'core' or 'non-core'"),
   query("branch").optional().trim().isLength({ max: 20 }),
+  query("domainId").optional().isMongoId().withMessage("Career domain id must be valid"),
   query("search").optional().trim().isLength({ max: 100 }),
 ];
 

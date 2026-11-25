@@ -4,6 +4,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { assertGuideOwnsContent, contributorSnapshot, recordContentEdit } from "../utils/contentAuthorization.js";
 import escapeRegex from "../utils/escapeRegex.js";
+import CareerDomain from "../models/CareerDomain.js";
+import { resolveCareerDomain } from "../utils/resolveCareerDomain.js";
 import { Institution } from "../models/Institution.js";
 import mongoose from "mongoose";
 
@@ -13,7 +15,7 @@ import mongoose from "mongoose";
  * (all/core/non-core), and substring search across title + description.
  */
 export const getRoles = asyncHandler(async (req, res) => {
-  const { branch, type, search } = req.query;
+  const { branch, type, search, domainId } = req.query;
   const page = req.query.page || 1;
   const limit = req.query.limit || 20;
 
@@ -21,6 +23,7 @@ export const getRoles = asyncHandler(async (req, res) => {
   filter.institution = null;
   if (branch) filter.branch = branch.toUpperCase();
   if (type) filter.type = type;
+  if (domainId) filter.domainId = domainId;
   if (search) {
     const re = new RegExp(escapeRegex(search), "i");
     filter.$or = [{ title: re }, { description: re }];
@@ -77,7 +80,7 @@ export const getRoleById = asyncHandler(async (req, res) => {
  * role.branch = _guide.branch and never lets the guide type a different one.
  */
 export const createRole = asyncHandler(async (req, res) => {
-  const { title, type, description, guidance, reality, experiments, verification, domain } = req.body;
+  const { title, type, description, guidance, reality, experiments, verification, domain, domainId } = req.body;
   let branch = req.body.branch;
   let institution = null;
 
@@ -92,10 +95,13 @@ export const createRole = asyncHandler(async (req, res) => {
     }
   }
 
+  const requestedDomain = domain || "Technology & Engineering";
+  const domainRecord = await resolveCareerDomain(CareerDomain, { domainId, domain: requestedDomain });
   const role = await Role.create({
     title,
     branch,
-    domain,
+    domain: domainRecord?.name || requestedDomain,
+    domainId: domainRecord?._id || null,
     institution,
     type,
     description,
@@ -130,10 +136,23 @@ export const updateRole = asyncHandler(async (req, res) => {
     throw ApiError.forbidden("You can only edit roles owned by your institution");
   }
 
-  const editableFields = ["title", "branch", "type", "description", "domain"];
+  const editableFields = ["title", "branch", "type", "description"];
   editableFields.forEach((field) => {
     if (req.body[field] !== undefined) role[field] = req.body[field];
   });
+
+  if (req.body.domain !== undefined || req.body.domainId !== undefined) {
+    const domainRecord = await resolveCareerDomain(CareerDomain, req.body);
+    if (domainRecord) {
+      role.domain = domainRecord.name;
+      role.domainId = domainRecord._id;
+    } else if (req.body.domain !== undefined) {
+      role.domain = req.body.domain;
+      role.domainId = null;
+    } else {
+      role.domainId = null;
+    }
+  }
 
   if (req.user.role === "admin" && req.body.institutionId !== undefined) {
     if (req.body.institutionId && !(await Institution.exists({ _id: req.body.institutionId }))) {

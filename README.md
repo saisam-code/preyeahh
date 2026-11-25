@@ -73,6 +73,11 @@ role uniqueness index. Admins can manage platform and institution roles;
 approved institutions can add and maintain roles from the Career Roles tab
 in their portal.
 
+Before enabling domain-linked role management, run
+`npm run migrate:career-domains` once from `backend/`. This idempotently
+synchronizes the shared 12-domain catalog and links existing roles by their
+domain name; it does not delete or rewrite unmatched roles.
+
 ## Testing
 
 ```bash

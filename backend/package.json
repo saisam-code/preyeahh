@@ -15,6 +15,7 @@
     "seed:resources": "node scripts/seedResources.js",
     "seed:demo": "node scripts/seedDemoAccounts.js",
     "migrate:career-goals": "node scripts/migrateCareerGoals.js",
+    "migrate:career-domains": "node scripts/migrateCareerDomains.js",
     "migrate:role-institution-scope": "node scripts/migrateRoleInstitutionScope.js",
     "migrate:institution-codes": "node scripts/migrateInstitutionAssociationCodes.js"
   },

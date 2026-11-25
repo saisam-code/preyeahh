@@ -17,6 +17,10 @@ const branchSchema = new mongoose.Schema(
       minlength: 2,
       maxlength: 20,
     },
+    domainIds: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "CareerDomain" }],
+      default: [],
+    },
   },
   { timestamps: true }
 );
@@ -31,6 +35,7 @@ branchSchema.pre("findOneAndDelete", async function (next) {
   const Role = mongoose.model("Role");
   const Beyond = mongoose.model("Beyond");
   const Guidance = mongoose.model("Guidance");
+  const CareerSubdomain = mongoose.model("CareerSubdomain");
 
   const roles = await Role.find({ branch: branch.name }).select("_id");
   const roleIds = roles.map((r) => r._id);
@@ -39,6 +44,7 @@ branchSchema.pre("findOneAndDelete", async function (next) {
   await Guidance.deleteMany({ branch: branch.name });
   await Beyond.deleteMany({ branch: branch.name });
   await Role.deleteMany({ branch: branch.name });
+  await CareerSubdomain.deleteMany({ branchId: branch._id });
 
   next();
 });

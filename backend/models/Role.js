@@ -40,6 +40,7 @@ const roleSchema = new mongoose.Schema(
     },
     domain: { type: String, default: "Technology & Engineering", trim: true },
     domainId: { type: mongoose.Schema.Types.ObjectId, ref: "CareerDomain", default: null, index: true },
+    subdomainId: { type: mongoose.Schema.Types.ObjectId, ref: "CareerSubdomain", default: null, index: true },
     institution: { type: mongoose.Schema.Types.ObjectId, ref: "Institution", default: null, index: true },
     category: {
       type: String,

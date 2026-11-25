@@ -35,6 +35,7 @@ test("3.4: Role schema has optional type and domainId reference", async () => {
 
   const domainIdPath = Role.schema.path("domainId");
   assert.ok(domainIdPath, "Role must have domainId path");
+  assert.equal(domainIdPath.options.ref, "CareerDomain");
   assert.equal(Role.schema.path("institution").options.ref, "Institution");
   assert.ok(
     Role.schema.indexes().some(([fields]) => fields.title === 1 && fields.branch === 1 && fields.institution === 1),
@@ -50,12 +51,55 @@ test("Role create validation accepts platform scope and selected career domain",
       branch: "SCI",
       type: "core",
       domain: "Agriculture & Environment",
+      domainId: "650000000000000000000001",
       institutionId: "",
     },
     params: {},
   };
   await Promise.all(createRoleRules.map((rule) => rule.run(req)));
   assert.deepEqual(validationResult(req).array(), []);
+
+  const invalidDomainReq = {
+    body: { ...req.body, domainId: "not-an-id" },
+    params: {},
+  };
+  await Promise.all(createRoleRules.map((rule) => rule.run(invalidDomainReq)));
+  assert.ok(validationResult(invalidDomainReq).array().some((error) => error.path === "domainId"));
+});
+
+test("Role domain resolution links known names and slugs and preserves unknown legacy names", async () => {
+  const { resolveCareerDomain } = await import("../utils/resolveCareerDomain.js");
+  const records = [
+    { _id: "650000000000000000000001", slug: "tech-eng", name: "Technology & Engineering" },
+    { _id: "650000000000000000000002", slug: "law-public", name: "Law & Public Services" },
+  ];
+  const CareerDomain = {
+    findById: async (id) => records.find((record) => record._id === id) || null,
+    findOne: async ({ $or }) => records.find((record) =>
+      $or.some((condition) => Object.entries(condition).every(([key, value]) => record[key] === value))
+    ) || null,
+  };
+
+  assert.equal(
+    (await resolveCareerDomain(CareerDomain, { domain: "Technology & Engineering" }))._id,
+    records[0]._id
+  );
+  assert.equal(
+    (await resolveCareerDomain(CareerDomain, { domain: "law-public" }))._id,
+    records[1]._id
+  );
+  assert.equal(await resolveCareerDomain(CareerDomain, { domain: "Legacy custom domain" }), null);
+  await assert.rejects(
+    resolveCareerDomain(CareerDomain, { domainId: "650000000000000000000099" }),
+    (error) => error.statusCode === 404
+  );
+});
+
+test("Shared career domain catalog uses unique stable slugs", async () => {
+  const { CAREER_DOMAIN_CATALOG } = await import("../../shared/careerDomainCatalog.js");
+  assert.equal(CAREER_DOMAIN_CATALOG.length, 12);
+  assert.equal(new Set(CAREER_DOMAIN_CATALOG.map((domain) => domain.slug)).size, 12);
+  assert.ok(CAREER_DOMAIN_CATALOG.every((domain) => domain.name && domain.description));
 });
 
 test("3.4: CareerDomain model is registered in mongoose", async () => {

@@ -12,30 +12,17 @@ import {
   FaPlaneDeparture,
   FaRocket,
 } from "react-icons/fa6";
+import { CAREER_DOMAIN_CATALOG } from "../../../shared/careerDomainCatalog.js";
 
-export const WHEEL_DOMAIN_COLORS = Object.freeze({
-  "tech-eng": "#E96840",
-  "med-health": "#F3A712",
-  "arts-media": "#17BEBB",
-  "business-ent": "#287E9F",
-  "science-res": "#3F5EFB",
-  "law-public": "#7B4FD6",
-  "edu-psych": "#C13CA4",
-  "sports-fit": "#E76F9B",
-  "agri-env": "#8D6E63",
-  "trades-voc": "#607D8B",
-  "aviation-def": "#D98E04",
-  "emerging-unconv": "#4F9D69",
-});
+export const WHEEL_DOMAIN_COLORS = Object.freeze(
+  Object.fromEntries(CAREER_DOMAIN_CATALOG.map((domain) => [domain.slug, domain.color]))
+);
 
-export const CAREER_DOMAINS = [
+const CAREER_DOMAIN_PRESENTATION = [
   {
     id: "tech-eng",
-    title: "Technology & Engineering",
     shortTitle: "Tech",
     icon: FaLaptopCode,
-    color: WHEEL_DOMAIN_COLORS["tech-eng"],
-    description: "Build software, design intelligent systems, architecture, and shape the digital world.",
     careers: [
       { name: "Software Engineer", desc: "Design and build web, mobile, and cloud software systems." },
       { name: "AI / ML Specialist", desc: "Train neural networks and develop predictive intelligence models." },
@@ -50,11 +37,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "med-health",
-    title: "Medicine & Healthcare",
     shortTitle: "Health",
     icon: FaHeartPulse,
-    color: WHEEL_DOMAIN_COLORS["med-health"],
-    description: "Heal lives, study disease mechanisms, and improve physical and mental human well-being.",
     careers: [
       { name: "Physician / Doctor", desc: "Diagnose, treat, and heal patients in specialized medical branches." },
       { name: "Biomedical Scientist", desc: "Research medical breakthroughs, diagnostics, and treatments." },
@@ -69,11 +53,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "arts-media",
-    title: "Arts, Design & Media",
     shortTitle: "Arts",
     icon: FaPalette,
-    color: WHEEL_DOMAIN_COLORS["arts-media"],
-    description: "Express stories through visual design, cinema, sound, digital illustration, and media.",
     careers: [
       { name: "UI/UX Designer", desc: "Craft intuitive, accessible digital interfaces and products." },
       { name: "Filmmaker / Director", desc: "Direct cinematic narratives, documentaries, and visual media." },
@@ -88,11 +69,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "business-ent",
-    title: "Business & Entrepreneurship",
     shortTitle: "Business",
     icon: FaBriefcase,
-    color: WHEEL_DOMAIN_COLORS["business-ent"],
-    description: "Launch innovative ventures, drive financial growth, lead teams, and scale global organizations.",
     careers: [
       { name: "Startup Founder", desc: "Identify market opportunities and build high-growth businesses." },
       { name: "Product Manager", desc: "Guide cross-functional teams to build market-defining products." },
@@ -107,11 +85,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "science-res",
-    title: "Science & Research",
     shortTitle: "Science",
     icon: FaMicroscope,
-    color: WHEEL_DOMAIN_COLORS["science-res"],
-    description: "Investigate cosmic mysteries, molecular physics, genetics, and fundamental scientific truths.",
     careers: [
       { name: "Astrophysicist", desc: "Study cosmological bodies, gravitational fields, and space missions." },
       { name: "Geneticist", desc: "Analyze DNA sequencing, gene therapy, and biological inheritance." },
@@ -126,11 +101,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "law-public",
-    title: "Law & Public Services",
     shortTitle: "Law",
     icon: FaScaleBalanced,
-    color: WHEEL_DOMAIN_COLORS["law-public"],
-    description: "Uphold justice, craft public policy, defend civil rights, and govern societal institutions.",
     careers: [
       { name: "Corporate Lawyer", desc: "Navigate contracts, mergers, intellectual property, and compliance." },
       { name: "Civil Services Officer", desc: "Lead administrative districts, departments, and government policies." },
@@ -145,11 +117,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "edu-psych",
-    title: "Education & Psychology",
     shortTitle: "Education",
     icon: FaBookOpen,
-    color: WHEEL_DOMAIN_COLORS["edu-psych"],
-    description: "Inspire next generations, design pedagogical innovations, and explore human cognition.",
     careers: [
       { name: "Professor / Lecturer", desc: "Teach specialized academic disciplines and publish research." },
       { name: "Instructional Designer", desc: "Architect modern curriculum and interactive learning systems." },
@@ -164,11 +133,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "sports-fit",
-    title: "Sports & Fitness",
     shortTitle: "Sports",
     icon: FaDumbbell,
-    color: WHEEL_DOMAIN_COLORS["sports-fit"],
-    description: "Excel in athletic performance, sports analytics, biomechanics, and physical coaching.",
     careers: [
       { name: "Professional Athlete", desc: "Compete at national and international competitive sporting levels." },
       { name: "Sports Physiotherapist", desc: "Prevent and rehabilitate sports injuries and enhance recovery." },
@@ -183,11 +149,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "agri-env",
-    title: "Agriculture & Environment",
     shortTitle: "Agri",
     icon: FaSeedling,
-    color: WHEEL_DOMAIN_COLORS["agri-env"],
-    description: "Sustain planetary ecosystems, advance regenerative agriculture, and fight climate change.",
     careers: [
       { name: "Agritech Specialist", desc: "Deploy IoT, drones, and precision technology in agriculture." },
       { name: "Environmental Scientist", desc: "Protect natural habitats, clean water, and conservation areas." },
@@ -202,11 +165,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "trades-voc",
-    title: "Skilled Trades & Vocational",
     shortTitle: "Trades",
     icon: FaWrench,
-    color: WHEEL_DOMAIN_COLORS["trades-voc"],
-    description: "Master craft expertise, precision engineering, architectural builds, and technical mastery.",
     careers: [
       { name: "Precision CNC Machinist", desc: "Fabricate aerospace-grade metal and precision mechanisms." },
       { name: "Automotive Specialist", desc: "Service and optimize electric vehicle and combustion systems." },
@@ -221,11 +181,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "aviation-def",
-    title: "Aviation & Defence",
     shortTitle: "Aviation",
     icon: FaPlaneDeparture,
-    color: WHEEL_DOMAIN_COLORS["aviation-def"],
-    description: "Pilot commercial aircraft, navigate flight operations, aerospace engineering, and national security.",
     careers: [
       { name: "Commercial Pilot", desc: "Fly passenger and cargo aircraft across global routes." },
       { name: "Air Traffic Controller", desc: "Coordinate airspace safety, departures, and landings." },
@@ -240,11 +197,8 @@ export const CAREER_DOMAINS = [
   },
   {
     id: "emerging-unconv",
-    title: "Emerging & Unconventional",
     shortTitle: "Emerging",
     icon: FaRocket,
-    color: WHEEL_DOMAIN_COLORS["emerging-unconv"],
-    description: "Pioneer new frontiers in content creation, esports, metaverse, culinary arts, and web3.",
     careers: [
       { name: "Content Creator / Streamer", desc: "Build independent media brands and digital communities." },
       { name: "Game Developer", desc: "Code interactive gameplay, physics, and gaming mechanics." },
@@ -258,3 +212,16 @@ export const CAREER_DOMAINS = [
     specializations: ["Esports Strategy", "Culinary Science", "Game Mechanics", "Virtual Reality"],
   },
 ];
+
+const domainMetadataBySlug = new Map(CAREER_DOMAIN_CATALOG.map((domain) => [domain.slug, domain]));
+
+export const CAREER_DOMAINS = CAREER_DOMAIN_PRESENTATION.map((domain) => {
+  const metadata = domainMetadataBySlug.get(domain.id);
+  return {
+    ...domain,
+    slug: domain.id,
+    title: metadata.name,
+    description: metadata.description,
+    color: metadata.color,
+  };
+});

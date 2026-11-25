@@ -9,6 +9,7 @@
  */
 import "./Branch.js";
 import "./CareerDomain.js";
+import "./CareerSubdomain.js";
 import "./Role.js";
 import "./Guidance.js";
 import "./Beyond.js";
