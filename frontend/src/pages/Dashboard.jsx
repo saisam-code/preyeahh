@@ -210,6 +210,12 @@ export default function Dashboard() {
       to: "/government-careers",
     },
     {
+      title: "My Profile",
+      description: "Update your learning preferences and career interests.",
+      icon: FaUser,
+      to: "/profile",
+    },
+    {
       title: "Career AI Chat",
       description: "Ask questions, compare career paths, and get contextual guidance based on your branch and goals.",
       icon: FaCommentDots,

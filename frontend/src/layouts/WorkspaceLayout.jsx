@@ -1,12 +1,10 @@
-import { useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
-  FaBars,
   FaChevronLeft,
   FaChevronRight,
   FaRightFromBracket,
-  FaXmark,
 } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -15,13 +13,7 @@ import preyeahhLogo from "../assets/preyeahh-logo.png";
 export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [location.pathname]);
 
   const handleSignOut = async () => {
     await logout();
@@ -31,17 +23,8 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
 
   return (
     <div className="workspace-shell">
-      {mobileOpen && (
-        <button
-          type="button"
-          className="workspace-sidebar-backdrop"
-          onClick={() => setMobileOpen(false)}
-          aria-label="Close navigation menu"
-        />
-      )}
-
       <aside
-        className={`workspace-sidebar${collapsed ? " workspace-sidebar--collapsed" : ""}${mobileOpen ? " workspace-sidebar--mobile-open" : ""}`}
+        className={`workspace-sidebar${collapsed ? " workspace-sidebar--collapsed" : ""}`}
         aria-label={`${roleLabel} navigation`}
       >
         <div className="workspace-sidebar-brand">
@@ -52,14 +35,6 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
               <small>{roleLabel}</small>
             </span>
           </Link>
-          <button
-            type="button"
-            className="workspace-sidebar-close"
-            onClick={() => setMobileOpen(false)}
-            aria-label="Close navigation menu"
-          >
-            <FaXmark />
-          </button>
         </div>
 
         <nav className="workspace-sidebar-nav" aria-label="Workspace pages">
@@ -88,15 +63,6 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
             </span>
             <span className="workspace-sidebar-label">{user?.name || roleLabel}</span>
           </span>
-          <button
-            type="button"
-            className="workspace-sidebar-link workspace-sidebar-signout"
-            onClick={handleSignOut}
-            title="Sign out"
-          >
-            <FaRightFromBracket aria-hidden="true" />
-            <span className="workspace-sidebar-label">Sign out</span>
-          </button>
         </div>
       </aside>
 
@@ -111,16 +77,16 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
           >
             {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
           </button>
-          <button
-            type="button"
-            className="workspace-menu-toggle workspace-menu-toggle--mobile"
-            onClick={() => setMobileOpen(true)}
-            aria-label="Open navigation menu"
-          >
-            <FaBars />
-          </button>
           <div className="workspace-topbar-spacer" />
           <ThemeToggle />
+          <button
+            type="button"
+            className="workspace-topbar-signout"
+            onClick={handleSignOut}
+          >
+            <FaRightFromBracket aria-hidden="true" />
+            <span>Sign out</span>
+          </button>
         </header>
         <div className="workspace-page-content">
           <Outlet />
