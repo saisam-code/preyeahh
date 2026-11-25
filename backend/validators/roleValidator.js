@@ -22,6 +22,7 @@ export const createRoleRules = [
   body("description").optional().trim().isLength({ max: 500 }),
   body("domain").optional().trim().isLength({ max: 100 }),
   body("domainId").optional({ values: "falsy" }).isMongoId().withMessage("Career domain id must be valid"),
+  body("subdomainId").optional({ values: "falsy" }).isMongoId().withMessage("Career subdomain id must be valid"),
   body("institutionId").optional({ values: "falsy" }).isMongoId().withMessage("Institution id must be valid"),
   ...guidanceRules,
 ];
@@ -34,6 +35,7 @@ export const updateRoleRules = [
   body("description").optional().trim().isLength({ max: 500 }),
   body("domain").optional().trim().isLength({ max: 100 }),
   body("domainId").optional({ values: "falsy" }).isMongoId().withMessage("Career domain id must be valid"),
+  body("subdomainId").optional({ values: "falsy" }).isMongoId().withMessage("Career subdomain id must be valid"),
   body("institutionId").optional({ values: "falsy" }).isMongoId().withMessage("Institution id must be valid"),
   ...guidanceRules,
 ];
@@ -46,6 +48,7 @@ export const listQueryRules = [
   query("type").optional().isIn(VALID_TYPES).withMessage("type must be 'core' or 'non-core'"),
   query("branch").optional().trim().isLength({ max: 20 }),
   query("domainId").optional().isMongoId().withMessage("Career domain id must be valid"),
+  query("subdomainId").optional().isMongoId().withMessage("Career subdomain id must be valid"),
   query("search").optional().trim().isLength({ max: 100 }),
 ];
 

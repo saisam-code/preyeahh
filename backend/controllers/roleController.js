@@ -5,9 +5,38 @@ import asyncHandler from "../utils/asyncHandler.js";
 import { assertGuideOwnsContent, contributorSnapshot, recordContentEdit } from "../utils/contentAuthorization.js";
 import escapeRegex from "../utils/escapeRegex.js";
 import CareerDomain from "../models/CareerDomain.js";
+import CareerSubdomain from "../models/CareerSubdomain.js";
+import Branch from "../models/Branch.js";
 import { resolveCareerDomain } from "../utils/resolveCareerDomain.js";
 import { Institution } from "../models/Institution.js";
 import mongoose from "mongoose";
+
+async function findBranchForDomain(branchName, domainRecord) {
+  if (!domainRecord) return null;
+  const branch = await Branch.findOne({ name: branchName.trim().toUpperCase() });
+  if (branch?.domainIds.length && !branch.domainIds.some((id) => String(id) === String(domainRecord._id))) {
+    throw ApiError.badRequest("Career domain is not associated with this branch");
+  }
+  return branch;
+}
+
+async function resolveRoleSubdomain(subdomainId, branchName, domainRecord) {
+  if (!subdomainId) return null;
+  if (!domainRecord) throw ApiError.badRequest("A subdomain requires a recognized career domain");
+
+  const branch = await Branch.findOne({ name: branchName.trim().toUpperCase() });
+  if (!branch) throw ApiError.badRequest("A subdomain requires a registered branch");
+
+  const subdomain = await CareerSubdomain.findOne({
+    _id: subdomainId,
+    domainId: domainRecord._id,
+    branchId: branch._id,
+  });
+  if (!subdomain) {
+    throw ApiError.badRequest("Subdomain must belong to the selected career domain and branch");
+  }
+  return subdomain;
+}
 
 /**
  * GET /api/roles?branch=CSE&type=core&search=engineer&page=1&limit=20
@@ -15,7 +44,7 @@ import mongoose from "mongoose";
  * (all/core/non-core), and substring search across title + description.
  */
 export const getRoles = asyncHandler(async (req, res) => {
-  const { branch, type, search, domainId } = req.query;
+  const { branch, type, search, domainId, subdomainId } = req.query;
   const page = req.query.page || 1;
   const limit = req.query.limit || 20;
 
@@ -24,6 +53,7 @@ export const getRoles = asyncHandler(async (req, res) => {
   if (branch) filter.branch = branch.toUpperCase();
   if (type) filter.type = type;
   if (domainId) filter.domainId = domainId;
+  if (subdomainId) filter.subdomainId = subdomainId;
   if (search) {
     const re = new RegExp(escapeRegex(search), "i");
     filter.$or = [{ title: re }, { description: re }];
@@ -97,11 +127,14 @@ export const createRole = asyncHandler(async (req, res) => {
 
   const requestedDomain = domain || "Technology & Engineering";
   const domainRecord = await resolveCareerDomain(CareerDomain, { domainId, domain: requestedDomain });
+  await findBranchForDomain(branch, domainRecord);
+  const subdomainRecord = await resolveRoleSubdomain(req.body.subdomainId, branch, domainRecord);
   const role = await Role.create({
     title,
     branch,
     domain: domainRecord?.name || requestedDomain,
     domainId: domainRecord?._id || null,
+    subdomainId: subdomainRecord?._id || null,
     institution,
     type,
     description,
@@ -151,6 +184,27 @@ export const updateRole = asyncHandler(async (req, res) => {
       role.domainId = null;
     } else {
       role.domainId = null;
+    }
+  }
+
+  const taxonomyChanged = ["branch", "domain", "domainId", "subdomainId"].some(
+    (field) => req.body[field] !== undefined
+  );
+  if (taxonomyChanged) {
+    const domainRecord = role.domainId ? await CareerDomain.findById(role.domainId) : null;
+    await findBranchForDomain(role.branch, domainRecord);
+
+    if (req.body.subdomainId !== undefined) {
+      const subdomainRecord = await resolveRoleSubdomain(req.body.subdomainId, role.branch, domainRecord);
+      role.subdomainId = subdomainRecord?._id || null;
+    } else if (role.subdomainId) {
+      const existingSubdomain = await CareerSubdomain.findOne({
+        _id: role.subdomainId,
+        domainId: domainRecord?._id,
+      });
+      if (!existingSubdomain || !(await Branch.exists({ _id: existingSubdomain.branchId, name: role.branch }))) {
+        role.subdomainId = null;
+      }
     }
   }
 

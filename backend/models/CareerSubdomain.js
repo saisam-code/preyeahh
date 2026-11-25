@@ -41,7 +41,13 @@ const careerSubdomainSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-careerSubdomainSchema.index({ domainId: 1, branchId: 1, slug: 1 }, { unique: true });
-careerSubdomainSchema.index({ domainId: 1, branchId: 1, displayOrder: 1 });
+careerSubdomainSchema.index(
+  { domainId: 1, branchId: 1, slug: 1 },
+  { unique: true, name: "domain_branch_slug_unique" }
+);
+careerSubdomainSchema.index(
+  { domainId: 1, branchId: 1, displayOrder: 1 },
+  { name: "domain_branch_order" }
+);
 
 export default mongoose.model("CareerSubdomain", careerSubdomainSchema);

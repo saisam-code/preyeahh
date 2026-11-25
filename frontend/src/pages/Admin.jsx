@@ -35,6 +35,7 @@ import AdminStudentChats from "../components/admin/AdminStudentChats.jsx";
 import AdminStudentRoadmaps from "../components/admin/AdminStudentRoadmaps.jsx";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
 import AdminBranches from "../components/admin/AdminBranches.jsx";
+import AdminSubdomains from "../components/admin/AdminSubdomains.jsx";
 import AdminBeyond from "../components/admin/AdminBeyond.jsx";
 import AdminGuidance from "../components/admin/AdminGuidance.jsx";
 import AdminRequests from "../components/admin/AdminRequests.jsx";
@@ -258,6 +259,8 @@ export default function Admin() {
     ActivePanel = <AdminInstitutions onUpdated={loadBadges} />;
   } else if (section === "audit-logs") {
     ActivePanel = <AdminAuditLogs />;
+  } else if (section === "subdomains") {
+    ActivePanel = <AdminSubdomains />;
   } else {
     const LegacyComponents = {
       roles: AdminRoles,
@@ -428,6 +431,14 @@ export default function Admin() {
               >
                 <FaSchool className="nav-item-icon" />
                 <span>Manage Branches</span>
+              </button>
+
+              <button
+                className={`sidebar-nav-item ${section === "subdomains" ? "active" : ""}`}
+                onClick={() => navigateTo("subdomains")}
+              >
+                <FaCompass className="nav-item-icon" />
+                <span>Manage Subdomains</span>
               </button>
 
               <button

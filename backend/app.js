@@ -31,6 +31,8 @@ import plannerRoutes from "./routes/plannerRoutes.js";
 import studentDevelopmentRoutes from "./routes/studentDevelopmentRoutes.js";
 import extendedAuthRoutes from "./routes/extendedAuthRoutes.js";
 import governmentCareersRoutes from "./routes/governmentCareersRoutes.js";
+import careerDomainRoutes from "./routes/careerDomainRoutes.js";
+import careerSubdomainRoutes from "./routes/careerSubdomainRoutes.js";
 
 const app = express();
 
@@ -113,6 +115,8 @@ app.use("/api/career-intelligence", careerIntelligenceRoutes);
 app.use("/api/planner", plannerRoutes);
 app.use("/api/development", studentDevelopmentRoutes);
 app.use("/api/government-careers", governmentCareersRoutes);
+app.use("/api/career-domains", careerDomainRoutes);
+app.use("/api/career-subdomains", careerSubdomainRoutes);
 
 // ── 404 + centralized error handler (must be last) ───────────────
 app.use(notFound);

@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import "../models/index.js";
 import { CAREER_DOMAIN_CATALOG } from "../../shared/careerDomainCatalog.js";
 import CareerDomain from "../models/CareerDomain.js";
+import CareerSubdomain from "../models/CareerSubdomain.js";
 import Branch from "../models/Branch.js";
 import Role from "../models/Role.js";
 
@@ -11,6 +12,22 @@ async function run() {
   await mongoose.connect(mongoUri);
 
   try {
+    await CareerDomain.collection.createIndex({ name: 1 }, { unique: true, name: "name_1" });
+    await CareerDomain.collection.createIndex({ slug: 1 }, { unique: true, name: "slug_1" });
+    await Branch.collection.createIndex({ domainIds: 1 }, { name: "domainIds_1" });
+    await Role.collection.createIndex({ domainId: 1 }, { name: "domainId_1" });
+    await Role.collection.createIndex({ subdomainId: 1 }, { name: "subdomainId_1" });
+    await CareerSubdomain.collection.createIndex({ domainId: 1 }, { name: "domainId_1" });
+    await CareerSubdomain.collection.createIndex({ branchId: 1 }, { name: "branchId_1" });
+    await CareerSubdomain.collection.createIndex(
+      { domainId: 1, branchId: 1, slug: 1 },
+      { unique: true, name: "domain_branch_slug_unique" }
+    );
+    await CareerSubdomain.collection.createIndex(
+      { domainId: 1, branchId: 1, displayOrder: 1 },
+      { name: "domain_branch_order" }
+    );
+
     let domainsUpserted = 0;
     let rolesLinked = 0;
     let branchesLinked = 0;

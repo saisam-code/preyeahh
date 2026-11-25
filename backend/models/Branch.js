@@ -49,4 +49,6 @@ branchSchema.pre("findOneAndDelete", async function (next) {
   next();
 });
 
+branchSchema.index({ domainIds: 1 });
+
 export default mongoose.model("Branch", branchSchema);

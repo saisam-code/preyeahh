@@ -1,13 +1,15 @@
 import express from "express";
-import { getBranches, createBranch, deleteBranch } from "../controllers/branchController.js";
+import { getBranches, getManagedBranches, createBranch, updateBranchDomains, deleteBranch } from "../controllers/branchController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
-import { createBranchRules, branchNameParamRule } from "../validators/branchValidator.js";
+import { createBranchRules, updateBranchDomainsRules, branchNameParamRule } from "../validators/branchValidator.js";
 
 const router = express.Router();
 
 router.get("/", getBranches);
+router.get("/manage", protect, authorize("admin"), getManagedBranches);
 router.post("/", protect, authorize("admin"), createBranchRules, validate, createBranch);
+router.put("/:name/domains", protect, authorize("admin"), updateBranchDomainsRules, validate, updateBranchDomains);
 router.delete("/:name", protect, authorize("admin"), branchNameParamRule, validate, deleteBranch);
 
 export default router;
