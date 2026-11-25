@@ -168,6 +168,22 @@ export default function Home() {
             >
               Learn About PREYEAHH
             </Link>
+            <Link
+              to="/explore-careers"
+              className="btn btn-outline"
+              style={{
+                padding: "0.9rem 2.2rem",
+                fontSize: "var(--font-size-md)",
+                borderRadius: "var(--radius)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              Explore Careers <FaCompass />
+            </Link>
           </div>
         </motion.div>
       </section>

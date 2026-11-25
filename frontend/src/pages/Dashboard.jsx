@@ -14,6 +14,9 @@ import {
   FaXmark,
   FaBullhorn,
   FaCalendarCheck,
+  FaBookmark,
+  FaBullseye,
+  FaBuildingColumns,
 } from "react-icons/fa6";
 
 import { useAuth } from "../context/AuthContext.jsx";
@@ -181,6 +184,30 @@ export default function Dashboard() {
       description: "Practice with instant, role-aware quizzes and tighten the weak spots before interviews or exams.",
       icon: FaGraduationCap,
       to: "/quiz",
+    },
+    {
+      title: "Career Roles Catalog",
+      description: "Browse role requirements, guidance, and pathways connected to your interests.",
+      icon: FaCompass,
+      to: `/roles${branchTarget}`,
+    },
+    {
+      title: "Career Resources",
+      description: "Find learning materials, references, and resources for your next steps.",
+      icon: FaBookmark,
+      to: "/resources",
+    },
+    {
+      title: "Beyond Degree",
+      description: "Explore opportunities and experiences beyond your formal degree program.",
+      icon: FaBullseye,
+      to: "/beyond",
+    },
+    {
+      title: "Government Careers",
+      description: "Explore public service careers and government pathways.",
+      icon: FaBuildingColumns,
+      to: "/government-careers",
     },
     {
       title: "Career AI Chat",

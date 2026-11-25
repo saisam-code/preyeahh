@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser, FaComments } from "react-icons/fa6";
+import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser, FaComments, FaBookmark, FaArrowRight } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchGuideBranchOverview } from "../services/guideService.js";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
@@ -35,6 +35,32 @@ export default function GuidePanel() {
         </div>
         <p>Keep student management separate from your branch content duties.</p>
       </div>
+
+      <section aria-label="Guide workspace shortcuts" style={{ marginBottom: "1.5rem" }}>
+        <h2 style={{ margin: "0 0 0.75rem" }}>Workspace shortcuts</h2>
+        <div className="dashboard-grid">
+          <button type="button" className="dashboard-card" onClick={() => navigate("/chat")}>
+            <div className="dashboard-card-icon"><FaComments /></div>
+            <div><h3>Mentorship Inbox</h3><p>Continue conversations with students.</p></div>
+            <div className="dashboard-card-footer">Open <FaArrowRight /></div>
+          </button>
+          <button type="button" className="dashboard-card" onClick={() => navigate("/roles")}>
+            <div className="dashboard-card-icon"><FaCompass /></div>
+            <div><h3>Roles Catalog</h3><p>Browse career roles across the platform.</p></div>
+            <div className="dashboard-card-footer">Open <FaArrowRight /></div>
+          </button>
+          <button type="button" className="dashboard-card" onClick={() => navigate("/resources")}>
+            <div className="dashboard-card-icon"><FaBookmark /></div>
+            <div><h3>Resources</h3><p>Find materials and learning references.</p></div>
+            <div className="dashboard-card-footer">Open <FaArrowRight /></div>
+          </button>
+          <button type="button" className="dashboard-card" onClick={() => navigate("/beyond")}>
+            <div className="dashboard-card-icon"><FaBullseye /></div>
+            <div><h3>Beyond Degree</h3><p>Explore opportunities outside formal courses.</p></div>
+            <div className="dashboard-card-footer">Open <FaArrowRight /></div>
+          </button>
+        </div>
+      </section>
 
       <div className="type-tabs" role="tablist" aria-label="Guide dashboard sections" style={{ margin: "0 0 1.5rem" }}>
         <button type="button" role="tab" aria-selected={activeSection === "students"} className={`tab ${activeSection === "students" ? "active" : ""}`} onClick={() => setActiveSection("students")}>

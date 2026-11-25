@@ -1,14 +1,10 @@
 import { useState } from "react";
-import { NavLink, Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
-  FaBuildingColumns,
-  FaBullhorn,
   FaCircleUser,
   FaChevronDown,
   FaRightFromBracket,
-  FaBars,
-  FaXmark,
 } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
@@ -18,7 +14,6 @@ export default function InstitutionLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const handleSignOut = async () => {
     setMenuOpen(false);
@@ -29,7 +24,7 @@ export default function InstitutionLayout() {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <nav
+      <header
         className="role-header-tint"
         style={{
           height: 70,
@@ -64,24 +59,6 @@ export default function InstitutionLayout() {
               </span>
             </span>
           </Link>
-
-          <div className="institution-desktop-nav" style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-            <NavLink
-              to="/institution-portal"
-              className={({ isActive }) => (isActive ? "active" : "")}
-              style={{
-                fontSize: "var(--font-size-sm)",
-                fontWeight: 600,
-                color: "var(--text)",
-                textDecoration: "none",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-              }}
-            >
-              <FaBuildingColumns /> Command Center
-            </NavLink>
-          </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
             <ThemeToggle />
@@ -146,40 +123,9 @@ export default function InstitutionLayout() {
                 </div>
               )}
             </div>
-            <button
-              className="nav-hamburger institution-menu-toggle"
-              onClick={() => setDrawerOpen(true)}
-              aria-label="Open institution navigation"
-            >
-              <FaBars />
-            </button>
           </div>
         </div>
-      </nav>
-
-      {drawerOpen && (
-        <div className="role-mobile-drawer">
-          <button
-            className="role-mobile-drawer-backdrop"
-            onClick={() => setDrawerOpen(false)}
-            aria-label="Close institution navigation"
-          />
-          <aside className="role-mobile-drawer-panel" aria-label="Institution navigation">
-            <div className="role-mobile-drawer-heading">
-              <strong>Institution Navigation</strong>
-              <button onClick={() => setDrawerOpen(false)} aria-label="Close institution navigation">
-                <FaXmark />
-              </button>
-            </div>
-            <NavLink to="/institution-portal" onClick={() => setDrawerOpen(false)}>
-              <FaBuildingColumns /> Command Center
-            </NavLink>
-            <button className="role-mobile-signout" onClick={handleSignOut}>
-              <FaRightFromBracket /> Sign Out
-            </button>
-          </aside>
-        </div>
-      )}
+      </header>
 
       <main style={{ flex: 1 }}>
         <Outlet />

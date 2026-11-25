@@ -1,12 +1,10 @@
-import { useState } from "react";
-import { NavLink, Link, Outlet } from "react-router-dom";
-import { FaBars, FaXmark, FaHouse, FaCircleInfo, FaArrowRight } from "react-icons/fa6";
+import { Link, Outlet } from "react-router-dom";
+import { FaArrowRight } from "react-icons/fa6";
 import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 export default function PublicLayout() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
 
   const workspacePath =
@@ -40,53 +38,6 @@ export default function PublicLayout() {
               Pre<span style={{ color: "var(--primary)" }}>yeahh</span>
             </span>
           </Link>
-
-          {/* Public Navigation */}
-          <nav className="desktop-public-nav" style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-              style={({ isActive }) => ({
-                textDecoration: "none",
-                fontSize: "var(--font-size-md)",
-                fontWeight: 600,
-                color: isActive ? "var(--primary)" : "var(--text)",
-                padding: "0.35rem 0.6rem",
-                borderRadius: "var(--radius)",
-              })}
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/about"
-              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-              style={({ isActive }) => ({
-                textDecoration: "none",
-                fontSize: "var(--font-size-md)",
-                fontWeight: 600,
-                color: isActive ? "var(--primary)" : "var(--text)",
-                padding: "0.35rem 0.6rem",
-                borderRadius: "var(--radius)",
-              })}
-            >
-              About
-            </NavLink>
-            <NavLink
-              to="/explore-careers"
-              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-              style={({ isActive }) => ({
-                textDecoration: "none",
-                fontSize: "var(--font-size-md)",
-                fontWeight: 600,
-                color: isActive ? "var(--primary)" : "var(--text)",
-                padding: "0.35rem 0.6rem",
-                borderRadius: "var(--radius)",
-              })}
-            >
-              Explore Careers
-            </NavLink>
-          </nav>
 
           {/* Right Actions: Login & Get Started OR Open Workspace */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
@@ -138,114 +89,9 @@ export default function PublicLayout() {
             )}
             </div>
 
-            {/* Mobile Hamburger */}
-            <button
-              className="nav-hamburger"
-              onClick={() => setDrawerOpen(true)}
-              aria-label="Open mobile menu"
-              style={{
-                background: "transparent",
-                border: "none",
-                fontSize: "var(--font-size-lg)",
-                color: "var(--text)",
-                cursor: "pointer",
-                padding: "0.4rem",
-              }}
-            >
-              <FaBars />
-            </button>
           </div>
         </div>
       </header>
-
-      {/* ── MOBILE DRAWER: HOME, ABOUT, LOGIN, GET STARTED ── */}
-      {drawerOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex" }}>
-          <div
-            style={{ position: "absolute", inset: 0, background: "color-mix(in srgb, var(--ink-900) 50%, transparent)" }}
-            onClick={() => setDrawerOpen(false)}
-          />
-          <div
-            style={{
-              position: "relative",
-              marginLeft: "auto",
-              width: "min(280px, 100vw)",
-              height: "100%",
-              background: "var(--surface)",
-              padding: "1.5rem",
-              display: "flex",
-              flexDirection: "column",
-              gap: "1rem",
-              boxShadow: "-4px 0 24px color-mix(in srgb, var(--ink-900) 15%, transparent)",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-              <strong style={{ fontSize: "var(--font-size-md)" }}>Menu</strong>
-              <button
-                onClick={() => setDrawerOpen(false)}
-                style={{ background: "transparent", border: "none", fontSize: "var(--font-size-lg)", cursor: "pointer" }}
-              >
-                <FaXmark />
-              </button>
-            </div>
-
-            <NavLink
-              to="/"
-              end
-              onClick={() => setDrawerOpen(false)}
-              style={{ textDecoration: "none", color: "var(--text)", fontSize: "var(--font-size-md)", fontWeight: 600, padding: "0.5rem 0" }}
-            >
-              Home
-            </NavLink>
-            <NavLink
-              to="/about"
-              onClick={() => setDrawerOpen(false)}
-              style={{ textDecoration: "none", color: "var(--text)", fontSize: "var(--font-size-md)", fontWeight: 600, padding: "0.5rem 0" }}
-            >
-              About
-            </NavLink>
-            <NavLink
-              to="/explore-careers"
-              onClick={() => setDrawerOpen(false)}
-              style={{ textDecoration: "none", color: "var(--text)", fontSize: "var(--font-size-md)", fontWeight: 600, padding: "0.5rem 0" }}
-            >
-              Explore Careers
-            </NavLink>
-            <hr style={{ border: "none", borderTop: "1px solid var(--border)", margin: "0.5rem 0" }} />
-
-            {isAuthenticated ? (
-              <Link
-                to={workspacePath}
-                onClick={() => setDrawerOpen(false)}
-                className="btn btn-primary"
-                style={{ textDecoration: "none", textAlign: "center" }}
-              >
-                Open Workspace
-              </Link>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  onClick={() => setDrawerOpen(false)}
-                  className="btn btn-outline"
-                  style={{ textDecoration: "none", textAlign: "center" }}
-                >
-                  Login
-                </Link>
-
-                <Link
-                  to="/get-started"
-                  onClick={() => setDrawerOpen(false)}
-                  className="btn btn-primary"
-                  style={{ textDecoration: "none", textAlign: "center" }}
-                >
-                  Get Started
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Main Public Content */}
       <main style={{ flex: 1 }}>
