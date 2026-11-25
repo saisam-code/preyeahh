@@ -2,6 +2,7 @@ import Guide from "../models/Guide.js";
 import Role from "../models/Role.js";
 import RoleInterest from "../models/RoleInterest.js";
 import MentorshipConversation from "../models/MentorshipConversation.js";
+import { InstitutionMembership } from "../models/Institution.js";
 import ApiError from "../utils/ApiError.js";
 
 function idOf(value) {
@@ -41,25 +42,41 @@ function conversationDto(conversation) {
 async function getCommittedRole(student, roleId) {
   const role = await Role.findById(roleId);
   if (!role) throw ApiError.notFound("Role not found");
-  if (role.branch !== student.branch) {
-    throw ApiError.forbidden("You can only contact guides for roles in your branch");
-  }
-
-  const interest = await RoleInterest.findOne({ student: student.id, role: role._id, committed: true });
-  if (!interest) throw ApiError.forbidden("Commit to this role before contacting its guides");
   return role;
 }
 
 export async function listRoleMentors(student, roleId) {
   const role = await getCommittedRole(student, roleId);
-  const guides = await Guide.find({ branch: role.branch, status: "approved" })
-    .select("name branch roleNames bio")
+  const activeMembership = await InstitutionMembership.findOne({
+    student: student.id,
+    status: "ACTIVE",
+  }).select("institution").lean();
+  const guideFilter = {
+    status: "approved",
+    roleNames: { $exists: true },
+    $or: [
+      { guideType: "PREYEAHH" },
+      ...(activeMembership?.institution
+        ? [{ guideType: "INSTITUTION", institutionId: activeMembership.institution }]
+        : []),
+    ],
+  };
+  const guides = await Guide.find(guideFilter)
+    .select("name branch roleNames bio guideType institutionId")
     .sort({ name: 1 })
     .lean();
 
   return guides
     .filter((guide) => guide.roleNames.some((name) => String(name).trim().toLowerCase() === role.title.toLowerCase()))
-    .map((guide) => ({ id: guide._id, name: guide.name, branch: guide.branch, roleTitle: role.title, bio: guide.bio }));
+    .map((guide) => ({
+      id: guide._id,
+      name: guide.name,
+      branch: guide.branch,
+      roleTitle: role.title,
+      bio: guide.bio,
+      guideType: guide.guideType,
+      institutionScoped: guide.guideType === "INSTITUTION",
+    }));
 }
 
 export async function startConversation(student, { roleId, guideId }) {
@@ -83,8 +100,8 @@ export async function startConversation(student, { roleId, guideId }) {
   const { UserBlock } = await import("../models/SafetyAndOutcomes.js");
   const isBlocked = await UserBlock.findOne({
     $or: [
-      { blockerId: student.id, blockedUserId: guideId },
-      { blockerId: guideId, blockedUserId: student.id },
+      { blocker: student.id, blockedUser: guideId },
+      { blocker: guideId, blockedUser: student.id },
     ],
   });
   if (isBlocked) {
@@ -92,7 +109,21 @@ export async function startConversation(student, { roleId, guideId }) {
   }
 
   const role = await getCommittedRole(student, roleId);
-  const guide = await Guide.findOne({ _id: guideId, branch: role.branch, status: "approved" }).select("name roleNames");
+  const activeMembership = await InstitutionMembership.findOne({
+    student: student.id,
+    status: "ACTIVE",
+  }).select("institution").lean();
+  const guideFilter = {
+    _id: guideId,
+    status: "approved",
+    $or: [
+      { guideType: "PREYEAHH" },
+      ...(activeMembership?.institution
+        ? [{ guideType: "INSTITUTION", institutionId: activeMembership.institution }]
+        : []),
+    ],
+  };
+  const guide = await Guide.findOne(guideFilter).select("name roleNames guideType institutionId");
   if (!guide || !guide.roleNames.some((name) => String(name).trim().toLowerCase() === role.title.toLowerCase())) {
     throw ApiError.notFound("Approved guide for this role not found");
   }
@@ -158,8 +189,8 @@ export async function sendConversationMessage(conversationId, user, content) {
   const { UserBlock } = await import("../models/SafetyAndOutcomes.js");
   const isBlocked = await UserBlock.findOne({
     $or: [
-      { blockerId: conversation.studentId, blockedUserId: conversation.guideId },
-      { blockerId: conversation.guideId, blockedUserId: conversation.studentId },
+      { blocker: conversation.studentId, blockedUser: conversation.guideId },
+      { blocker: conversation.guideId, blockedUser: conversation.studentId },
     ],
   });
   if (isBlocked) {

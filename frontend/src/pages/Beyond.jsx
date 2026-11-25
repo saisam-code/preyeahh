@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { FaXmark, FaHandPointer } from "react-icons/fa6";
 
-import { useBranch } from "../context/BranchContext.jsx";
 import { fetchBeyond } from "../services/beyondService.js";
-import BranchGate from "../components/BranchGate.jsx";
 import ContributorLabel from "../components/ContributorLabel.jsx";
 
 const CAT_META = {
@@ -27,7 +25,6 @@ function parseResource(str) {
 }
 
 export default function Beyond() {
-  const { branch } = useBranch();
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCat, setActiveCat] = useState("all");
@@ -35,12 +32,11 @@ export default function Beyond() {
   const [selected, setSelected] = useState(null);
 
   useEffect(() => {
-    if (!branch) return;
     setLoading(true);
     fetchBeyond({ limit: 100 })
-      .then((res) => setList(res.data.filter((l) => l.branch === branch || l.branch === "All")))
+      .then((res) => setList(res.data))
       .finally(() => setLoading(false));
-  }, [branch]);
+  }, []);
 
   const filtered = useMemo(() => {
     let items = list;
@@ -52,13 +48,11 @@ export default function Beyond() {
     return items;
   }, [list, activeCat, search]);
 
-  if (!branch) return <BranchGate label="opportunities beyond placements" />;
-
   return (
     <div>
       <div className="page-hero">
-        <h1>{branch} <span>Beyond</span></h1>
-        <p>Startups, higher studies, national &amp; international opportunities for {branch} — tap any card for full guidance</p>
+        <h1>Career <span>Opportunities</span></h1>
+        <p>Explore startups, higher studies, national and international opportunities across domains.</p>
       </div>
 
       <div className="section">

@@ -501,14 +501,14 @@ export default function PersonalCareerPlanner() {
           </div>
 
           {/* Calendar Grid Header */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem", textAlign: "center", fontWeight: 700, fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
+          <div className="planner-calendar-grid planner-calendar-header" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem", textAlign: "center", fontWeight: 700, fontSize: "var(--font-size-xs)", color: "var(--text-muted)", marginBottom: "0.5rem" }}>
             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
               <div key={day} style={{ padding: "0.4rem 0" }}>{day}</div>
             ))}
           </div>
 
           {/* Calendar Days */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem" }}>
+          <div className="planner-calendar-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem" }}>
             {/* Empty slots before first day of month */}
             {Array.from({ length: firstDayOfMonth }, (_, i) => (
               <div key={`empty-${i}`} style={{ minHeight: 70, background: "transparent" }} />
@@ -639,6 +639,53 @@ export default function PersonalCareerPlanner() {
                 {plan?.milestones?.length || 0}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD PROJECT / PROOF MODAL ── */}
+      {showProjectModal && (
+        <div className="modal-backdrop">
+          <div className="modal-card" style={{ maxWidth: 520, padding: "1.5rem" }}>
+            <h3 style={{ margin: "0 0 1rem" }}>Add Project or Proof</h3>
+            <form onSubmit={handleCreateProject}>
+              <div className="form-group">
+                <label>Project title</label>
+                <input value={projectForm.title} onChange={(e) => setProjectForm((current) => ({ ...current, title: e.target.value }))} required />
+              </div>
+              <div className="form-group">
+                <label>Description</label>
+                <textarea value={projectForm.description} onChange={(e) => setProjectForm((current) => ({ ...current, description: e.target.value }))} style={{ minHeight: 80 }} />
+              </div>
+              <div className="form-group">
+                <label>Career relevance</label>
+                <input value={projectForm.careerRelevance} onChange={(e) => setProjectForm((current) => ({ ...current, careerRelevance: e.target.value }))} placeholder="How does this support your career goal?" />
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Skills used (comma separated)</label>
+                  <input value={projectForm.skillsUsed} onChange={(e) => setProjectForm((current) => ({ ...current, skillsUsed: e.target.value }))} />
+                </div>
+                <div className="form-group">
+                  <label>Project type</label>
+                  <select value={projectForm.projectType} onChange={(e) => setProjectForm((current) => ({ ...current, projectType: e.target.value }))}>
+                    <option>Personal</option><option>Academic</option><option>Career Experiment</option><option>Technical</option><option>Creative</option><option>Competition</option><option>Internship</option>
+                  </select>
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group"><label>Live URL</label><input value={projectForm.liveUrl} onChange={(e) => setProjectForm((current) => ({ ...current, liveUrl: e.target.value }))} /></div>
+                <div className="form-group"><label>Repository URL</label><input value={projectForm.repoUrl} onChange={(e) => setProjectForm((current) => ({ ...current, repoUrl: e.target.value }))} /></div>
+              </div>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", marginBottom: "1rem" }}>
+                <input type="checkbox" checked={projectForm.isPublicOnPortfolio} onChange={(e) => setProjectForm((current) => ({ ...current, isPublicOnPortfolio: e.target.checked }))} />
+                Share this project publicly on my portfolio
+              </label>
+              <div className="modal-actions" style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+                <button type="button" className="btn btn-outline" onClick={() => setShowProjectModal(false)}>Cancel</button>
+                <button type="submit" className="btn btn-primary">Save Proof</button>
+              </div>
+            </form>
           </div>
         </div>
       )}

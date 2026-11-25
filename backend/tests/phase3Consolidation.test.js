@@ -224,3 +224,26 @@ test("Experiment completion validates reflection fields and experiment ownership
   assert.match(source, /completeExperimentRules/);
   assert.match(source, /authorize\("student"\)/);
 });
+
+test("Planner sync links goal history to proof and milestones", async () => {
+  const source = await readFile(new URL("../controllers/plannerController.js", import.meta.url), "utf8");
+  assert.match(source, /StudentProject/);
+  assert.match(source, /StudentExperiment/);
+  assert.match(source, /Synced from career goal history/);
+  assert.match(source, /planWithProof/);
+});
+
+test("Mentorship supports cross-domain verified guides with institution isolation", async () => {
+  const source = await readFile(new URL("../services/mentorshipService.js", import.meta.url), "utf8");
+  assert.match(source, /guideType:\s*"PREYEAHH"/);
+  assert.match(source, /guideType:\s*"INSTITUTION"/);
+  assert.match(source, /status:\s*"ACTIVE"/);
+  assert.doesNotMatch(source, /role\.branch !== student\.branch/);
+  assert.doesNotMatch(source, /blockerId:/);
+});
+
+test("Beyond opportunities do not require a branch gate", async () => {
+  const source = await readFile(new URL("../../frontend/src/pages/Beyond.jsx", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /BranchGate/);
+  assert.doesNotMatch(source, /if\s*\(!branch\)/);
+});

@@ -21,7 +21,7 @@ export const registerGuide = asyncHandler(async (req, res) => {
   if (existing) throw ApiError.conflict("An account with this email already exists");
   assertEmailConfigured();
 
-  const guide = await Guide.create({ name, email, password, branch, roleNames, bio });
+  const guide = await Guide.create({ name, email, password, branch, roleNames, bio, guideType: "PREYEAHH" });
 
   const rawToken = guide.createEmailVerificationToken();
   await guide.save({ validateBeforeSave: false });

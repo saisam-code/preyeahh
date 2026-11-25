@@ -203,7 +203,7 @@ export default function Profile() {
 
           <form onSubmit={handleAddGoal} style={{ display: "grid", gap: "0.75rem" }}>
             <input value={newGoalTitle} onChange={(e) => setNewGoalTitle(e.target.value)} placeholder="Add a goal or career to explore" maxLength={120} />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+            <div className="profile-goal-form-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
               <select value={newGoalType} onChange={(e) => setNewGoalType(e.target.value)} aria-label="Goal type">
                 <option value="PRIMARY">Primary goal</option>
                 <option value="ALTERNATIVE">Alternative goal</option>

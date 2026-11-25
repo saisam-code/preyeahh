@@ -176,7 +176,7 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
       description: `Complete one realistic experiment, build proof of skill, and review the real requirements before committing.`,
       timeHorizon: goal.type === "PRIMARY" ? "6 Months" : "3 Months",
       relatedSkills: [],
-      notes: `Synced from career goal history (${goal.type}).`,
+      notes: `Synced from career goal history (${goal.type}: ${goal.goalTitle}).`,
     },
   }));
   for (const expected of expectedMilestones) {

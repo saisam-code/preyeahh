@@ -7260,3 +7260,127 @@ body.dark .hero-stat-card:hover {
   margin-top: auto;
   color: var(--error, var(--danger));
 }
+
+/* Career discovery, profile and planner responsive overrides */
+@media (max-width: 768px) {
+  .career-filter-row,
+  .career-search-form,
+  .career-skills-form,
+  .career-switch-form,
+  .career-roi-form,
+  .profile-goal-form-grid {
+    width: 100%;
+  }
+
+  .career-filter-row {
+    display: grid !important;
+  }
+
+  .career-filter-row select,
+  .career-search-form,
+  .career-search-form input,
+  .career-skills-form,
+  .career-skills-form input,
+  .career-switch-form,
+  .career-switch-form input,
+  .career-switch-form button,
+  .career-roi-form,
+  .career-roi-form input,
+  .career-roi-form button {
+    width: 100%;
+  }
+
+  .career-skills-form,
+  .career-switch-form,
+  .career-roi-form,
+  .profile-goal-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .career-reality-modal {
+    width: 100%;
+    max-height: calc(100dvh - 1.5rem);
+    overflow-y: auto;
+  }
+
+  .modal-backdrop {
+    align-items: end;
+    padding: 0.75rem;
+  }
+
+  .planner-calendar-grid {
+    gap: 0.25rem !important;
+  }
+
+  .planner-calendar-grid > div {
+    min-width: 0;
+  }
+
+  .planner-calendar-header {
+    font-size: var(--font-size-micro) !important;
+  }
+
+  .planner-container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .bottom-nav-item {
+    min-height: 3.25rem;
+  }
+
+  button,
+  .btn,
+  input,
+  select,
+  textarea {
+    max-width: 100%;
+  }
+
+  .btn,
+  button,
+  .tab,
+  [role="tab"] {
+    min-height: 44px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: var(--font-base);
+  }
+}
+
+@media (max-width: 480px) {
+  .career-filter-row select {
+    min-width: 0;
+  }
+
+  .planner-calendar-grid {
+    grid-template-columns: repeat(7, minmax(38px, 1fr)) !important;
+    overflow-x: auto;
+  }
+
+  .planner-calendar-grid > div {
+    min-height: 58px;
+  }
+
+  .career-reality-modal {
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

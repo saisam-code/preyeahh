@@ -118,6 +118,9 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
             {mentors.map((guide) => (
               <div key={guide.id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.75rem", minWidth: 220, maxWidth: 360, background: "var(--surface)" }}>
                 <strong>{guide.name}</strong>
+                <div style={{ color: "var(--text-muted)", fontSize: "var(--font-size-xs)", marginTop: "0.2rem" }}>
+                  {guide.guideType === "PREYEAHH" ? "PREYEAHH Guide" : "Institution Guide"}
+                </div>
                 {guide.bio && <p style={{ fontSize: "var(--font-size-sm)", color: "var(--text-muted)", margin: "0.35rem 0" }}>{guide.bio}</p>}
                 <button type="button" className="btn btn-primary btn-sm" disabled={startingGuideId === guide.id} onClick={() => beginConversation(guide)}>
                   {startingGuideId === guide.id ? "Opening..." : "Message guide"}
@@ -130,7 +133,7 @@ export default function MentorshipInbox({ mode = "student", roleIntent = null })
 
       {mode === "student" && roleIntent?.id && !mentors.length && !loading && !hasRoleConversation && (
         <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "1rem" }}>
-          No approved guide is currently assigned to {roleIntent.title}. Your commitment is saved; check back later.
+          No approved guide is currently assigned to {roleIntent.title}. You can explore the role and check back later.
         </p>
       )}
 

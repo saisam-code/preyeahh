@@ -288,7 +288,7 @@ export default function CareerDiscovery() {
       {activeTab === "discovery" && (
         <div>
           {/* Category Filters & Search */}
-          <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
+          <div className="career-filter-row" style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginBottom: "1.5rem" }}>
             <div style={{ display: "flex", gap: "0.5rem", overflowX: "auto", flex: 1 }}>
               {CATEGORIES.map((c) => (
                 <button
@@ -326,7 +326,7 @@ export default function CareerDiscovery() {
               ))}
             </select>
 
-            <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "0.5rem" }}>
+            <form className="career-search-form" onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "0.5rem" }}>
               <input
                 type="text"
                 placeholder="Search role, domain..."
@@ -338,7 +338,7 @@ export default function CareerDiscovery() {
                 <FaMagnifyingGlass />
               </button>
             </form>
-            <form onSubmit={handleSearchSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", flexBasis: "100%" }}>
+            <form className="career-skills-form" onSubmit={handleSearchSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", flexBasis: "100%" }}>
               <input
                 type="text"
                 value={currentSkills}
@@ -456,7 +456,7 @@ export default function CareerDiscovery() {
             Identify transferable skills, missing prerequisites, and realistic timelines when pivoting to a new domain.
           </p>
 
-          <form onSubmit={handleRunSwitch} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "1rem", alignItems: "flex-end", marginBottom: "1.5rem" }}>
+          <form className="career-switch-form" onSubmit={handleRunSwitch} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "1rem", alignItems: "flex-end", marginBottom: "1.5rem" }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label>Current Background / Career</label>
               <input type="text" value={switchFrom} onChange={(e) => setSwitchFrom(e.target.value)} required />
@@ -585,7 +585,7 @@ export default function CareerDiscovery() {
             Compare approximate education costs against realistic starting salary projections.
           </p>
 
-          <form onSubmit={handleCalculateRoi} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "1rem", alignItems: "flex-end", marginBottom: "1.5rem" }}>
+          <form className="career-roi-form" onSubmit={handleCalculateRoi} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: "1rem", alignItems: "flex-end", marginBottom: "1.5rem" }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label>Estimated Total Education Cost (INR)</label>
               <input type="number" value={eduCost} onChange={(e) => setEduCost(e.target.value)} required />
@@ -689,7 +689,7 @@ export default function CareerDiscovery() {
       {/* ── DETAIL REALITY MODAL ── */}
       {selectedRole && (
         <div className="modal-backdrop">
-          <div className="modal-card" style={{ maxWidth: 650, padding: "1.5rem" }}>
+          <div className="modal-card career-reality-modal" style={{ maxWidth: 650, padding: "1.5rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
               <h3 style={{ margin: 0 }}>Career Reality: {selectedRole.title}</h3>
               <button className="btn btn-outline btn-sm" onClick={() => setSelectedRole(null)}>Close</button>
