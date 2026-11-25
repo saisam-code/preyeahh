@@ -48,7 +48,7 @@ export const recordCareerOutcome = asyncHandler(async (req, res) => {
     roleOrDegree: roleOrDegree || "",
     outcomeDate: outcomeDate ? new Date(outcomeDate) : new Date(),
     verificationEvidenceUrl: verificationEvidenceUrl || "",
-    isPublic: isPublic !== false,
+    isPublic: isPublic === true,
     storySummary: storySummary || "",
   });
 

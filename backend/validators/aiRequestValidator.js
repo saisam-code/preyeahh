@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 export const compareGovernmentJobsRules = [
   body("slugs")
@@ -25,4 +25,17 @@ export const calculateFinancialRoiRules = [
   body("startingSalary").optional({ values: "falsy" }).isFloat({ min: 0, max: 1_000_000_000 }).toFloat(),
   body("savingsRatePercent").optional({ values: "falsy" }).isFloat({ min: 5, max: 80 }).toFloat(),
   body("timeToPaybackYears").optional({ values: "falsy" }).isFloat({ min: 0.1, max: 100 }).toFloat(),
+];
+
+export const completeExperimentRules = [
+  param("id").isMongoId().withMessage("Invalid experiment id"),
+  body("evidenceUrl").optional({ values: "falsy" }).isURL().withMessage("Evidence URL must be valid"),
+  body("reflectionNotes").optional().isString().isLength({ max: 2000 }),
+  body("skillsGained").optional().isArray({ max: 30 }),
+  body("skillsGained.*").optional().isString().trim().isLength({ min: 1, max: 80 }),
+  body("rating").optional({ values: "falsy" }).isInt({ min: 1, max: 5 }).toInt(),
+  body("enjoyed").optional({ values: "falsy" }).isIn(["yes", "unsure", "no"]),
+  body("difficultyNotes").optional().isString().isLength({ max: 1000 }),
+  body("wouldContinue").optional({ values: "falsy" }).isIn(["yes", "unsure", "no"]),
+  body("nextStepRecommendation").optional().isString().isLength({ max: 1000 }),
 ];

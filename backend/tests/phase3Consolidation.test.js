@@ -13,6 +13,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { validationResult } from "express-validator";
+import { readFile } from "node:fs/promises";
 
 test("3.2: StudentGoal model schema enforces types and statuses", async () => {
   const StudentGoal = (await import("../models/StudentGoal.js")).default;
@@ -159,4 +160,67 @@ test("Student experiments retain an explicit planner task reference", async () =
   const { StudentExperiment, StudentProject } = await import("../models/StudentDevelopment.js");
   assert.ok(StudentExperiment.schema.path("plannerTaskId"), "Experiment must reference its planner task");
   assert.ok(StudentProject.schema.path("isPublicOnPortfolio"), "Project privacy field must remain");
+});
+
+test("Student goals preserve discovery history and dream/switch context", async () => {
+  const StudentGoal = (await import("../models/StudentGoal.js")).default;
+  assert.ok(StudentGoal.schema.path("origin"));
+  assert.ok(StudentGoal.schema.path("previousGoalTitle"));
+  assert.ok(StudentGoal.schema.path("changeReason"));
+  assert.ok(StudentGoal.schema.path("origin").enumValues.includes("CHILDHOOD_DREAM"));
+  assert.ok(StudentGoal.schema.path("origin").enumValues.includes("SWITCH_TARGET"));
+});
+
+test("Student preferences support childhood dreams and career switching context", async () => {
+  const Student = (await import("../models/Student.js")).default;
+  assert.ok(Student.schema.path("preferences.childhoodDream"));
+  assert.ok(Student.schema.path("preferences.formerCareerGoal"));
+  assert.ok(Student.schema.path("preferences.careerSwitchReason"));
+});
+
+test("Cross-domain role interests are not rejected by the student branch", async () => {
+  const source = await readFile(new URL("../controllers/studentController.js", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /role\.branch !== req\.user\.branch/);
+});
+
+test("Career outcomes require explicit public consent", async () => {
+  const source = await readFile(new URL("../controllers/advancedCapabilitiesController.js", import.meta.url), "utf8");
+  assert.match(source, /isPublic:\s*isPublic\s*===\s*true/);
+});
+
+test("Career discovery computes explainable skill matches without inventing requirements", async () => {
+  const source = await readFile(new URL("../controllers/careerIntelligenceController.js", import.meta.url), "utf8");
+  assert.match(source, /matchedSkills/);
+  assert.match(source, /missingSkills/);
+  assert.match(source, /explanation/);
+});
+
+test("Career reality does not invent a default employability timeline", async () => {
+  const CareerIntelligence = await import("../models/CareerIntelligence.js");
+  assert.equal(
+    CareerIntelligence.careerRealitySchema.path("timeToEmployabilityMonths").defaultValue,
+    null
+  );
+});
+
+test("Career experiments support structured reflection and next-step feedback", async () => {
+  const { StudentExperiment } = await import("../models/StudentDevelopment.js");
+  assert.ok(StudentExperiment.schema.path("enjoyed"));
+  assert.ok(StudentExperiment.schema.path("difficultyNotes"));
+  assert.ok(StudentExperiment.schema.path("wouldContinue"));
+  assert.ok(StudentExperiment.schema.path("nextStepRecommendation"));
+});
+
+test("Career reality controller connects resources and opportunities to existing systems", async () => {
+  const source = await readFile(new URL("../controllers/careerIntelligenceController.js", import.meta.url), "utf8");
+  assert.match(source, /learningResources/);
+  assert.match(source, /opportunities/);
+  assert.match(source, /resourceService\.searchResources/);
+  assert.match(source, /Opportunity\.find/);
+});
+
+test("Experiment completion validates reflection fields and experiment ownership", async () => {
+  const source = await readFile(new URL("../routes/careerIntelligenceRoutes.js", import.meta.url), "utf8");
+  assert.match(source, /completeExperimentRules/);
+  assert.match(source, /authorize\("student"\)/);
 });

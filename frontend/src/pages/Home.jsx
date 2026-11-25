@@ -118,8 +118,8 @@ export default function Home() {
               color: "var(--text)",
             }}
           >
-            Your future is bigger <br />
-            <span style={{ color: "var(--primary)" }}>than one single career path.</span>
+            Discover what you can become. <br />
+            <span style={{ color: "var(--primary)" }}>Build the path to get there.</span>
           </h1>
 
           <p

@@ -113,10 +113,10 @@ export default function Dashboard() {
   const weakestTopic = performance?.weakTopics?.[0];
 
   let nextStep = {
-    title: "Explore roles that fit your branch",
-    description: "Pick a role to get a tailored roadmap and a clear next step.",
-    action: "Browse roles",
-    onClick: () => navigate(`/roles${branchTarget}`),
+    title: "Explore careers across every domain",
+    description: "Browse roles by interest, current skills, and skills you want to learn without committing to a branch.",
+    action: "Discover careers",
+    onClick: () => navigate("/discovery"),
   };
   if (performance && !performance.profileComplete) {
     nextStep = {
@@ -157,10 +157,10 @@ export default function Dashboard() {
 
   const studentCards = [
     {
-      title: "Explore Branch Roles",
-      description: "Start with your branch and compare core career paths before deciding where to focus.",
+      title: "Discover Careers Across Domains",
+      description: "Explore film, aviation, design, technology, skilled trades, research, and other career domains.",
       icon: FaCompass,
-      to: `/roles${branchTarget}`,
+      to: "/discovery",
       highlight: true,
     },
     {

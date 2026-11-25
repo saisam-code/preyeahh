@@ -20,9 +20,15 @@ import {
   analyzeCareerSwitch,
   calculateFinancialRoi,
   getPublicOutcomes,
+  getCareerReality,
   startExperiment,
+  getStudentExperiments,
+  completeExperiment,
   submitReport,
 } from "../services/careerIntelligenceService.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import { CAREER_DOMAINS } from "../data/careerWheelData.js";
+import { EDUCATION_STAGES } from "../constants/educationStages.js";
 
 function formatRealityFact(fact) {
   if (!fact) return "No verified data yet";
@@ -53,11 +59,20 @@ const CAPABILITY_TABS = [
 ];
 
 export default function CareerDiscovery() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("discovery");
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("all");
   const [search, setSearch] = useState("");
+  const [domain, setDomain] = useState("all");
+  const [stage, setStage] = useState("all");
+  const [currentSkills, setCurrentSkills] = useState(() =>
+    (user?.preferences?.skills || []).map((skill) => typeof skill === "string" ? skill : skill?.name).filter(Boolean).join(", ")
+  );
+  const [wantedSkills, setWantedSkills] = useState(() =>
+    (user?.preferences?.strengths || []).join(", ")
+  );
 
   // Compare mode
   const [selectedForCompare, setSelectedForCompare] = useState([]);
@@ -79,6 +94,8 @@ export default function CareerDiscovery() {
 
   // Outcomes state
   const [outcomes, setOutcomes] = useState([]);
+  const [studentExperiments, setStudentExperiments] = useState([]);
+  const [experimentReflection, setExperimentReflection] = useState({});
 
   // Report state
   const [reportReason, setReportReason] = useState("Inappropriate behavior");
@@ -87,7 +104,14 @@ export default function CareerDiscovery() {
   const loadCareers = async () => {
     try {
       setLoading(true);
-      const data = await discoverCareers({ category, search });
+      const data = await discoverCareers({
+        category,
+        search,
+        skills: currentSkills,
+        wantedSkills,
+        domain,
+        stage,
+      });
       setRoles(data || []);
     } catch {
       toast.error("Failed to fetch careers");
@@ -98,19 +122,32 @@ export default function CareerDiscovery() {
 
   useEffect(() => {
     loadCareers();
-    // category is the only filter that should trigger this effect; search is submitted explicitly
+    // Structured filters trigger automatically; search is submitted explicitly
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category]);
+  }, [category, domain, stage]);
 
   useEffect(() => {
     if (activeTab === "outcomes") {
       getPublicOutcomes().then(setOutcomes).catch(() => {});
     }
-  }, [activeTab]);
+    if (activeTab === "experiments" && user) {
+      getStudentExperiments().then(setStudentExperiments).catch(() => {});
+    }
+  }, [activeTab, user]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     loadCareers();
+  };
+
+  const openCareerReality = async (role) => {
+    try {
+      const reality = await getCareerReality(role._id);
+      setSelectedRole(reality);
+    } catch {
+      setSelectedRole(role);
+      toast.error("Full verified details could not be loaded; showing the discovery record.");
+    }
   };
 
   const toggleCompare = (roleId) => {
@@ -142,7 +179,11 @@ export default function CareerDiscovery() {
     e.preventDefault();
     setAnalyzingSwitch(true);
     try {
-      const res = await analyzeCareerSwitch({ currentCareer: switchFrom, targetCareer: switchTo });
+      const res = await analyzeCareerSwitch({
+        currentCareer: switchFrom,
+        targetCareer: switchTo,
+        currentSkills: currentSkills ? currentSkills.split(",").map((skill) => skill.trim()).filter(Boolean) : [],
+      });
       setSwitchAnalysis(res.analysis);
       toast.success("Career transition pathway analyzed");
     } catch {
@@ -170,9 +211,32 @@ export default function CareerDiscovery() {
   const handleStartExp = async (title, domain) => {
     try {
       await startExperiment({ experimentTitle: title, careerDomain: domain });
+      if (user) {
+        getStudentExperiments().then(setStudentExperiments).catch(() => {});
+      }
       toast.success("Experiment added to your active planner!");
     } catch {
       toast.error("Please login as a student to start career experiments");
+    }
+  };
+
+  const handleCompleteExperiment = async (experimentId) => {
+    const reflection = experimentReflection[experimentId] || {};
+    try {
+      const updated = await completeExperiment(experimentId, {
+        evidenceUrl: reflection.evidenceUrl || "",
+        reflectionNotes: reflection.reflectionNotes || "",
+        skillsGained: (reflection.skillsGained || "").split(",").map((skill) => skill.trim()).filter(Boolean),
+        rating: reflection.rating ? Number(reflection.rating) : undefined,
+        enjoyed: reflection.enjoyed || "",
+        difficultyNotes: reflection.difficultyNotes || "",
+        wouldContinue: reflection.wouldContinue || "",
+        nextStepRecommendation: reflection.nextStepRecommendation || "",
+      });
+      setStudentExperiments((current) => current.map((item) => item._id === experimentId ? updated : item));
+      toast.success("Experiment reflection saved.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not complete the experiment.");
     }
   };
 
@@ -238,6 +302,30 @@ export default function CareerDiscovery() {
               ))}
             </div>
 
+            <select
+              value={domain}
+              onChange={(e) => setDomain(e.target.value)}
+              aria-label="Career domain"
+              style={{ minWidth: 210, padding: "0.45rem 0.75rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)", color: "var(--text)" }}
+            >
+              <option value="all">All domains</option>
+              {CAREER_DOMAINS.map((item) => (
+                <option key={item.id} value={item.title}>{item.title}</option>
+              ))}
+            </select>
+
+            <select
+              value={stage}
+              onChange={(e) => setStage(e.target.value)}
+              aria-label="Education stage"
+              style={{ minWidth: 180, padding: "0.45rem 0.75rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)", color: "var(--text)" }}
+            >
+              <option value="all">All education stages</option>
+              {EDUCATION_STAGES.filter((item) => !item.includes(" / ")).map((item) => (
+                <option key={item} value={item}>{item}</option>
+              ))}
+            </select>
+
             <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "0.5rem" }}>
               <input
                 type="text"
@@ -249,6 +337,24 @@ export default function CareerDiscovery() {
               <button type="submit" className="btn btn-outline btn-sm">
                 <FaMagnifyingGlass />
               </button>
+            </form>
+            <form onSubmit={handleSearchSubmit} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", flexBasis: "100%" }}>
+              <input
+                type="text"
+                value={currentSkills}
+                onChange={(e) => setCurrentSkills(e.target.value)}
+                placeholder="Current skills: Python, Mathematics"
+                aria-label="Current skills"
+                style={{ padding: "0.4rem 0.8rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)" }}
+              />
+              <input
+                type="text"
+                value={wantedSkills}
+                onChange={(e) => setWantedSkills(e.target.value)}
+                placeholder="Skills you want to learn"
+                aria-label="Skills to learn"
+                style={{ padding: "0.4rem 0.8rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)" }}
+              />
             </form>
           </div>
 
@@ -318,10 +424,20 @@ export default function CareerDiscovery() {
                           <span style={{ color: "var(--text-muted)" }}>Job Demand:</span>
                           <span style={{ color: "var(--primary)", fontWeight: 600 }}>{formatRealityFact(role.reality?.demandLevel)}</span>
                         </div>
+                        <div style={{ borderTop: "1px solid var(--border)", paddingTop: "0.35rem" }}>
+                          <span style={{ color: "var(--text-muted)" }}>Why this may fit:</span>{" "}
+                          <strong>{role.skillMatch?.explanation || "No structured skill match is available yet."}</strong>
+                        </div>
+                        {role.skillMatch?.missingSkills?.length > 0 && (
+                          <div>
+                            <span style={{ color: "var(--text-muted)" }}>Skills to develop:</span>{" "}
+                            {role.skillMatch.missingSkills.slice(0, 3).join(", ")}
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    <button className="btn btn-outline btn-sm" onClick={() => setSelectedRole(role)}>
+                    <button className="btn btn-outline btn-sm" onClick={() => openCareerReality(role)}>
                       View Reality Details
                     </button>
                   </div>
@@ -405,6 +521,58 @@ export default function CareerDiscovery() {
                 </button>
               </div>
             </div>
+
+            {user && (
+              <div style={{ background: "var(--card-bg, var(--white))", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem" }}>
+                <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.75rem" }}>My experiment reflections</h2>
+                {studentExperiments.length === 0 ? (
+                  <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>No experiments started yet.</p>
+                ) : (
+                  <div style={{ display: "grid", gap: "0.75rem" }}>
+                    {studentExperiments.map((experiment) => {
+                      const reflection = experimentReflection[experiment._id] || {};
+                      const setReflection = (field, value) => setExperimentReflection((current) => ({
+                        ...current,
+                        [experiment._id]: { ...current[experiment._id], [field]: value },
+                      }));
+                      return (
+                        <div key={experiment._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1rem" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
+                            <strong>{experiment.experimentTitle}</strong>
+                            <span className="branch-tag">{experiment.status.replaceAll("_", " ")}</span>
+                          </div>
+                          {experiment.status !== "completed" ? (
+                            <div style={{ display: "grid", gap: "0.65rem", marginTop: "0.75rem" }}>
+                              <input value={reflection.evidenceUrl || ""} onChange={(e) => setReflection("evidenceUrl", e.target.value)} placeholder="Evidence URL (optional)" />
+                              <input value={reflection.skillsGained || ""} onChange={(e) => setReflection("skillsGained", e.target.value)} placeholder="Skills gained (comma separated)" />
+                              <textarea value={reflection.reflectionNotes || ""} onChange={(e) => setReflection("reflectionNotes", e.target.value)} placeholder="What did you learn?" style={{ minHeight: 70 }} />
+                              <input value={reflection.difficultyNotes || ""} onChange={(e) => setReflection("difficultyNotes", e.target.value)} placeholder="What was difficult?" />
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "0.5rem" }}>
+                                <select value={reflection.enjoyed || ""} onChange={(e) => setReflection("enjoyed", e.target.value)}>
+                                  <option value="">Did you enjoy it?</option><option value="yes">Yes</option><option value="unsure">Unsure</option><option value="no">No</option>
+                                </select>
+                                <select value={reflection.wouldContinue || ""} onChange={(e) => setReflection("wouldContinue", e.target.value)}>
+                                  <option value="">Would you continue?</option><option value="yes">Yes</option><option value="unsure">Unsure</option><option value="no">No</option>
+                                </select>
+                                <select value={reflection.rating || ""} onChange={(e) => setReflection("rating", e.target.value)}>
+                                  <option value="">Rating</option>{[1,2,3,4,5].map((value) => <option key={value} value={value}>{value}/5</option>)}
+                                </select>
+                              </div>
+                              <input value={reflection.nextStepRecommendation || ""} onChange={(e) => setReflection("nextStepRecommendation", e.target.value)} placeholder="Recommended next step (optional)" />
+                              <button type="button" className="btn btn-primary btn-sm" style={{ justifySelf: "start" }} onClick={() => handleCompleteExperiment(experiment._id)}>Save reflection & complete</button>
+                            </div>
+                          ) : (
+                            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginTop: "0.65rem" }}>
+                              {experiment.reflectionNotes || "Completed"}{experiment.wouldContinue ? ` · Continue: ${experiment.wouldContinue}` : ""}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -540,9 +708,82 @@ export default function CareerDiscovery() {
               <div>
                 <strong>Practical Entry Timeline:</strong>
                 <p style={{ margin: "0.25rem 0", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
-                  Estimated ~{selectedRole.reality?.timeToEmployabilityMonths || 48} months of education and skill preparation.
+                  {selectedRole.reality?.timeToEmployabilityMonths
+                    ? `Approximately ${selectedRole.reality.timeToEmployabilityMonths} months in published records.`
+                    : "No verified entry timeline is available yet."}
                 </p>
               </div>
+
+              <div>
+                <strong>Verification:</strong>
+                <p style={{ margin: "0.25rem 0", fontSize: "var(--font-size-sm)", color: "var(--text-muted)" }}>
+                  {selectedRole.verification?.status || "UNVERIFIED"}
+                  {selectedRole.verification?.sourceName ? ` · ${selectedRole.verification.sourceName}` : ""}
+                </p>
+                {selectedRole.verification?.sourceUrl && (
+                  <a href={selectedRole.verification.sourceUrl} target="_blank" rel="noopener noreferrer" className="resource-link">
+                    View source
+                  </a>
+                )}
+              </div>
+
+              {selectedRole.pathwaySkills?.length > 0 && (
+                <div>
+                  <strong>Skills in this pathway:</strong>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.5rem" }}>
+                    {selectedRole.pathwaySkills.map((skill) => (
+                      <span key={skill} className="branch-tag">{skill}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedRole.learningResources?.length > 0 && (
+                <div>
+                  <strong>Learning resources:</strong>
+                  <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", fontSize: "var(--font-size-sm)" }}>
+                    {selectedRole.learningResources.slice(0, 6).map((resource) => (
+                      <li key={resource._id}>
+                        {resource.url
+                          ? <a href={resource.url} target="_blank" rel="noopener noreferrer">{resource.title}</a>
+                          : resource.title}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {selectedRole.experiments?.length > 0 && (
+                <div>
+                  <strong>Small career experiments:</strong>
+                  <div style={{ display: "grid", gap: "0.5rem", marginTop: "0.5rem" }}>
+                    {selectedRole.experiments.slice(0, 4).map((experiment) => (
+                      <div key={experiment._id} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.65rem" }}>
+                        <strong style={{ fontSize: "var(--font-size-sm)" }}>{experiment.title}</strong>
+                        <div style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>
+                          {experiment.objective}
+                          {experiment.estimatedHours ? ` · ~${experiment.estimatedHours} hours` : ""}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedRole.opportunities?.length > 0 && (
+                <div>
+                  <strong>Relevant opportunities:</strong>
+                  <ul style={{ margin: "0.25rem 0", paddingLeft: "1.25rem", fontSize: "var(--font-size-sm)" }}>
+                    {selectedRole.opportunities.slice(0, 6).map((opportunity) => (
+                      <li key={opportunity._id}>
+                        {opportunity.officialUrl
+                          ? <a href={opportunity.officialUrl} target="_blank" rel="noopener noreferrer">{opportunity.title}</a>
+                          : opportunity.title}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div>
                 <strong>Career Risks & Honest Realities:</strong>
@@ -550,10 +791,7 @@ export default function CareerDiscovery() {
                   {selectedRole.reality?.careerRisks?.length ? (
                     selectedRole.reality.careerRisks.map((r, i) => <li key={i}>{r}</li>)
                   ) : (
-                    <>
-                      <li>Continuous technical adaptation required.</li>
-                      <li>Competitive market for junior positions requiring strong portfolio proof.</li>
-                    </>
+                    <li>No verified career risks have been published yet.</li>
                   )}
                 </ul>
               </div>

@@ -1,7 +1,7 @@
 import PersonalCareerPlan from "../models/PersonalCareerPlan.js";
 import Student from "../models/Student.js";
 import StudentGoal from "../models/StudentGoal.js";
-import { StudentExperiment } from "../models/StudentDevelopment.js";
+import { StudentExperiment, StudentProject } from "../models/StudentDevelopment.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -147,7 +147,55 @@ export const getStudentPlan = asyncHandler(async (req, res) => {
   if (primary) plan.primaryCareer = primary.goalTitle;
   if (alternative) plan.alternativeCareer = alternative.goalTitle;
 
-  res.status(200).json(new ApiResponse(200, plan, "Personal Career Plan fetched"));
+  const canonicalGoalTypeMap = {
+    PRIMARY: "Primary",
+    ALTERNATIVE: "Alternative",
+    EXPLORING: "Exploring",
+    INTEREST: "Exploring",
+  };
+  for (const goal of canonicalGoals) {
+    const existingGoal = plan.goals.find(
+      (item) => item.title.trim().toLowerCase() === goal.goalTitle.trim().toLowerCase()
+    );
+    if (!existingGoal) {
+      plan.goals.push({
+        title: goal.goalTitle,
+        goalType: canonicalGoalTypeMap[goal.type] || "Exploring",
+        description: `${goal.type === "PRIMARY" ? "Primary" : "Alternative or exploration"} career direction preserved in goal history.`,
+        targetTimeline: goal.type === "PRIMARY" ? "3 years" : "Explore and compare",
+        status: goal.status === "ACTIVE" ? "Active" : "Archived",
+        progressPercent: 0,
+      });
+    }
+  }
+
+  const expectedMilestones = canonicalGoals.map((goal) => ({
+    key: `${goal.type}:${goal.goalTitle}`,
+    milestone: {
+      title: `Explore and prove readiness: ${goal.goalTitle}`,
+      description: `Complete one realistic experiment, build proof of skill, and review the real requirements before committing.`,
+      timeHorizon: goal.type === "PRIMARY" ? "6 Months" : "3 Months",
+      relatedSkills: [],
+      notes: `Synced from career goal history (${goal.type}).`,
+    },
+  }));
+  for (const expected of expectedMilestones) {
+    const alreadyLinked = plan.milestones.some(
+      (milestone) => milestone.notes === expected.milestone.notes
+    );
+    if (!alreadyLinked) plan.milestones.push(expected.milestone);
+  }
+  await plan.save();
+
+  const [projects, experiments] = await Promise.all([
+    StudentProject.find({ student: studentId }).sort({ completedAt: -1 }).lean(),
+    StudentExperiment.find({ student: studentId }).sort({ startedAt: -1 }).lean(),
+  ]);
+  const planWithProof = plan.toObject();
+  planWithProof.projects = projects;
+  planWithProof.experiments = experiments;
+
+  res.status(200).json(new ApiResponse(200, planWithProof, "Personal Career Plan fetched"));
 });
 
 /**

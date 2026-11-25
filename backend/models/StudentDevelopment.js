@@ -23,6 +23,10 @@ const studentExperimentSchema = new mongoose.Schema(
     reflectionNotes: { type: String, default: "" },
     skillsGained: { type: [String], default: [] },
     rating: { type: Number, min: 1, max: 5, default: null },
+    enjoyed: { type: String, enum: ["yes", "unsure", "no", ""], default: "" },
+    difficultyNotes: { type: String, default: "" },
+    wouldContinue: { type: String, enum: ["yes", "unsure", "no", ""], default: "" },
+    nextStepRecommendation: { type: String, default: "" },
   },
   { timestamps: true }
 );

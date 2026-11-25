@@ -96,7 +96,7 @@ export const careerRealitySchema = new mongoose.Schema(
       examFeesMax: { type: Number, default: 0 },
       currency: { type: String, default: "INR" },
     },
-    timeToEmployabilityMonths: { type: Number, default: 48 },
+    timeToEmployabilityMonths: { type: Number, default: null },
     employmentTypes: {
       type: [String],
       default: ["Full-time Employment", "Freelance / Independent"],

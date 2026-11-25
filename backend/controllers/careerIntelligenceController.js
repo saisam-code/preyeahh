@@ -6,6 +6,7 @@ import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import { chatCompletion } from "../services/groqService.js";
 import escapeRegex from "../utils/escapeRegex.js";
+import * as resourceService from "../services/resourceService.js";
 
 /**
  * GET /api/career-intelligence/roles
@@ -13,7 +14,7 @@ import escapeRegex from "../utils/escapeRegex.js";
  * with educationStage, domain, and branch filters
  */
 export const discoverCareers = asyncHandler(async (req, res) => {
-  const { category, domain, branch, stage, search } = req.query;
+  const { category, domain, branch, stage, search, skills, wantedSkills } = req.query;
   const filter = {};
 
   if (category && category !== "all") filter.category = category;
@@ -26,6 +27,49 @@ export const discoverCareers = asyncHandler(async (req, res) => {
   }
 
   const roles = await Role.find(filter).sort({ title: 1 }).lean();
+
+  const parseSkillList = (value) => {
+    if (Array.isArray(value)) return [...new Set(value.map((skill) => String(skill).trim()).filter(Boolean))];
+    if (typeof value !== "string") return [];
+    return [...new Set(value.split(",").map((skill) => skill.trim()).filter(Boolean))];
+  };
+  const currentSkills = parseSkillList(skills);
+  const skillsToLearn = parseSkillList(wantedSkills);
+  const normalizeSkill = (value) => String(value).trim().toLowerCase();
+  const currentSkillKeys = new Set(currentSkills.map(normalizeSkill));
+  const wantedSkillKeys = new Set(skillsToLearn.map(normalizeSkill));
+
+  const addExplainableMatches = (role) => {
+    const recordedSkills = Array.isArray(role.guidance?.skills)
+      ? role.guidance.skills.map((skill) => String(skill).trim()).filter(Boolean)
+      : [];
+    const matchedSkills = recordedSkills.filter((skill) => currentSkillKeys.has(normalizeSkill(skill)));
+    const wantedSkillsMatched = recordedSkills.filter((skill) => wantedSkillKeys.has(normalizeSkill(skill)));
+    const missingSkills = recordedSkills.filter((skill) =>
+      !currentSkillKeys.has(normalizeSkill(skill)) &&
+      !wantedSkillKeys.has(normalizeSkill(skill))
+    );
+    const matchCount = matchedSkills.length;
+    const matchScore = recordedSkills.length
+      ? Math.round((matchCount / recordedSkills.length) * 100)
+      : 0;
+
+    return {
+      ...role,
+      skillMatch: {
+        matchScore,
+        matchedSkills,
+        wantedSkillsMatched,
+        missingSkills,
+        recordedSkills,
+        explanation: matchedSkills.length
+          ? `Uses your existing ${matchedSkills.join(", ")} skills.`
+          : recordedSkills.length
+            ? `This role lists ${recordedSkills.slice(0, 3).join(", ")} for development.`
+            : "No structured skill requirements are verified for this role yet.",
+      },
+    };
+  };
 
   // Phase 3.4: Group by title to eliminate duplicate-per-branch card clutter in discovery
   let resultRoles = roles;
@@ -48,6 +92,14 @@ export const discoverCareers = asyncHandler(async (req, res) => {
     resultRoles = Array.from(groupedMap.values());
   }
 
+  resultRoles = resultRoles.map(addExplainableMatches);
+  if (currentSkills.length || skillsToLearn.length) {
+    resultRoles.sort((a, b) =>
+      (b.skillMatch.matchScore - a.skillMatch.matchScore) ||
+      a.title.localeCompare(b.title)
+    );
+  }
+
   res.status(200).json(new ApiResponse(200, resultRoles, "Careers discovered"));
 });
 
@@ -58,6 +110,33 @@ export const discoverCareers = asyncHandler(async (req, res) => {
 export const getCareerReality = asyncHandler(async (req, res) => {
   const role = await Role.findById(req.params.id);
   if (!role) throw ApiError.notFound("Career role not found");
+
+  const skillNames = (role.guidance?.skills || []).map((skill) => String(skill).trim()).filter(Boolean);
+  const resourcePools = await Promise.all(
+    skillNames.slice(0, 3).map((skill) =>
+      resourceService.searchResources({
+        query: skill,
+        branch: role.branch,
+        limit: 3,
+        page: 1,
+      }).then((result) => result.items).catch(() => [])
+    )
+  );
+  const resourcesById = new Map();
+  for (const pool of resourcePools) {
+    for (const resource of pool) {
+      resourcesById.set(String(resource._id), resource);
+    }
+  }
+
+  const opportunityFilter = {
+    isActive: true,
+    domainsOrBranches: { $in: ["ALL", role.domain || "", role.branch || ""] },
+  };
+  const opportunities = await Opportunity.find(opportunityFilter)
+    .sort({ deadline: 1, createdAt: -1 })
+    .limit(6)
+    .lean();
 
   res.status(200).json(
     new ApiResponse(200, {
@@ -70,6 +149,9 @@ export const getCareerReality = asyncHandler(async (req, res) => {
       guidance: role.guidance,
       experiments: role.experiments || [],
       verification: role.verification,
+      learningResources: Array.from(resourcesById.values()).slice(0, 6),
+      opportunities,
+      pathwaySkills: skillNames,
     }, "Career reality details fetched")
   );
 });
@@ -205,7 +287,16 @@ export const getStudentExperiments = asyncHandler(async (req, res) => {
 });
 
 export const completeExperiment = asyncHandler(async (req, res) => {
-  const { evidenceUrl, reflectionNotes, skillsGained = [], rating } = req.body;
+  const {
+    evidenceUrl,
+    reflectionNotes,
+    skillsGained = [],
+    rating,
+    enjoyed,
+    difficultyNotes,
+    wouldContinue,
+    nextStepRecommendation,
+  } = req.body;
   const exp = await StudentExperiment.findOne({ _id: req.params.id, student: req.user.id });
   if (!exp) throw ApiError.notFound("Experiment not found");
 
@@ -215,6 +306,12 @@ export const completeExperiment = asyncHandler(async (req, res) => {
   if (reflectionNotes) exp.reflectionNotes = reflectionNotes;
   if (skillsGained.length) exp.skillsGained = skillsGained;
   if (rating) exp.rating = rating;
+  if (["yes", "unsure", "no"].includes(enjoyed)) exp.enjoyed = enjoyed;
+  if (typeof difficultyNotes === "string") exp.difficultyNotes = difficultyNotes.slice(0, 1000);
+  if (["yes", "unsure", "no"].includes(wouldContinue)) exp.wouldContinue = wouldContinue;
+  if (typeof nextStepRecommendation === "string") {
+    exp.nextStepRecommendation = nextStepRecommendation.slice(0, 1000);
+  }
   await exp.save();
 
   if (exp.plannerTaskId) {

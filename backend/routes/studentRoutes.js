@@ -13,6 +13,7 @@ import {
   refreshToken,
   logoutStudent,
   getStudentGoals,
+  changeStudentGoal,
   extractProfile,
   updatePreferences,
   skipOnboarding,
@@ -41,6 +42,7 @@ import {
   preferencesRules,
   googleOnboardingRules,
   institutionAssociationRules,
+  changeGoalRules,
 } from "../validators/studentValidator.js";
 import {
   forgotPasswordRules,
@@ -76,6 +78,7 @@ router.post("/logout", logoutStudent);
 
 router.get("/me", protect, authorize("student"), getMe);
 router.get("/goals", protect, authorize("student"), getStudentGoals);
+router.post("/goals", protect, authorize("student"), changeGoalRules, validate, changeStudentGoal);
 router.get("/interest/:roleId", protect, authorize("student"), roleIdParamRule, validate, getInterestForRole);
 router.post("/interest", protect, authorize("student"), interestRules, validate, recordInterest);
 

@@ -38,6 +38,9 @@ export const registerStudent = asyncHandler(async (req, res) => {
     "currentRole",
     "primaryCareerGoal",
     "alternativeCareerGoal",
+    "childhoodDream",
+    "formerCareerGoal",
+    "careerSwitchReason",
     "targetRole",
     "interests",
     "skills",
@@ -129,11 +132,48 @@ export const getMe = asyncHandler(async (req, res) => {
 });
 
 export const getStudentGoals = asyncHandler(async (req, res) => {
-  const goals = await StudentGoal.find({ student: req.user.id, status: "ACTIVE" })
-    .select("goalTitle type status roleId createdAt updatedAt")
+  const goals = await StudentGoal.find({ student: req.user.id })
+    .select("goalTitle type status roleId origin previousGoalTitle changeReason createdAt updatedAt")
     .sort({ type: 1, updatedAt: -1 })
     .lean();
   res.status(200).json(new ApiResponse(200, goals, "Career goals fetched"));
+});
+
+export const changeStudentGoal = asyncHandler(async (req, res) => {
+  const { goalTitle, type = "EXPLORING", status = "ACTIVE", origin = "DISCOVERY", changeReason = "", previousGoalTitle = "" } = req.body;
+  const title = typeof goalTitle === "string" ? goalTitle.trim() : "";
+  if (!title) throw ApiError.badRequest("Goal title is required");
+  if (!["PRIMARY", "ALTERNATIVE", "EXPLORING", "INTEREST"].includes(type)) {
+    throw ApiError.badRequest("Invalid career goal type");
+  }
+  if (!["ACTIVE", "PAUSED", "COMPLETED", "ABANDONED"].includes(status)) {
+    throw ApiError.badRequest("Invalid career goal status");
+  }
+  if (!["DISCOVERY", "CHILDHOOD_DREAM", "CURRENT_GOAL", "SWITCH_TARGET"].includes(origin)) {
+    throw ApiError.badRequest("Invalid career goal origin");
+  }
+
+  const existing = await StudentGoal.findOne({ student: req.user.id, goalTitle: title });
+  if (existing) {
+    existing.type = type;
+    existing.status = status;
+    existing.origin = origin;
+    existing.changeReason = typeof changeReason === "string" ? changeReason.trim().slice(0, 500) : "";
+    existing.previousGoalTitle = typeof previousGoalTitle === "string" ? previousGoalTitle.trim().slice(0, 120) : "";
+    await existing.save();
+    return res.status(200).json(new ApiResponse(200, existing, "Career goal updated"));
+  }
+
+  const created = await StudentGoal.create({
+    student: req.user.id,
+    goalTitle: title,
+    type,
+    status,
+    origin,
+    changeReason: typeof changeReason === "string" ? changeReason.trim().slice(0, 500) : "",
+    previousGoalTitle: typeof previousGoalTitle === "string" ? previousGoalTitle.trim().slice(0, 120) : "",
+  });
+  res.status(201).json(new ApiResponse(201, created, "Career goal saved"));
 });
 
 export const getInterestForRole = asyncHandler(async (req, res) => {
@@ -145,9 +185,6 @@ export const recordInterest = asyncHandler(async (req, res) => {
   const { roleId, committed } = req.body;
   const role = await Role.findById(roleId);
   if (!role) throw ApiError.notFound("Role not found");
-  if (role.branch !== req.user.branch) {
-    throw ApiError.forbidden(`${role.title} is a ${role.branch} role — only ${req.user.branch} roles count toward your profile`);
-  }
   const interest = await RoleInterest.findOneAndUpdate(
     { student: req.user.id, role: role._id },
     { student: req.user.id, role: role._id, roleName: role.title, branch: role.branch, committed, recordedAt: new Date() },
@@ -315,20 +352,15 @@ export const completeGoogleOnboarding = asyncHandler(async (req, res) => {
   }
 
   const { branch, name } = req.body;
+  const normalizedBranch = typeof branch === "string" ? branch.trim().toUpperCase() : "";
 
-  if (!branch || !branch.trim()) {
-    throw ApiError.badRequest("Branch is required");
+  if (normalizedBranch) {
+    const existingBranch = await Branch.findOne({ name: normalizedBranch });
+    if (!existingBranch) throw ApiError.badRequest("Invalid branch");
+    student.branch = normalizedBranch;
+  } else {
+    student.branch = "";
   }
-
-  const normalizedBranch = branch.trim().toUpperCase();
-
-  // Validate that the submitted branch actually exists in the database
-  const existingBranch = await Branch.findOne({ name: normalizedBranch });
-  if (!existingBranch) {
-    throw ApiError.badRequest("Invalid branch. Please select a valid engineering branch.");
-  }
-
-  student.branch = normalizedBranch;
   if (name && name.trim()) student.name = name.trim();
   student.googlePendingOnboarding = false;
 

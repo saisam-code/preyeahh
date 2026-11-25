@@ -91,6 +91,9 @@ export default function StudentOnboarding() {
   });
   const [primaryGoal, setPrimaryGoal] = useState(() => initialValue("primaryCareerGoal", ""));
   const [alternativeGoal, setAlternativeGoal] = useState(() => initialValue("alternativeCareerGoal", ""));
+  const [childhoodDream, setChildhoodDream] = useState(() => initialValue("childhoodDream", ""));
+  const [formerCareerGoal, setFormerCareerGoal] = useState(() => initialValue("formerCareerGoal", ""));
+  const [careerSwitchReason, setCareerSwitchReason] = useState(() => initialValue("careerSwitchReason", ""));
   const careerGoalsEdited = useRef(false);
   const [careerPreference, setCareerPreference] = useState(() => initialValue("careerPreference", "unsure"));
   const [selectedSkills, setSelectedSkills] = useState(() => {
@@ -126,6 +129,9 @@ export default function StudentOnboarding() {
         interests: selectedInterests,
         primaryCareerGoal: primaryGoal,
         alternativeCareerGoal: alternativeGoal,
+        childhoodDream,
+        formerCareerGoal,
+        careerSwitchReason,
         careerPreference,
         skills: selectedSkills,
         dailyHours,
@@ -140,7 +146,8 @@ export default function StudentOnboarding() {
     draftKey, step, stage, schoolOrInstitution, board, subjects, academicStream, degreeOrProgram,
     specialization, yearOfStudy, semester, expectedGraduationYear, country,
     stateName, city, currentRole, selectedInterests, primaryGoal, alternativeGoal,
-    careerPreference, selectedSkills, dailyHours, learningStyle, connectionType, institutionCode,
+    childhoodDream, formerCareerGoal, careerSwitchReason, careerPreference, selectedSkills,
+    dailyHours, learningStyle, connectionType, institutionCode,
   ]);
 
   // Consume pre-selected interests from Career Wheel if coming from Login / entry
@@ -219,6 +226,9 @@ export default function StudentOnboarding() {
       interests: selectedInterests,
       primaryCareerGoal: primaryGoal,
       alternativeCareerGoal: alternativeGoal,
+      childhoodDream,
+      formerCareerGoal,
+      careerSwitchReason,
       careerPreference,
       skills: selectedSkills.map((name) => ({ name, level: "beginner" })),
       weeklyHoursAvailable: dailyHours * 7,
@@ -271,6 +281,9 @@ export default function StudentOnboarding() {
           interests: selectedInterests,
           primaryCareerGoal: primaryGoal,
           alternativeCareerGoal: alternativeGoal,
+          childhoodDream,
+          formerCareerGoal,
+          careerSwitchReason,
           careerPreference,
           skills: selectedSkills.map((name) => ({ name, level: "beginner" })),
           weeklyHoursAvailable: dailyHours * 7,
@@ -506,6 +519,39 @@ export default function StudentOnboarding() {
                 placeholder="e.g. UX Designer, Data Analyst, Photographer..."
                 style={{ width: "100%", padding: "0.6rem 0.85rem", borderRadius: "var(--radius)", border: "1px solid var(--border)" }}
               />
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "1rem", marginTop: "1.25rem" }}>
+              <label>
+                Childhood dream (optional)
+                <input
+                  type="text"
+                  value={childhoodDream}
+                  onChange={(e) => setChildhoodDream(e.target.value)}
+                  maxLength={120}
+                  placeholder="What did you once imagine becoming?"
+                />
+              </label>
+              <label>
+                Previous goal or current position (optional)
+                <input
+                  type="text"
+                  value={formerCareerGoal}
+                  onChange={(e) => setFormerCareerGoal(e.target.value)}
+                  maxLength={120}
+                  placeholder="Example: Mechanical Engineering"
+                />
+              </label>
+              <label>
+                Reason for changing direction (optional)
+                <input
+                  type="text"
+                  value={careerSwitchReason}
+                  onChange={(e) => setCareerSwitchReason(e.target.value)}
+                  maxLength={500}
+                  placeholder="What has changed or what do you want to explore?"
+                />
+              </label>
             </div>
           </div>
         )}

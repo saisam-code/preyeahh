@@ -109,6 +109,9 @@ function toSetFields(raw) {
   if (subjects.length) set["preferences.subjects"] = subjects;
   if (str(raw.primaryCareerGoal)) set["preferences.primaryCareerGoal"] = str(raw.primaryCareerGoal);
   if (str(raw.alternativeCareerGoal)) set["preferences.alternativeCareerGoal"] = str(raw.alternativeCareerGoal);
+  if (Object.hasOwn(raw, "childhoodDream")) set["preferences.childhoodDream"] = str(raw.childhoodDream);
+  if (Object.hasOwn(raw, "formerCareerGoal")) set["preferences.formerCareerGoal"] = str(raw.formerCareerGoal);
+  if (Object.hasOwn(raw, "careerSwitchReason")) set["preferences.careerSwitchReason"] = str(raw.careerSwitchReason, 500);
   const exploring = strList(raw.exploringCareers);
   if (exploring.length) set["preferences.exploringCareers"] = exploring;
   if (str(raw.budgetRange, 40)) set["preferences.budgetRange"] = str(raw.budgetRange, 40);
@@ -229,6 +232,9 @@ export async function updatePreferences(studentId, body) {
   }
   for (const key of ["goals", "interests", "skills", "subjects", "exploringCareers"]) {
     if (Array.isArray(body[key]) && body[key].length === 0) $set[`preferences.${key}`] = [];
+  }
+  for (const key of ["childhoodDream", "formerCareerGoal", "careerSwitchReason"]) {
+    if (body[key] === "") $set[`preferences.${key}`] = "";
   }
 
   const student = await saveProfileFields(studentId, $set);

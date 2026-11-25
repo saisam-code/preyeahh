@@ -26,6 +26,12 @@ export const registerRules = [
   body("currentRole").optional().isString().trim().isLength({ max: 120 }),
   body("primaryCareerGoal").optional().isString().trim().isLength({ max: 120 }),
   body("alternativeCareerGoal").optional().isString().trim().isLength({ max: 120 }),
+  body("childhoodDream").optional().isString().trim().isLength({ max: 120 }),
+  body("formerCareerGoal").optional().isString().trim().isLength({ max: 120 }),
+  body("careerSwitchReason").optional().isString().trim().isLength({ max: 500 }),
+  body("childhoodDream").optional().isString().trim().isLength({ max: 120 }),
+  body("formerCareerGoal").optional().isString().trim().isLength({ max: 120 }),
+  body("careerSwitchReason").optional().isString().trim().isLength({ max: 500 }),
   body("targetRole").optional().isString().trim().isLength({ max: 120 }),
   body("interests").optional().isArray({ max: 15 }),
   body("interests.*").optional().isString().trim().isLength({ max: 120 }),
@@ -52,6 +58,15 @@ export const interestRules = [
 
 export const institutionAssociationRules = [
   body("associationCode").isString().trim().notEmpty().isLength({ max: 120 }),
+];
+
+export const changeGoalRules = [
+  body("goalTitle").isString().trim().notEmpty().isLength({ max: 120 }),
+  body("type").optional().isIn(["PRIMARY", "ALTERNATIVE", "EXPLORING", "INTEREST"]),
+  body("status").optional().isIn(["ACTIVE", "PAUSED", "COMPLETED", "ABANDONED"]),
+  body("origin").optional().isIn(["DISCOVERY", "CHILDHOOD_DREAM", "CURRENT_GOAL", "SWITCH_TARGET"]),
+  body("changeReason").optional().isString().trim().isLength({ max: 500 }),
+  body("previousGoalTitle").optional().isString().trim().isLength({ max: 120 }),
 ];
 
 export const roleIdParamRule = [param("roleId").isMongoId().withMessage("Invalid role id")];
@@ -111,6 +126,6 @@ export const preferencesRules = [
 // ── Google onboarding (new Google students completing their branch) ───────────
 
 export const googleOnboardingRules = [
-  body("branch").trim().notEmpty().withMessage("Branch is required").isLength({ max: 20 }),
+  body("branch").optional({ values: "falsy" }).isString().trim().isLength({ max: 20 }),
   body("name").optional().trim().isLength({ min: 1, max: 100 }).withMessage("Name must be 1-100 characters"),
 ];

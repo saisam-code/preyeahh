@@ -37,6 +37,14 @@ const studentGoalSchema = new mongoose.Schema(
       default: "ACTIVE",
       index: true,
     },
+    origin: {
+      type: String,
+      enum: ["DISCOVERY", "CHILDHOOD_DREAM", "CURRENT_GOAL", "SWITCH_TARGET"],
+      default: "DISCOVERY",
+      index: true,
+    },
+    previousGoalTitle: { type: String, default: "", trim: true },
+    changeReason: { type: String, default: "", trim: true },
     history: [
       {
         previousType: String,

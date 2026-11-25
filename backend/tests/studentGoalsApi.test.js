@@ -4,7 +4,7 @@ import StudentGoal from "../models/StudentGoal.js";
 import { protect } from "../middleware/auth.js";
 import studentRoutes from "../routes/studentRoutes.js";
 
-test("GET /goals is student-authenticated and scopes active goals to the current student", async () => {
+test("GET /goals is student-authenticated and preserves goal history for the current student", async () => {
   const route = studentRoutes.stack.find((layer) => layer.route?.path === "/goals")?.route;
   assert.ok(route?.methods.get);
   assert.equal(route.stack[0].handle, protect);
@@ -19,7 +19,7 @@ test("GET /goals is student-authenticated and scopes active goals to the current
     /permission/i
   );
 
-  const expectedGoals = [{ goalTitle: "Researcher", type: "PRIMARY", status: "ACTIVE" }];
+  const expectedGoals = [{ goalTitle: "Researcher", type: "PRIMARY", status: "ACTIVE", origin: "DISCOVERY" }];
   const query = {
     selectFields: "",
     sortFields: null,
@@ -40,7 +40,7 @@ test("GET /goals is student-authenticated and scopes active goals to the current
   let responseBody;
 
   StudentGoal.find = (filter) => {
-    assert.deepEqual(filter, { student: "student-123", status: "ACTIVE" });
+    assert.deepEqual(filter, { student: "student-123" });
     return query;
   };
 
@@ -68,6 +68,6 @@ test("GET /goals is student-authenticated and scopes active goals to the current
 
   assert.equal(responseStatus, 200);
   assert.deepEqual(responseBody.data, expectedGoals);
-  assert.equal(query.selectFields, "goalTitle type status roleId createdAt updatedAt");
+  assert.equal(query.selectFields, "goalTitle type status roleId origin previousGoalTitle changeReason createdAt updatedAt");
   assert.deepEqual(query.sortFields, { type: 1, updatedAt: -1 });
 });

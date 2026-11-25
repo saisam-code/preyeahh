@@ -12,6 +12,10 @@ export function getStudentGoals() {
   return api.get("/students/goals").then((r) => r.data.data);
 }
 
+export function changeStudentGoal(payload) {
+  return api.post("/students/goals", payload).then((r) => r.data.data);
+}
+
 // ── AI learning profile ──
 export function extractProfile(text) {
   return api.post("/students/profile/extract", { text }).then((r) => r.data.data);

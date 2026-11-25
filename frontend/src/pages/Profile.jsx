@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
-import { extractProfile, updatePreferences } from "../services/studentService.js";
+import { changeStudentGoal, extractProfile, getStudentGoals, updatePreferences } from "../services/studentService.js";
 
 const card = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", marginBottom: "1.5rem" };
 const selectStyle = { width: "100%", padding: "0.55rem 0.75rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--radius)", color: "var(--text)" };
@@ -15,6 +15,57 @@ export default function Profile() {
   const [text, setText] = useState("");
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [careerGoals, setCareerGoals] = useState([]);
+  const [newGoalTitle, setNewGoalTitle] = useState("");
+  const [newGoalType, setNewGoalType] = useState("ALTERNATIVE");
+  const [newGoalOrigin, setNewGoalOrigin] = useState("DISCOVERY");
+  const [goalChangeReason, setGoalChangeReason] = useState("");
+
+  useEffect(() => {
+    getStudentGoals()
+      .then(setCareerGoals)
+      .catch(() => toast.error("Career goal history could not be loaded."));
+  }, []);
+
+  const handleGoalChange = async (goal, status) => {
+    try {
+      const updated = await changeStudentGoal({
+        goalTitle: goal.goalTitle,
+        type: goal.type,
+        status,
+        origin: goal.origin || "DISCOVERY",
+        changeReason: goal.changeReason || "",
+        previousGoalTitle: goal.previousGoalTitle || "",
+      });
+      setCareerGoals((current) => current.map((item) =>
+        item._id === updated._id ? updated : item
+      ));
+      toast.success(`Career goal marked ${status.toLowerCase()}.`);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not update career goal.");
+    }
+  };
+
+  const handleAddGoal = async (event) => {
+    event.preventDefault();
+    if (!newGoalTitle.trim()) return toast.error("Enter a career goal.");
+    try {
+      const created = await changeStudentGoal({
+        goalTitle: newGoalTitle.trim(),
+        type: newGoalType,
+        status: "ACTIVE",
+        origin: newGoalOrigin,
+        changeReason: goalChangeReason.trim(),
+        previousGoalTitle: prefs.targetRole || prefs.primaryCareerGoal || "",
+      });
+      setCareerGoals((current) => [created, ...current]);
+      setNewGoalTitle("");
+      setGoalChangeReason("");
+      toast.success("Career goal saved with its history.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not save career goal.");
+    }
+  };
   const [themePreference, setThemePreference] = useState(() => localStorage.getItem("pp_theme") || "system");
   const [stageOverride, setStageOverride] = useState(() => localStorage.getItem("pp_stage_override") || "auto");
   const [form, setForm] = useState({
@@ -25,6 +76,9 @@ export default function Profile() {
     goals: csv(prefs.goals),
     interests: csv(prefs.interests),
     skills: csv((prefs.skills || []).map((s) => s.name)),
+    childhoodDream: prefs.childhoodDream || "",
+    formerCareerGoal: prefs.formerCareerGoal || "",
+    careerSwitchReason: prefs.careerSwitchReason || "",
     shareContactWithGuides: prefs.shareContactWithGuides || false,
     shareProfileWithGuides: prefs.shareProfileWithGuides || false,
   });
@@ -38,6 +92,9 @@ export default function Profile() {
       goals: csv(p.goals),
       interests: csv(p.interests),
       skills: csv((p.skills || []).map((s) => s.name)),
+      childhoodDream: p.childhoodDream || "",
+      formerCareerGoal: p.formerCareerGoal || "",
+      careerSwitchReason: p.careerSwitchReason || "",
       shareContactWithGuides: p.shareContactWithGuides || false,
       shareProfileWithGuides: p.shareProfileWithGuides || false,
     });
@@ -73,6 +130,9 @@ export default function Profile() {
         shareProfileWithGuides: form.shareProfileWithGuides,
         // keep the level of skills the AI already rated; new ones start as beginner
         skills: splitCsv(form.skills).map((name) => ({ name, level: existing.get(name.toLowerCase()) || "beginner" })),
+        childhoodDream: form.childhoodDream,
+        formerCareerGoal: form.formerCareerGoal,
+        careerSwitchReason: form.careerSwitchReason,
       });
       updateUser({ preferences });
       toast.success("Preferences saved");
@@ -106,6 +166,61 @@ export default function Profile() {
       </div>
 
       <div className="section" style={{ maxWidth: 760 }}>
+        <div style={card}>
+          <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "0.5rem" }}>Career directions & history</div>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginBottom: "1rem" }}>
+            Keep a primary goal, alternatives and exploration goals. Changing direction preserves previous progress.
+          </p>
+
+          {careerGoals.length > 0 ? (
+            <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1rem" }}>
+              {careerGoals.map((goal) => (
+                <div key={goal._id || goal.goalTitle} style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.75rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: "0.75rem", flexWrap: "wrap" }}>
+                    <div>
+                      <strong>{goal.goalTitle}</strong>
+                      <div style={{ color: "var(--text-muted)", fontSize: "var(--font-size-xs)", marginTop: "0.15rem" }}>
+                        {goal.type} · {goal.status} · {goal.origin?.replaceAll("_", " ") || "DISCOVERY"}
+                      </div>
+                    </div>
+                    {goal.status === "ACTIVE" && (
+                      <div style={{ display: "flex", gap: "0.35rem" }}>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={() => handleGoalChange(goal, "PAUSED")}>Pause</button>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={() => handleGoalChange(goal, "COMPLETED")}>Completed</button>
+                        <button type="button" className="btn btn-outline btn-sm" onClick={() => handleGoalChange(goal, "ABANDONED")}>Abandon</button>
+                      </div>
+                    )}
+                  </div>
+                  {goal.changeReason && (
+                    <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", marginTop: "0.5rem" }}>{goal.changeReason}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>No saved career goals yet.</p>
+          )}
+
+          <form onSubmit={handleAddGoal} style={{ display: "grid", gap: "0.75rem" }}>
+            <input value={newGoalTitle} onChange={(e) => setNewGoalTitle(e.target.value)} placeholder="Add a goal or career to explore" maxLength={120} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <select value={newGoalType} onChange={(e) => setNewGoalType(e.target.value)} aria-label="Goal type">
+                <option value="PRIMARY">Primary goal</option>
+                <option value="ALTERNATIVE">Alternative goal</option>
+                <option value="EXPLORING">Exploring</option>
+                <option value="INTEREST">Interest</option>
+              </select>
+              <select value={newGoalOrigin} onChange={(e) => setNewGoalOrigin(e.target.value)} aria-label="Goal origin">
+                <option value="DISCOVERY">Discovered</option>
+                <option value="CHILDHOOD_DREAM">Childhood dream</option>
+                <option value="CURRENT_GOAL">Current goal</option>
+                <option value="SWITCH_TARGET">Career switch target</option>
+              </select>
+            </div>
+            <input value={goalChangeReason} onChange={(e) => setGoalChangeReason(e.target.value)} placeholder="Reason for this direction (optional)" maxLength={500} />
+            <button type="submit" className="btn btn-primary" style={{ justifySelf: "start" }}>Save career direction</button>
+          </form>
+        </div>
         <div style={card}>
           <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "1rem" }}>Appearance</div>
           <div className="form-group">
@@ -173,6 +288,9 @@ export default function Profile() {
           <div className="form-group"><label>Skills (comma separated)</label><input value={form.skills} onChange={set("skills")} placeholder="Python, SQL, React" /></div>
           <div className="form-group"><label>Goals (comma separated)</label><input value={form.goals} onChange={set("goals")} placeholder="Get a placement, build a project" /></div>
           <div className="form-group"><label>Interests (comma separated)</label><input value={form.interests} onChange={set("interests")} placeholder="Web, AI" /></div>
+          <div className="form-group"><label>Childhood dream (optional)</label><input value={form.childhoodDream} onChange={set("childhoodDream")} placeholder="A career you once imagined" /></div>
+          <div className="form-group"><label>Previous goal or current position (optional)</label><input value={form.formerCareerGoal} onChange={set("formerCareerGoal")} placeholder="Example: Mechanical Engineering" /></div>
+          <div className="form-group"><label>Reason for changing direction (optional)</label><input value={form.careerSwitchReason} onChange={set("careerSwitchReason")} placeholder="What changed or what do you want to explore?" /></div>
           <fieldset style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "0.85rem 1rem", marginBottom: "1rem" }}>
             <legend style={{ padding: "0 0.35rem", fontWeight: 700, color: "var(--text)" }}>Sharing with branch guides</legend>
             <label style={{ display: "flex", alignItems: "flex-start", gap: "0.6rem", margin: "0.5rem 0", color: "var(--text-dim)" }}>

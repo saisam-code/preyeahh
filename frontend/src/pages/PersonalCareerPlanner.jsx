@@ -27,6 +27,7 @@ import {
   addCareerGoal,
   addExamDeadline,
 } from "../services/plannerService.js";
+import { addStudentProject } from "../services/studentDevelopmentService.js";
 import { TASK_CATEGORIES } from "../constants/educationStages.js";
 
 const CATEGORIES = TASK_CATEGORIES;
@@ -37,6 +38,7 @@ const VIEWS = [
   { id: "month", label: "Monthly Calendar" },
   { id: "milestones", label: "Milestones & Timeline" },
   { id: "goals", label: "Career Goals" },
+  { id: "proof", label: "Build & Proof" },
   { id: "analytics", label: "Planner Analytics" },
 ];
 
@@ -63,6 +65,17 @@ export default function PersonalCareerPlanner() {
 
   // New Deadline modal
   const [showDeadlineModal, setShowDeadlineModal] = useState(false);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [projectForm, setProjectForm] = useState({
+    title: "",
+    description: "",
+    careerRelevance: "",
+    skillsUsed: "",
+    projectType: "Personal",
+    liveUrl: "",
+    repoUrl: "",
+    isPublicOnPortfolio: false,
+  });
   const [deadlineTitle, setDeadlineTitle] = useState("");
   const [deadlineCategory, setDeadlineCategory] = useState("University Exam");
   const [deadlineDate, setDeadlineDate] = useState("");

@@ -72,6 +72,27 @@ export default function PublicLayout() {
             >
               About
             </NavLink>
+            <NavLink
+              to="/explore-careers"
+              onClick={() => setDrawerOpen(false)}
+              style={{ textDecoration: "none", color: "var(--text)", fontSize: "var(--font-size-md)", fontWeight: 600, padding: "0.5rem 0" }}
+            >
+              Explore Careers
+            </NavLink>
+            <NavLink
+              to="/explore-careers"
+              className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+              style={({ isActive }) => ({
+                textDecoration: "none",
+                fontSize: "var(--font-size-md)",
+                fontWeight: 600,
+                color: isActive ? "var(--primary)" : "var(--text)",
+                padding: "0.35rem 0.6rem",
+                borderRadius: "var(--radius)",
+              })}
+            >
+              Explore Careers
+            </NavLink>
           </nav>
 
           {/* Right Actions: Login & Get Started OR Open Workspace */}

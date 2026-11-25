@@ -3,14 +3,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaXmark, FaFire, FaEye, FaPaperPlane, FaHandPointer } from "react-icons/fa6";
 
-import { useBranch } from "../context/BranchContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchRoles } from "../services/rolesService.js";
 import { fetchGuidanceForRole } from "../services/guidanceService.js";
 import { getInterestForRole, recordInterest } from "../services/studentService.js";
 import { submitRoleRequest } from "../services/roleRequestService.js";
 import { generateRoadmap } from "../services/aiRoadmapService.js";
-import BranchGate from "../components/BranchGate.jsx";
 import ContributorLabel from "../components/ContributorLabel.jsx";
 
 function parseResource(str) {
@@ -26,7 +24,6 @@ function parseResource(str) {
 }
 
 export default function Roles() {
-  const { branch } = useBranch();
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -43,17 +40,16 @@ export default function Roles() {
   const [commitRole, setCommitRole] = useState(null);
 
   const [requestOpen, setRequestOpen] = useState(false);
-  const [requestForm, setRequestForm] = useState({ roleName: "", branch: branch || "", summary: "" });
+  const [requestForm, setRequestForm] = useState({ roleName: "", branch: "", summary: "" });
   const [requestErr, setRequestErr] = useState("");
   const [requestOk, setRequestOk] = useState(false);
 
   useEffect(() => {
-    if (!branch) return;
     setLoading(true);
-    fetchRoles({ branch, limit: 100 })
+    fetchRoles({ limit: 100 })
       .then((res) => setRoles(res.data))
       .finally(() => setLoading(false));
-  }, [branch]);
+  }, []);
 
   const filteredRoles = useMemo(() => {
     let list = roles;
@@ -90,10 +86,7 @@ export default function Roles() {
   };
 
   const doRecordInterest = async (role, committed) => {
-    if (user.branch && role.branch !== user.branch) {
-      toast(`${role.title} is a ${role.branch} role — only ${user.branch} roles count toward your profile`);
-    } else {
-      try {
+    try {
         const existing = await getInterestForRole(role._id);
         if (existing?.committed === committed) {
           if (committed) {
@@ -118,9 +111,8 @@ export default function Roles() {
           return;
         }
         toast.success("Saved");
-      } catch (err) {
+    } catch (err) {
         toast.error(err.response?.data?.message || "Could not record interest");
-      }
     }
     openDetail(role);
   };
@@ -164,20 +156,18 @@ export default function Roles() {
       setTimeout(() => {
         setRequestOpen(false);
         setRequestOk(false);
-        setRequestForm({ roleName: "", branch: branch || "", summary: "", email: "" });
+        setRequestForm({ roleName: "", branch: "", summary: "", email: "" });
       }, 1500);
     } catch (err) {
       setRequestErr(err.response?.data?.message || "Could not submit request.");
     }
   };
 
-  if (!branch) return <BranchGate label="roles" />;
-
   return (
     <div>
       <div className="page-hero">
-        <h1>{branch} <span>Roles</span></h1>
-                <p>Explore {branch} career paths. Core roles are shown first; switch to Non-Core to explore other options.</p>
+        <h1>Career <span>Roles</span></h1>
+        <p>Explore roles across every domain and education branch. Save interests or examine a role without committing.</p>
       </div>
 
       <div className="section">
@@ -235,7 +225,7 @@ export default function Roles() {
             <i className="fa fa-lightbulb" />
             <span>Can't find a desired role? <strong>Ask here</strong> and we'll consider adding it.</span>
           </div>
-          <button className="btn btn-accent" onClick={() => { setRequestForm({ roleName: "", branch: branch || "", summary: "" }); setRequestOpen(true); }}>
+          <button className="btn btn-accent" onClick={() => { setRequestForm({ roleName: "", branch: "", summary: "" }); setRequestOpen(true); }}>
             <FaPaperPlane /> Request a Role
           </button>
         </div>

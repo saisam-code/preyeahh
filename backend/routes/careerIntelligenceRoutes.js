@@ -23,6 +23,7 @@ import {
   analyzeCareerSwitchRules,
   calculateFinancialRoiRules,
   compareCareersRules,
+  completeExperimentRules,
 } from "../validators/aiRequestValidator.js";
 
 const router = express.Router();
@@ -40,7 +41,7 @@ router.post("/outcomes", protect, authorize("student"), recordCareerOutcome);
 // Experiments (student-facing)
 router.get("/experiments", protect, authorize("student"), getStudentExperiments);
 router.post("/experiments", protect, authorize("student"), startExperiment);
-router.patch("/experiments/:id/complete", protect, authorize("student"), completeExperiment);
+router.patch("/experiments/:id/complete", protect, authorize("student"), completeExperimentRules, validate, completeExperiment);
 
 // Trust, Safety & Verification
 router.post("/verify-submission", protect, authorize("guide", "admin"), submitInformationForVerification);
