@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const sourceInventorySchema = new mongoose.Schema(
   {
     sourceId: { type: String, required: true, unique: true },
+    duplicateOf: { type: String, default: "" },
     sourceRepository: { type: String, required: true, index: true },
     sourceListRepository: { type: String, default: "" },
     sourceVersion: { type: String, default: "" },

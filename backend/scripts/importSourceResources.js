@@ -8,6 +8,7 @@ import Resource from "../models/Resource.js";
 import SourceInventory from "../models/SourceInventory.js";
 import logger from "../utils/logger.js";
 import { parseAwesomeMarkdown, parseBuildYourOwnX } from "../services/sourceImportParser.js";
+import { assignUniqueInventoryIds } from "../services/sourceImportInventory.js";
 import { CAREER_DOMAIN_CATALOG } from "../../shared/careerDomainCatalog.js";
 
 const REPOSITORIES = [
@@ -100,20 +101,7 @@ async function mapConcurrent(items, concurrency, callback) {
 }
 
 function duplicateAndCoverage(items, failedRepositories, sourceVersions) {
-  const seenIds = new Set();
-  const inventory = items.map((item) => {
-    const output = { ...item };
-    if (output.importStatus === "excluded") return output;
-    const priorId = seenIds.has(output.sourceId);
-    if (priorId) {
-      output.importStatus = "duplicate";
-      output.exclusionReason = "Duplicate source item identifier";
-      output.duplicateOf = output.sourceId;
-      return output;
-    }
-    seenIds.add(output.sourceId);
-    return output;
-  });
+  const inventory = assignUniqueInventoryIds(items);
 
   const byRepository = {};
   const byCategory = {};
@@ -408,9 +396,7 @@ async function writeResources(inventory, dryRun, sourceVersions) {
         };
       });
     await writeBulkBatches(Resource, operations, "resources");
-    const inventoryById = new Map();
-    for (const item of inventory) inventoryById.set(item.sourceId, item);
-    const inventoryOperations = [...inventoryById.values()].map((item) => ({
+    const inventoryOperations = inventory.map((item) => ({
       updateOne: {
         filter: { sourceId: item.sourceId },
         update: {
@@ -418,7 +404,7 @@ async function writeResources(inventory, dryRun, sourceVersions) {
             ...Object.fromEntries([
               "sourceRepository", "sourceListRepository", "sourceCategory", "sourceSubcategory", "title", "description", "url",
               "sourceReference", "sourceUrl", "sourceLicense", "type", "resourceType", "technology", "relatedDomains",
-              "relatedRoles", "relatedSkills", "relatedTechnologies", "importStatus", "exclusionReason", "sourceLine",
+              "relatedRoles", "relatedSkills", "relatedTechnologies", "importStatus", "exclusionReason", "sourceLine", "duplicateOf",
             ].map((field) => [field, item[field]])),
             sourceVersion: sourceVersions[item.sourceRepository] || "",
             lastSeenAt: new Date(),
