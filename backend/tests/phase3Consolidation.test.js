@@ -205,22 +205,22 @@ test("Student profile supports detailed education history and non-engineering le
   assert.equal(undecidedStudent.preferences.educationStage, "");
 });
 
-test("Student registration and onboarding accept optional branch and undecided profile fields", async () => {
-  const { registerRules, preferencesRules } = await import("../validators/studentValidator.js");
+test("Google student onboarding and profile validation accept optional branch and undecided profile fields", async () => {
+  const { googleOnboardingRules, preferencesRules } = await import("../validators/studentValidator.js");
   const req = {
     body: {
       name: "Learner",
-      email: "learner@example.com",
-      password: "password1",
       branch: "",
-      educationStage: "",
-      primaryCareerGoal: "",
-      alternativeCareerGoal: "",
-      expectedGraduationYear: null,
-      learningStyle: "",
+      profile: {
+        educationStage: "",
+        primaryCareerGoal: "",
+        alternativeCareerGoal: "",
+        expectedGraduationYear: null,
+        learningStyle: "",
+      },
     },
   };
-  await Promise.all(registerRules.map((rule) => rule.run(req)));
+  await Promise.all(googleOnboardingRules.map((rule) => rule.run(req)));
   assert.deepEqual(validationResult(req).array(), []);
 
   const profileReq = {
@@ -243,8 +243,8 @@ test("Student registration and onboarding accept optional branch and undecided p
   await Promise.all(preferencesRules.map((rule) => rule.run(profileReq)));
   assert.deepEqual(validationResult(profileReq).array(), []);
 
-  const invalidReq = { body: { ...req.body, educationStage: "Unknown stage" } };
-  await Promise.all(registerRules.map((rule) => rule.run(invalidReq)));
+  const invalidReq = { body: { educationStage: "Unknown stage" } };
+  await Promise.all(preferencesRules.map((rule) => rule.run(invalidReq)));
   assert.ok(validationResult(invalidReq).array().some((error) => error.path === "educationStage"));
 });
 

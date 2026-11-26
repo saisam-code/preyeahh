@@ -74,26 +74,6 @@ export function AuthProvider({ children }) {
     })();
   }, []);
 
-  const registerGuide = useCallback(async ({ name, email, password, branch, roleNames, bio }) => {
-    setLoading(true);
-    try {
-      const { data } = await api.post("/guides/register", { name, email, password, branch, roleNames, bio });
-      return data;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const registerStudent = useCallback(async (studentData) => {
-    setLoading(true);
-    try {
-      const { data } = await api.post("/students/register", studentData);
-      return data;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   const registerParent = useCallback(async (payload) => {
     setLoading(true);
     try {
@@ -175,9 +155,9 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       user, role: user?.role || null, isAuthenticated: !!user, initialized, loading,
-      registerGuide, registerStudent, registerParent, registerInstitution, login, setSession, updateUser, logout,
+      registerParent, registerInstitution, login, setSession, updateUser, logout,
     }),
-    [user, initialized, loading, registerGuide, registerStudent, registerParent, registerInstitution, login, setSession, updateUser, logout]
+    [user, initialized, loading, registerParent, registerInstitution, login, setSession, updateUser, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 
 const guideSchema = new mongoose.Schema(
   {
@@ -21,6 +20,7 @@ const guideSchema = new mongoose.Schema(
     guideType: { type: String, enum: ["PREYEAHH", "INSTITUTION"], default: "PREYEAHH", index: true },
     institutionId: { type: mongoose.Schema.Types.ObjectId, ref: "Institution", default: null, index: true },
     branch: { type: String, required: [true, "Branch is required"], uppercase: true, trim: true, index: true },
+    googlePendingOnboarding: { type: Boolean, default: false },
     roleNames: { type: [String], default: [] },
     bio: { type: String, default: "", trim: true, maxlength: 1000 },
     status: {
@@ -31,10 +31,6 @@ const guideSchema = new mongoose.Schema(
     },
     refreshTokenVersion: { type: Number, default: 0, select: false },
     isVerified: { type: Boolean, default: false },
-    emailVerificationTokenHash: { type: String, select: false },
-    emailVerificationExpires: { type: Date, select: false },
-    passwordResetTokenHash: { type: String, select: false },
-    passwordResetExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );
@@ -51,20 +47,6 @@ guideSchema.methods.comparePassword = function (candidate) {
   return bcrypt.compare(candidate, this.password);
 };
 
-guideSchema.methods.createEmailVerificationToken = function () {
-  const rawToken = crypto.randomBytes(32).toString("hex");
-  this.emailVerificationTokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
-  return rawToken;
-};
-
-guideSchema.methods.createPasswordResetToken = function () {
-  const rawToken = crypto.randomBytes(32).toString("hex");
-  this.passwordResetTokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-  this.passwordResetExpires = Date.now() + 15 * 60 * 1000;
-  return rawToken;
-};
-
 guideSchema.methods.toSafeJSON = function () {
   return {
     id: this._id,
@@ -78,6 +60,7 @@ guideSchema.methods.toSafeJSON = function () {
     institutionId: this.institutionId,
     role: "guide",
     isVerified: this.isVerified,
+    googlePendingOnboarding: this.googlePendingOnboarding,
     createdAt: this.createdAt,
   };
 };

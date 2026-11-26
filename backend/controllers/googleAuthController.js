@@ -173,9 +173,34 @@ export async function handleGoogleCallback(req, res) {
           await guide.save({ validateBeforeSave: false });
           logger.info("[google-auth] Linked Google identity to existing guide:", email);
         } else {
-          logger.warn("[google-auth] Guide account not found for:", email);
-          return res.redirect(`${clientUrl}/login?google_error=not_found`);
+          const displayName = name || given_name || email.split("@")[0];
+          try {
+            guide = await Guide.create({
+              name: displayName,
+              email: email.toLowerCase(),
+              googleId,
+              isVerified: true,
+              googlePendingOnboarding: true,
+              branch: "UNASSIGNED",
+              status: "pending",
+            });
+            logger.info("[google-auth] Created new Google guide:", email);
+          } catch (err) {
+            if (err.code !== 11000) throw err;
+            guide = await Guide.findOne({ $or: [{ googleId }, { email: email.toLowerCase() }] });
+            if (!guide) throw err;
+            if (!guide.googleId) guide.googleId = googleId;
+            guide.isVerified = true;
+            if (guide.password) guide.password = undefined;
+            await guide.save({ validateBeforeSave: false });
+          }
         }
+      }
+
+      if (guide.googlePendingOnboarding) {
+        const onboardingToken = signOnboardingToken(guide._id, "guide");
+        const displayName = encodeURIComponent(guide.name || "");
+        return res.redirect(`${clientUrl}/google-onboarding#token=${onboardingToken}&role=guide&name=${displayName}`);
       }
 
       if (guide.status !== "approved") {

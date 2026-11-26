@@ -18,11 +18,11 @@ Live: https://preyeahh.vercel.app
 
 | Account | Sign up | Can do |
 |---|---|---|
-| Student | Email + password, or Google | Everything above |
-| Guide | Email + password, must use an `@nbkrist.org` email | Mentor students, reply to conversations |
+| Student | Google OAuth (Google-verified email) | Everything above |
+| Guide | Google OAuth (Google-verified email); admin approval required | Mentor students, reply to conversations |
+| Parent / institution | Email + password | Parent and institution portals |
 
-
-New Google students fill in a short onboarding form (branch, etc.) before they get in. Google never creates Guide accounts.
+New Google students complete branch onboarding before entering the app. New Google guides submit their branch and mentoring details for admin approval. Existing verified student and guide accounts can still use password login. SMTP email features, including app-managed email verification and password-reset emails, are disabled.
 
 ## How it works
 

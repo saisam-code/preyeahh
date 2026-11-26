@@ -2,8 +2,6 @@ import RoleRequest from "../models/RoleRequest.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import sendEmail, { getClientUrl } from "../utils/sendEmail.js";
-import logger from "../utils/logger.js";
 
 /**
  * POST /api/role-requests
@@ -59,22 +57,6 @@ export const acceptRoleRequest = asyncHandler(async (req, res) => {
   if (roleId) request.acceptedRole = roleId;
   request.notifiedStudent = false;
   await request.save();
-
-  // If email can be sent, notify them immediately via email as well
-  const recipientEmail = request.student?.email || request.email;
-  const recipientName = request.student?.name || "Student";
-  if (recipientEmail) {
-    try {
-      await sendEmail({
-        to: recipientEmail,
-        subject: `Great news! Role '${request.roleName}' has been added to Preyeahh`,
-        html: `<p>Hi ${recipientName},</p><p>We are excited to let you know that your requested role <strong>${request.roleName}</strong> (${request.branch}) has been approved and added to Preyeahh!</p><p>Log in to explore the guidance, curated roadmaps, and AI mentorship for this role.</p><p><a href="${getClientUrl()}/roles">Explore Roles</a></p>`,
-      });
-    } catch (err) {
-      logger.dev(`Failed to send role acceptance email: ${err.message}`);
-    }
-  }
-
   res.status(200).json(new ApiResponse(200, request, "Role request accepted and student will be notified"));
 });
 

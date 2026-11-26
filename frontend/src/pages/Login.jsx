@@ -7,12 +7,14 @@ import preyeahhLogo from "../assets/preyeahh-logo.png";
 import "./Login.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
+const GOOGLE_SIGNUP_DRAFT_KEY = "pp_google_signup_draft";
 
 const GOOGLE_ERRORS = {
   access_denied: "Google sign-in was cancelled.",
   domain_not_allowed: "This Google account can't be used for the selected role.",
   email_not_verified: "Your Google email is not verified.",
-  not_found: "No account found for that Google email. Register first.",
+  not_found: "Google could not create or link your account. Please try again.",
+  guide_pending_approval: "Your guide application is awaiting admin approval.",
   state_mismatch: "Sign-in session expired. Please try again.",
   server_error: "Google sign-in failed. Please try again.",
 };
@@ -148,15 +150,6 @@ export default function Login() {
             {errors.password && <small className="lp-err">{errors.password.message}</small>}
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "1rem" }}>
-            <Link
-              to={`/forgot-password?role=${role}`}
-              style={{ fontSize: "var(--font-size-sm)", color: "var(--primary)", textDecoration: "none", fontWeight: 600 }}
-            >
-              Forgot password?
-            </Link>
-          </div>
-
           {errors.root && <p className="ulm-err" style={{ display: "block" }}>{errors.root.message}</p>}
 
           <button className="btn btn-primary lp-full" type="submit" disabled={isSubmitting}>
@@ -169,7 +162,11 @@ export default function Login() {
           <>
             <div className="lp-or"><span>OR</span></div>
 
-            <a href={`${API_BASE}/auth/google?role=${role}`} className="btn btn-outline lp-full lp-google">
+            <a
+              href={`${API_BASE}/auth/google?role=${role}`}
+              className="btn btn-outline lp-full lp-google"
+              onClick={() => sessionStorage.removeItem(GOOGLE_SIGNUP_DRAFT_KEY)}
+            >
               <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                 <path fill="var(--google-red)" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
                 <path fill="var(--google-blue)" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
@@ -184,11 +181,6 @@ export default function Login() {
         <div style={{ marginTop: "1.25rem", textAlign: "center", fontSize: "var(--font-size-sm)", color: "var(--text-muted)", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
           <div>
             New to Preyeahh? <Link to={`/register?role=${role}`} style={{ color: "var(--primary)", fontWeight: 600 }}>Create an account</Link>
-          </div>
-          <div>
-            <Link to={`/resend-verification?role=${role}`} style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)", textDecoration: "none" }}>
-              Need to verify your email? Resend verification
-            </Link>
           </div>
         </div>
       </section>

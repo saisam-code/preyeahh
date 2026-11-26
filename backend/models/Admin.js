@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 
 const adminSchema = new mongoose.Schema(
   {
@@ -14,8 +13,6 @@ const adminSchema = new mongoose.Schema(
     },
     password: { type: String, required: [true, "Password is required"], minlength: 6, select: false },
     refreshTokenVersion: { type: Number, default: 0, select: false },
-    passwordResetTokenHash: { type: String, select: false },
-    passwordResetExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );
@@ -28,13 +25,6 @@ adminSchema.pre("save", async function (next) {
 
 adminSchema.methods.comparePassword = function (candidate) {
   return bcrypt.compare(candidate, this.password);
-};
-
-adminSchema.methods.createPasswordResetToken = function () {
-  const rawToken = crypto.randomBytes(32).toString("hex");
-  this.passwordResetTokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-  this.passwordResetExpires = Date.now() + 15 * 60 * 1000;
-  return rawToken;
 };
 
 adminSchema.methods.toSafeJSON = function () {

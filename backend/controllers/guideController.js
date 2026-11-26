@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import Student from "../models/Student.js";
 import Role from "../models/Role.js";
 import RoleInterest from "../models/RoleInterest.js";
@@ -10,38 +9,32 @@ import Guide from "../models/Guide.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
-import logger from "../utils/logger.js";
-import sendEmail, { assertEmailConfigured, getClientUrl } from "../utils/sendEmail.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 
-export const registerGuide = asyncHandler(async (req, res) => {
-  const { name, email, password, branch, roleNames, bio } = req.body;
+export const completeGoogleGuideOnboarding = asyncHandler(async (req, res) => {
+  const guide = req.user.doc;
+  if (!guide.googleId) throw ApiError.forbidden("This endpoint is only for Google-authenticated guides");
+  if (!guide.googlePendingOnboarding) throw ApiError.badRequest("Guide onboarding has already been completed");
 
-  const existing = await Guide.findOne({ email: email.toLowerCase() });
-  if (existing) throw ApiError.conflict("An account with this email already exists");
-  assertEmailConfigured();
-
-  const guide = await Guide.create({ name, email, password, branch, roleNames, bio, guideType: "PREYEAHH" });
-
-  const rawToken = guide.createEmailVerificationToken();
-  await guide.save({ validateBeforeSave: false });
-
-  const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=guide`;
-  if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-    logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
+  const branch = typeof req.body.branch === "string" ? req.body.branch.trim().toUpperCase() : "";
+  const roleNames = Array.isArray(req.body.roleNames)
+    ? [...new Set(req.body.roleNames.map((roleName) => roleName.trim()).filter(Boolean))]
+    : [];
+  if (!branch || !roleNames.length) {
+    throw ApiError.badRequest("Branch and at least one guide role are required");
   }
 
-  // Send verification email asynchronously so SMTP downtime does not abort registration
-  sendEmail({
-    to: guide.email,
-    subject: "Verify your Preyeahh guide account",
-    html: `<p>Hi ${guide.name},</p><p>Verify your email first, then the admin will review your registration:</p><p><a href="${verifyUrl}">Verify Email</a></p>`,
-  }).catch((err) => {
-    logger.error(`[email] Verification email delivery failed for ${guide.email}: ${err.message}`);
-  });
+  if (typeof req.body.name === "string" && req.body.name.trim()) {
+    guide.name = req.body.name.trim();
+  }
+  guide.branch = branch;
+  guide.roleNames = roleNames;
+  guide.bio = typeof req.body.bio === "string" ? req.body.bio.trim() : "";
+  guide.googlePendingOnboarding = false;
+  await guide.save();
 
-  res.status(201).json(
-    new ApiResponse(201, guide.toSafeJSON(), "Registration submitted. Check your email to verify it, then wait for admin approval.")
+  res.status(200).json(
+    new ApiResponse(200, { user: guide.toSafeJSON() }, "Guide application submitted for admin approval")
   );
 });
 
@@ -53,7 +46,7 @@ export const loginGuide = asyncHandler(async (req, res) => {
     throw ApiError.unauthorized("Invalid email or password");
   }
 
-  if (!guide.isVerified) throw ApiError.forbidden("Please verify your email before logging in.");
+  if (!guide.isVerified) throw ApiError.forbidden("Sign in with Google using this email to verify and link your account.");
   if (guide.status === "pending") throw ApiError.forbidden("Your guide registration is pending admin approval.");
   if (guide.status === "rejected") throw ApiError.forbidden("Your guide registration was not approved.");
 
@@ -210,87 +203,6 @@ export const getGuideBranchOverview = asyncHandler(async (req, res) => {
     totalBeyond,
     students: studentsWithProgress,
   }, "Branch overview retrieved"));
-});
-
-export const forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  const guide = await Guide.findOne({ email: email.toLowerCase() });
-
-  if (guide) {
-    const rawToken = guide.createPasswordResetToken();
-    await guide.save({ validateBeforeSave: false });
-    const resetUrl = `${getClientUrl()}/reset-password?token=${rawToken}&role=guide`;
-    if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      logger.dev(`[DEV] Guide password reset link for ${guide.email}: ${resetUrl}`);
-    }
-    await sendEmail({
-      to: guide.email,
-      subject: "Reset your Preyeahh password",
-      html: `<p>Click below to reset your password. This link expires in 15 minutes.</p><p><a href="${resetUrl}">Reset Password</a></p>`,
-    });
-  }
-
-  res.status(200).json(new ApiResponse(200, null, "If that email is registered, a reset link has been sent."));
-});
-
-export const resetPassword = asyncHandler(async (req, res) => {
-  const { token, password } = req.body;
-  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-
-  const guide = await Guide.findOne({
-    passwordResetTokenHash: tokenHash,
-    passwordResetExpires: { $gt: Date.now() },
-  }).select("+passwordResetTokenHash +passwordResetExpires +refreshTokenVersion");
-
-  if (!guide) throw ApiError.badRequest("Reset link is invalid or has expired");
-
-  guide.password = password;
-  guide.passwordResetTokenHash = undefined;
-  guide.passwordResetExpires = undefined;
-  guide.refreshTokenVersion = (guide.refreshTokenVersion || 0) + 1;
-  await guide.save();
-
-  res.status(200).json(new ApiResponse(200, null, "Password reset successful. Please log in."));
-});
-
-export const verifyEmail = asyncHandler(async (req, res) => {
-  const { token } = req.params;
-  const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
-
-  const guide = await Guide.findOne({
-    emailVerificationTokenHash: tokenHash,
-    emailVerificationExpires: { $gt: Date.now() },
-  }).select("+emailVerificationTokenHash +emailVerificationExpires");
-
-  if (!guide) throw ApiError.badRequest("Verification link is invalid or has expired");
-
-  guide.isVerified = true;
-  guide.emailVerificationTokenHash = undefined;
-  guide.emailVerificationExpires = undefined;
-  await guide.save({ validateBeforeSave: false });
-
-  res.status(200).json(new ApiResponse(200, null, "Email verified."));
-});
-
-export const resendVerification = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-  const guide = await Guide.findOne({ email: email.toLowerCase() });
-
-  if (guide && !guide.isVerified) {
-    const rawToken = guide.createEmailVerificationToken();
-    await guide.save({ validateBeforeSave: false });
-    const verifyUrl = `${getClientUrl()}/verify-email/${rawToken}?role=guide`;
-    if (!process.env.SMTP_HOST && process.env.NODE_ENV !== "production") {
-      logger.dev(`[DEV] Guide verification link for ${guide.email}: ${verifyUrl}`);
-    }
-    await sendEmail({
-      to: guide.email,
-      subject: "Verify your Preyeahh guide account",
-      html: `<p>Click below to verify your email:</p><p><a href="${verifyUrl}">Verify Email</a></p>`,
-    });
-  }
-
-  res.status(200).json(new ApiResponse(200, null, "If that email needs verification, a link has been sent."));
 });
 
 // ── Admin-only guide management (unchanged) ──

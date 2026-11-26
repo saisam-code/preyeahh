@@ -13,12 +13,43 @@ import "./Register.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "/api";
 const BRANCH_OPTIONS = ["CSE", "ECE", "EEE", "MECH", "CIVIL", "IT", "AI&DS", "OTHER"];
+const STUDENT_GOOGLE_PROFILE_FIELDS = [
+  "educationStage",
+  "academicStream",
+  "degreeOrProgram",
+  "specialization",
+  "yearOfStudy",
+  "semester",
+  "expectedGraduationYear",
+  "schoolOrInstitution",
+  "board",
+  "subjects",
+  "country",
+  "state",
+  "city",
+  "currentRole",
+  "primaryCareerGoal",
+  "alternativeCareerGoal",
+  "childhoodDream",
+  "formerCareerGoal",
+  "careerSwitchReason",
+  "targetRole",
+  "interests",
+  "skills",
+  "weeklyHoursAvailable",
+  "careerPreference",
+  "learningStyle",
+  "preferredLanguage",
+  "onboardingCompleted",
+  "onboardingStep",
+];
+const GOOGLE_SIGNUP_DRAFT_KEY = "pp_google_signup_draft";
 
 export default function Register() {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, user, registerStudent, registerGuide, registerParent, registerInstitution } = useAuth();
+  const { isAuthenticated, user, registerParent, registerInstitution } = useAuth();
 
   // Redirect authenticated users to their workspace
   useEffect(() => {
@@ -100,7 +131,8 @@ export default function Register() {
 
   const onSubmit = async (values) => {
     setSuccessMsg("");
-    if (values.password !== values.confirmPassword) {
+    const usesGoogleAuth = role === "student" || role === "guide";
+    if (!usesGoogleAuth && values.password !== values.confirmPassword) {
       setError("confirmPassword", { message: "Passwords do not match" });
       return;
     }
@@ -110,35 +142,38 @@ export default function Register() {
         const primaryCareerGoal = selectedCareerRoles[0] || onboardingData.primaryCareerGoal || "";
         const alternativeCareerGoal = selectedCareerRoles[1] || onboardingData.alternativeCareerGoal || "";
         const onboardingInterests = Array.isArray(onboardingData.interests) ? onboardingData.interests : [];
-        await registerStudent({
-          ...onboardingData,
-          name: values.name.trim(),
-          email: values.email.trim().toLowerCase(),
-          password: values.password,
-          schoolOrInstitution: values.attendsInstitution ? values.schoolOrInstitution.trim() : "",
-          interests: [...new Set([...onboardingInterests, ...selectedDomainInterests])],
-          primaryCareerGoal,
-          alternativeCareerGoal,
-          targetRole: primaryCareerGoal,
-          educationStage: values.educationStage || "",
-        });
-        try {
-          localStorage.removeItem("preyeahh.student-onboarding.guest");
-        } catch {
-          toast.error("Your saved onboarding draft could not be removed from this device.");
-        }
+        const profile = Object.fromEntries(
+          STUDENT_GOOGLE_PROFILE_FIELDS
+            .filter((field) => Object.hasOwn(onboardingData, field))
+            .map((field) => [field, onboardingData[field]])
+        );
+        profile.educationStage = values.educationStage || profile.educationStage || "";
+        profile.schoolOrInstitution = values.attendsInstitution
+          ? values.schoolOrInstitution.trim()
+          : profile.schoolOrInstitution || "";
+        profile.interests = [...new Set([...onboardingInterests, ...selectedDomainInterests])];
+        profile.primaryCareerGoal = primaryCareerGoal;
+        profile.alternativeCareerGoal = alternativeCareerGoal;
+        profile.targetRole = primaryCareerGoal;
 
-        setSuccessMsg("Registration successful! Please check your email to verify your student account before logging in.");
-      } else if (role === "guide") {
-        await registerGuide({
+        sessionStorage.setItem(GOOGLE_SIGNUP_DRAFT_KEY, JSON.stringify({
+          role,
           name: values.name.trim(),
-          email: values.email.trim().toLowerCase(),
-          password: values.password,
+          profile,
+        }));
+      } else if (role === "guide") {
+        sessionStorage.setItem(GOOGLE_SIGNUP_DRAFT_KEY, JSON.stringify({
+          role,
+          name: values.name.trim(),
           branch: values.branch,
-          roleNames: values.roleNames ? [values.roleNames] : ["Faculty Guide"],
-          bio: values.bio,
-        });
-        setSuccessMsg("Guide account submitted! Check your email for a verification link.");
+          roleNames: [values.roleNames?.trim() || "Faculty Guide"],
+          bio: values.bio?.trim() || "",
+        }));
+      }
+
+      if (usesGoogleAuth) {
+        window.location.assign(`${API_BASE}/auth/google?role=${role}`);
+        return;
       } else if (role === "parent") {
         await registerParent({
           name: values.name.trim(),
@@ -375,28 +410,26 @@ export default function Register() {
                   {errors.name && <small className="lp-err">{errors.name.message}</small>}
                 </div>
 
-                {/* Email Address */}
-                <div className="form-group">
-                  <label htmlFor="reg-email">Email Address</label>
-                  <input
-                    id="reg-email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder={
-                      role === "institution" ? "placement@college.edu" :
-                      role === "parent" ? "parent@example.com" :
-                      "you@gmail.com"
-                    }
-                    {...register("email", {
-                      required: "Email is required",
-                      pattern: {
-                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: "Enter a valid email address",
-                      },
-                    })}
-                  />
-                  {errors.email && <small className="lp-err">{errors.email.message}</small>}
-                </div>
+                {/* Google supplies and verifies the email for student/guide accounts. */}
+                {(role === "parent" || role === "institution") && (
+                  <div className="form-group">
+                    <label htmlFor="reg-email">Email Address</label>
+                    <input
+                      id="reg-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder={role === "institution" ? "placement@college.edu" : "parent@example.com"}
+                      {...register("email", {
+                        required: "Email is required",
+                        pattern: {
+                          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                          message: "Enter a valid email address",
+                        },
+                      })}
+                    />
+                    {errors.email && <small className="lp-err">{errors.email.message}</small>}
+                  </div>
+                )}
 
                 {/* Student Education Stage */}
                 {role === "student" && (
@@ -549,8 +582,8 @@ export default function Register() {
                   </>
                 )}
 
-                {/* Password Fields */}
-                <div className="register-field-grid">
+                {/* Parent and institution accounts continue to use passwords. */}
+                {(role === "parent" || role === "institution") && <div className="register-field-grid">
                   <div className="form-group">
                     <label htmlFor="reg-pass">Password</label>
                     <div className="pass-wrap">
@@ -579,29 +612,35 @@ export default function Register() {
                     />
                     {errors.confirmPassword && <small className="lp-err">{errors.confirmPassword.message}</small>}
                   </div>
-                </div>
+                </div>}
 
                 {errors.root && <p className="ulm-err" style={{ display: "block", marginTop: "0.5rem" }}>{errors.root.message}</p>}
 
-                <button className="btn btn-primary lp-full" type="submit" disabled={isSubmitting} style={{ marginTop: "1rem" }}>
-                  {isSubmitting ? "Creating Account..." : `Register as ${role.charAt(0).toUpperCase() + role.slice(1)}`}
-                </button>
+                {(role === "parent" || role === "institution") && (
+                  <button className="btn btn-primary lp-full" type="submit" disabled={isSubmitting} style={{ marginTop: "1rem" }}>
+                    {isSubmitting ? "Creating Account..." : `Register as ${role.charAt(0).toUpperCase() + role.slice(1)}`}
+                  </button>
+                )}
               </form>
             )}
 
-            {/* Google OAuth is supported for student and guide */}
+            {/* Student and guide accounts are created only after Google's email verification. */}
             {(role === "student" || role === "guide") && !successMsg && (
               <>
-                <div className="lp-or"><span>OR</span></div>
-                <a href={`${API_BASE}/auth/google?role=${role}`} className="btn btn-outline lp-full lp-google">
+                <button
+                  type="button"
+                  className="btn btn-outline lp-full lp-google"
+                  disabled={isSubmitting}
+                  onClick={handleSubmit(onSubmit)}
+                >
                   <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                     <path fill="var(--google-red)" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
                     <path fill="var(--google-blue)" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
                     <path fill="var(--google-yellow)" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
                     <path fill="var(--google-green)" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
                   </svg>
-                  Sign up with Google
-                </a>
+                  {isSubmitting ? "Continuing…" : "Continue with Google"}
+                </button>
               </>
             )}
 

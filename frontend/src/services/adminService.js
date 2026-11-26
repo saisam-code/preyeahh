@@ -12,14 +12,6 @@ export function logoutAdmin() {
   return api.post("/admin/logout").then((r) => r.data);
 }
 
-export function forgotPasswordAdmin(email) {
-  return api.post("/admin/forgot-password", { email }).then((r) => r.data);
-}
-
-export function resetPasswordAdmin(token, password) {
-  return api.post("/admin/reset-password", { token, password }).then((r) => r.data);
-}
-
 export function fetchAdminMe() {
   return api.get("/admin/me").then((r) => r.data);
 }

@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
-import crypto from "crypto";
 import { EDUCATION_STAGES, normalizeEducationStage } from "../constants/educationStages.js";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -102,8 +101,7 @@ const studentSchema = new mongoose.Schema(
         message: "Please enter a valid email address",
       },
     },
-    // Optional for Google-only accounts. Email/password registration still requires it
-    // (enforced in the controller, not the schema, so we can keep sparse Google accounts).
+    // Optional for Google-created accounts and legacy password accounts.
     password: { type: String, minlength: 6, select: false },
     branch: { type: String, uppercase: true, trim: true, default: "", index: true },
 
@@ -121,10 +119,6 @@ const studentSchema = new mongoose.Schema(
     preferences: { type: preferencesSchema, default: () => ({}) },
     refreshTokenVersion: { type: Number, default: 0, select: false },
     isVerified: { type: Boolean, default: false },
-    emailVerificationTokenHash: { type: String, select: false },
-    emailVerificationExpires: { type: Date, select: false },
-    passwordResetTokenHash: { type: String, select: false },
-    passwordResetExpires: { type: Date, select: false },
   },
   { timestamps: true }
 );
@@ -142,20 +136,6 @@ studentSchema.methods.comparePassword = function (candidate) {
     return Promise.resolve(false);
   }
   return bcrypt.compare(candidate, this.password);
-};
-
-studentSchema.methods.createEmailVerificationToken = function () {
-  const rawToken = crypto.randomBytes(32).toString("hex");
-  this.emailVerificationTokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000;
-  return rawToken;
-};
-
-studentSchema.methods.createPasswordResetToken = function () {
-  const rawToken = crypto.randomBytes(32).toString("hex");
-  this.passwordResetTokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
-  this.passwordResetExpires = Date.now() + 15 * 60 * 1000;
-  return rawToken;
 };
 
 studentSchema.methods.toSafeJSON = function () {

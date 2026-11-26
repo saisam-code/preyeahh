@@ -22,10 +22,6 @@ import About from "./pages/About.jsx";
 // Auth Experience Pages
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-import VerifyEmail from "./pages/VerifyEmail.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
-import ResetPassword from "./pages/ResetPassword.jsx";
-import ResendVerification from "./pages/ResendVerification.jsx";
 import GetStarted from "./pages/GetStarted.jsx";
 import StudentOnboarding from "./pages/StudentOnboarding.jsx";
 import GoogleCallback from "./pages/GoogleCallback.jsx";
@@ -117,10 +113,6 @@ export default function App() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/verify-email/:token" element={<VerifyEmail />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
-        <Route path="/resend-verification" element={<ResendVerification />} />
         <Route path="/get-started" element={<GetStarted />} />
         <Route path="/onboarding" element={<StudentOnboarding />} />
         <Route path="/google-callback" element={<GoogleCallback />} />

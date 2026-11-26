@@ -1,12 +1,7 @@
 import express from "express";
 import rateLimit from "express-rate-limit";
 import {
-  registerStudent,
   loginStudent,
-  forgotPassword,
-  resetPassword,
-  verifyEmail,
-  resendVerification,
   getMe,
   getInterestForRole,
   recordInterest,
@@ -34,7 +29,6 @@ import { protect, authorize, protectGoogleOnboarding } from "../middleware/auth.
 import validate from "../middleware/validate.js";
 import { aiLimiter, authLimiter } from "../middleware/rateLimiters.js";
 import {
-  registerRules,
   loginRules,
   interestRules,
   roleIdParamRule,
@@ -45,11 +39,6 @@ import {
   changeGoalRules,
 } from "../validators/studentValidator.js";
 import {
-  forgotPasswordRules,
-  resetPasswordRules,
-  resendVerificationRules,
-} from "../validators/authValidator.js";
-import {
   roleMentorsRules,
   startConversationRules,
   conversationIdRule,
@@ -58,21 +47,12 @@ import {
 
 const router = express.Router();
 
-const sensitiveLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, max: 5, standardHeaders: true, legacyHeaders: false,
-  message: { success: false, statusCode: 429, message: "Too many attempts. Please try again in an hour." },
-});
 const refreshLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, max: 60, standardHeaders: true, legacyHeaders: false,
   message: { success: false, statusCode: 429, message: "Too many requests." },
 });
 
-router.post("/register", authLimiter, registerRules, validate, registerStudent);
 router.post("/login", authLimiter, loginRules, validate, loginStudent);
-router.post("/forgot-password", sensitiveLimiter, forgotPasswordRules, validate, forgotPassword);
-router.post("/reset-password", sensitiveLimiter, resetPasswordRules, validate, resetPassword);
-router.get("/verify-email/:token", verifyEmail);
-router.post("/resend-verification", authLimiter, resendVerificationRules, validate, resendVerification);
 router.post("/refresh", refreshLimiter, refreshToken);
 router.post("/logout", logoutStudent);
 

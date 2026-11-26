@@ -3,9 +3,11 @@ import assert from "node:assert/strict";
 import { validationResult } from "express-validator";
 import { isGoogleEmailAllowedForRole } from "../controllers/googleAuthController.js";
 import { authLimiter, aiLimiter } from "../middleware/rateLimiters.js";
-import { protect } from "../middleware/auth.js";
+import { protect, protectGoogleOnboarding } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import extendedAuthRoutes from "../routes/extendedAuthRoutes.js";
+import guideRoutes from "../routes/guideRoutes.js";
+import studentRoutes from "../routes/studentRoutes.js";
 import careerIntelligenceRoutes from "../routes/careerIntelligenceRoutes.js";
 import governmentCareersRoutes from "../routes/governmentCareersRoutes.js";
 import {
@@ -14,7 +16,7 @@ import {
   compareCareersRules,
   compareGovernmentJobsRules,
 } from "../validators/aiRequestValidator.js";
-import { registerRules as guideRegisterRules } from "../validators/guideValidator.js";
+import { googleGuideOnboardingRules } from "../validators/guideValidator.js";
 import Guide from "../models/Guide.js";
 
 function routeFor(router, path) {
@@ -79,32 +81,35 @@ test("AI request validators cap comparison IDs, slugs, and career-switch input",
   assert.ok((await validateRules(calculateFinancialRoiRules, { startingSalary: -1 })).length > 0);
 });
 
-test("guide registration and Google sign-in accept any valid email domain", async () => {
+test("student and guide signup use Google verification and guide setup is token-protected", async () => {
   assert.equal(isGoogleEmailAllowedForRole("student", "learner@another-domain.example"), true);
   assert.equal(isGoogleEmailAllowedForRole("guide", "mentor@another-domain.example"), true);
   assert.equal(isGoogleEmailAllowedForRole("guide", "not-an-email"), false);
   assert.equal(isGoogleEmailAllowedForRole("admin", "mentor@another-domain.example"), false);
 
-  const guideRegistrationReq = {
-    body: {
-      name: "Guide",
-      email: "mentor@another-domain.example",
-      password: "example-password",
-      branch: "OTHER",
-      roleNames: ["Mentor"],
-      bio: "",
-    },
-  };
-  await Promise.all(guideRegisterRules.map((rule) => rule.run(guideRegistrationReq)));
-  assert.deepEqual(validationResult(guideRegistrationReq).array(), []);
-  const institutionGuide = new Guide({
+  assert.equal(routeFor(studentRoutes, "/register"), undefined);
+  assert.equal(routeFor(guideRoutes, "/register"), undefined);
+  const onboardingRoute = routeFor(guideRoutes, "/google-onboarding");
+  assert.ok(onboardingRoute);
+  assert.ok(onboardingRoute.stack.some(({ handle }) => handle === protectGoogleOnboarding));
+
+  assert.deepEqual(await validateRules(googleGuideOnboardingRules, {
+    name: "Guide",
+    branch: "OTHER",
+    roleNames: ["Mentor"],
+    bio: "",
+  }), []);
+
+  const googleGuide = new Guide({
     name: "Guide",
     email: "mentor@another-domain.example",
-    password: "example-password",
+    googleId: "google-guide-subject",
+    isVerified: true,
+    googlePendingOnboarding: true,
     branch: "OTHER",
     roleNames: ["Mentor"],
   });
-  assert.equal(institutionGuide.validateSync()?.errors?.email, undefined);
+  assert.equal(googleGuide.validateSync(), undefined);
 
   const invalidEmailGuide = new Guide({
     name: "Platform Guide",

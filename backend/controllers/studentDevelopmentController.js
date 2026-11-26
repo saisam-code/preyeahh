@@ -4,6 +4,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import escapeRegex from "../utils/escapeRegex.js";
+import mongoose from "mongoose";
+import { applyTrustedVerification } from "../utils/verificationSecurity.js";
 
 /**
  * PROJECTS & PORTFOLIO
@@ -78,13 +80,37 @@ export const createOpportunity = asyncHandler(async (req, res) => {
 });
 
 export const updateOpportunity = asyncHandler(async (req, res) => {
-  const updates = { ...req.body };
-  if (updates.url && !updates.officialUrl) {
-    updates.officialUrl = updates.url;
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
+    throw ApiError.badRequest("Invalid opportunity id");
   }
-  delete updates.url;
-  const opp = await Opportunity.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
+
+  const opp = await Opportunity.findById(req.params.id);
   if (!opp) throw ApiError.notFound("Opportunity not found");
+
+  const editableFields = [
+    "title",
+    "category",
+    "description",
+    "eligibility",
+    "educationLevels",
+    "deadline",
+    "officialUrl",
+    "location",
+    "domainsOrBranches",
+    "costOrStipend",
+    "isActive",
+  ];
+  for (const field of editableFields) {
+    if (req.body[field] !== undefined) opp[field] = req.body[field];
+  }
+  if (req.body.officialUrl === undefined && req.body.url !== undefined) {
+    opp.officialUrl = req.body.url;
+  }
+  if (req.user.role === "admin" && req.body.verification !== undefined) {
+    opp.verification = applyTrustedVerification(req.body.verification, req.user.id, opp.verification);
+  }
+
+  await opp.save();
   res.status(200).json(new ApiResponse(200, opp, "Opportunity updated successfully"));
 });
 

@@ -119,18 +119,22 @@ const protectGoogleOnboarding = asyncHandler(async (req, res, next) => {
     throw ApiError.unauthorized("Invalid token for onboarding");
   }
 
-  if (decoded.role !== "student") {
+  if (!["student", "guide"].includes(decoded.role)) {
     throw ApiError.unauthorized("Invalid token for onboarding");
   }
 
-  const student = await Student.findById(decoded.id);
-  if (!student) throw ApiError.unauthorized("User belonging to this token no longer exists");
+  const Model = decoded.role === "student" ? Student : Guide;
+  const user = await Model.findById(decoded.id);
+  if (!user) throw ApiError.unauthorized("User belonging to this token no longer exists");
+  if (!user.googlePendingOnboarding) {
+    throw ApiError.unauthorized("Google onboarding has already been completed");
+  }
 
   req.user = {
-    id: student._id.toString(),
-    role: "student",
-    branch: student.branch || null,
-    doc: student,
+    id: user._id.toString(),
+    role: decoded.role,
+    branch: user.branch || null,
+    doc: user,
   };
   next();
 });

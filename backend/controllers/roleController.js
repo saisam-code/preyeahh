@@ -10,6 +10,7 @@ import Branch from "../models/Branch.js";
 import { resolveCareerDomain } from "../utils/resolveCareerDomain.js";
 import { Institution } from "../models/Institution.js";
 import mongoose from "mongoose";
+import { applyTrustedVerification, sanitizeContributorReality } from "../utils/verificationSecurity.js";
 
 async function findBranchForDomain(branchName, domainRecord) {
   if (!domainRecord) return null;
@@ -129,6 +130,14 @@ export const createRole = asyncHandler(async (req, res) => {
   const domainRecord = await resolveCareerDomain(CareerDomain, { domainId, domain: requestedDomain });
   await findBranchForDomain(branch, domainRecord);
   const subdomainRecord = await resolveRoleSubdomain(req.body.subdomainId, branch, domainRecord);
+  const roleReality = req.user.role === "admin"
+    ? {
+        ...(reality || {}),
+        ...(reality?.verification
+          ? { verification: applyTrustedVerification(reality.verification, req.user.id) }
+          : {}),
+      }
+    : sanitizeContributorReality(reality);
   const role = await Role.create({
     title,
     branch,
@@ -139,9 +148,11 @@ export const createRole = asyncHandler(async (req, res) => {
     type,
     description,
     guidance: guidance || {},
-    reality: reality || {},
+    reality: roleReality,
     experiments: Array.isArray(experiments) ? experiments : [],
-    verification: req.user.role === "admin" && verification ? verification : { status: "UNVERIFIED" },
+    verification: req.user.role === "admin" && verification
+      ? applyTrustedVerification(verification, req.user.id)
+      : { status: "UNVERIFIED" },
     createdBy: contributorSnapshot(req.user),
   });
 
@@ -219,13 +230,28 @@ export const updateRole = asyncHandler(async (req, res) => {
     role.guidance = { ...role.guidance.toObject(), ...req.body.guidance };
   }
   if (req.body.reality) {
-    role.reality = { ...role.reality.toObject(), ...req.body.reality };
+    if (req.user.role === "admin") {
+      const realityUpdate = { ...req.body.reality };
+      if (realityUpdate.verification) {
+        realityUpdate.verification = applyTrustedVerification(
+          realityUpdate.verification,
+          req.user.id,
+          role.reality.verification
+        );
+      }
+      role.reality = { ...role.reality.toObject(), ...realityUpdate };
+    } else {
+      role.reality = {
+        ...role.reality.toObject(),
+        ...sanitizeContributorReality(req.body.reality),
+      };
+    }
   }
   if (Array.isArray(req.body.experiments)) {
     role.experiments = req.body.experiments;
   }
   if (req.body.verification && req.user.role === "admin") {
-    role.verification = { ...role.verification.toObject(), ...req.body.verification };
+    role.verification = applyTrustedVerification(req.body.verification, req.user.id, role.verification);
   }
 
   recordContentEdit(role, req.user);
