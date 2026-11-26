@@ -13,6 +13,10 @@ test("Resource schema stores source attribution and stable mapping metadata", ()
     assert.ok(Resource.schema.path(field), `Resource.${field} must exist`);
   }
   assert.ok(Resource.schema.indexes().some(([fields, options]) => fields.sourceId === 1 && options.unique && options.sparse));
+  const indexes = Resource.schema.indexes().map(([fields]) => fields);
+  assert.ok(indexes.some((fields) => fields.relatedDomains === 1 && !fields.relatedRoles));
+  assert.ok(indexes.some((fields) => fields.relatedRoles === 1 && !fields.relatedDomains));
+  assert.ok(!indexes.some((fields) => fields.relatedDomains && fields.relatedRoles));
 });
 
 test("resource search combines career, category, difficulty, and pagination filters", async () => {

@@ -72,7 +72,8 @@ const resourceSchema = new mongoose.Schema(
 resourceSchema.index({ technology: 1, tags: 1, difficulty: 1 });
 resourceSchema.index({ branches: 1 });
 resourceSchema.index({ sourceId: 1 }, { unique: true, sparse: true });
-resourceSchema.index({ relatedDomains: 1, relatedRoles: 1 });
+resourceSchema.index({ relatedDomains: 1 });
+resourceSchema.index({ relatedRoles: 1 });
 // Text index for standard search bar
 resourceSchema.index({ title: "text", description: "text", tags: "text" });
 

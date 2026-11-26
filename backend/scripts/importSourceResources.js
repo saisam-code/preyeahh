@@ -241,20 +241,68 @@ async function loadSourceItems(tempDirectory, versions, { crawlAwesome }) {
   return { items, failedRepositories };
 }
 
-async function checkDatabaseStatus(inventory) {
+async function ensureResourceIndexes() {
+  let indexes = [];
+  try {
+    indexes = await Resource.collection.indexes();
+  } catch (error) {
+    if (error.code !== 26 && error.codeName !== "NamespaceNotFound") throw error;
+  }
+  const parallelArrayIndex = indexes.find(({ key }) => key.relatedDomains && key.relatedRoles);
+  if (parallelArrayIndex) await Resource.collection.dropIndex(parallelArrayIndex.name);
+  await Resource.collection.createIndex({ relatedDomains: 1 });
+  await Resource.collection.createIndex({ relatedRoles: 1 });
+}
+
+async function writeBulkBatches(model, operations, label) {
+  const batchSize = 1000;
+  const concurrency = 3;
+  const batches = [];
+  for (let offset = 0; offset < operations.length; offset += batchSize) {
+    batches.push(operations.slice(offset, offset + batchSize));
+  }
+  if (!batches.length) return;
+
+  console.log(`Writing ${operations.length} ${label} in ${batches.length} batches`);
+  let nextBatch = 0;
+  let completedBatches = 0;
+  const workers = Array.from({ length: Math.min(concurrency, batches.length) }, async () => {
+    while (nextBatch < batches.length) {
+      const batch = batches[nextBatch];
+      nextBatch += 1;
+      await model.bulkWrite(batch, { ordered: false });
+      completedBatches += 1;
+      if (completedBatches % 25 === 0 || completedBatches === batches.length) {
+        console.log(`${label}: ${completedBatches}/${batches.length} batches written`);
+      }
+    }
+  });
+  const results = await Promise.allSettled(workers);
+  const failure = results.find((result) => result.status === "rejected");
+  if (failure) throw failure.reason;
+}
+
+async function checkDatabaseStatus(inventory, { dryRun }) {
   if (!process.env.MONGO_URI) return { available: false, error: "MONGO_URI is not configured" };
-  await mongoose.connect(process.env.MONGO_URI, { autoIndex: process.env.NODE_ENV !== "production" });
+  await mongoose.connect(process.env.MONGO_URI, { autoIndex: false });
+  if (!dryRun) await ensureResourceIndexes();
   const eligible = inventory.filter((item) => item.importStatus === "mapped");
   const urls = [...new Set(eligible.map((item) => item.url))];
   const sourceIds = [...new Set(eligible.map((item) => item.sourceId))];
   const known = new Map();
+  const lookupBatches = [];
   for (let offset = 0; offset < Math.max(urls.length, sourceIds.length); offset += 500) {
-    const resources = await Resource.find({
+    lookupBatches.push({
       $or: [
         { url: { $in: urls.slice(offset, offset + 500) } },
         { sourceId: { $in: sourceIds.slice(offset, offset + 500) } },
       ],
-    }).select("url sourceId").lean();
+    });
+  }
+  const resourcesByBatch = await mapConcurrent(lookupBatches, 6, (filter) => (
+    Resource.find(filter).select("url sourceId").lean()
+  ));
+  for (const resources of resourcesByBatch) {
     resources.forEach((resource) => {
       known.set(`url:${resource.url}`, resource);
       if (resource.sourceId) known.set(`sourceId:${resource.sourceId}`, resource);
@@ -313,7 +361,7 @@ async function writeResources(inventory, dryRun, sourceVersions) {
     }
   }
   const records = [...firstByUrl.values()];
-  const dbStatus = await checkDatabaseStatus(records);
+  const dbStatus = await checkDatabaseStatus(records, { dryRun });
   if (!dryRun && !dbStatus.available) {
     throw new Error("MONGO_URI is required to import source resources; use --dry-run to inspect without a database");
   }
@@ -359,9 +407,7 @@ async function writeResources(inventory, dryRun, sourceVersions) {
           },
         };
       });
-    for (let offset = 0; offset < operations.length; offset += 500) {
-      await Resource.bulkWrite(operations.slice(offset, offset + 500), { ordered: false });
-    }
+    await writeBulkBatches(Resource, operations, "resources");
     const inventoryById = new Map();
     for (const item of inventory) inventoryById.set(item.sourceId, item);
     const inventoryOperations = [...inventoryById.values()].map((item) => ({
@@ -382,9 +428,7 @@ async function writeResources(inventory, dryRun, sourceVersions) {
         upsert: true,
       },
     }));
-    for (let offset = 0; offset < inventoryOperations.length; offset += 500) {
-      await SourceInventory.bulkWrite(inventoryOperations.slice(offset, offset + 500), { ordered: false });
-    }
+    await writeBulkBatches(SourceInventory, inventoryOperations, "inventory records");
     totals.imported = totals.added + totals.updated;
   } else {
     totals.imported = 0;
