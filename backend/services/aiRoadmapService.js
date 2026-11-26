@@ -9,15 +9,15 @@ const LEVELS = ["beginner", "intermediate", "advanced"];
 const RESOURCE_TYPES = ["video", "article", "course", "documentation", "book", "practice", "github"];
 
 /** Replaces each AI "searchQuery" with a real library resource when one matches (title-only fallback otherwise). */
-async function attachResources(sections, { level, learningStyle, branch }) {
+async function attachResources(sections, { level, learningStyle, branch, roleTitle }) {
   const cache = new Map();
 
-  const lookup = async (q) => {
-    const key = JSON.stringify([q.technology, q.tags]);
+  const lookup = async (q, skill) => {
+    const key = JSON.stringify([q.technology, q.tags, roleTitle, skill]);
     if (!cache.has(key)) {
       cache.set(
         key,
-        getRecommendedResources({ technology: q.technology, tags: q.tags, difficulty: level, learningStyle, branch })
+        getRecommendedResources({ technology: q.technology, tags: q.tags, difficulty: level, learningStyle, branch, role: roleTitle, skill })
       );
     }
     return cache.get(key);
@@ -27,7 +27,7 @@ async function attachResources(sections, { level, learningStyle, branch }) {
     for (const topic of section.topics) {
       const mapped = [];
       for (const aiRes of topic.resources) {
-        const matches = aiRes.searchQuery ? await lookup(aiRes.searchQuery) : [];
+        const matches = aiRes.searchQuery ? await lookup(aiRes.searchQuery, topic.title) : [];
         if (matches.length) {
           mapped.push({ title: matches[0].title, type: matches[0].type, url: matches[0].url });
         } else {
@@ -120,7 +120,7 @@ export async function generateAIRoadmap(student, { topic, roleId }) {
     branch,
     roleGuidance: { steps: role?.steps, skills: role?.skills },
     preferences: prefs,
-    knownTechnologies: await listTechnologies(),
+    knownTechnologies: await listTechnologies({ role: roleTitle, skills: role?.skills || [] }),
   });
 
   const data = await jsonCompletion(prompt, { temperature: 0.3, maxTokens: 3500 });
@@ -136,7 +136,7 @@ export async function generateAIRoadmap(student, { topic, roleId }) {
     preferences: prefs,
     roleGuidance: { steps: role?.steps, skills: role?.skills },
   });
-  await attachResources(sections, { level, learningStyle: prefs.learningStyle || "", branch });
+  await attachResources(sections, { level, learningStyle: prefs.learningStyle || "", branch, roleTitle });
 
   return AIRoadmap.create({
     studentId: student.id,

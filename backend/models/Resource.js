@@ -22,6 +22,33 @@ const resourceSchema = new mongoose.Schema(
     // Branches this resource is relevant for. Empty array = relevant to every branch.
     branches: [{ type: String, uppercase: true, trim: true }],
 
+    sourceRepository: { type: String, default: "", trim: true, index: true },
+    sourceListRepository: { type: String, default: "", trim: true },
+    sourceCategory: { type: String, default: "", trim: true, index: true },
+    sourceSubcategory: { type: String, default: "", trim: true },
+    sourceId: { type: String, trim: true },
+    sourceReference: { type: String, default: "" },
+    sourceUrl: { type: String, default: "", trim: true },
+    sourceLicense: { type: String, default: "" },
+    resourceType: {
+      type: String,
+      enum: ["curated-list", "tutorial", "project", "course", "documentation", "article", "video", "tool", "repository", "other", ""],
+      default: "",
+      index: true,
+    },
+    relatedDomains: [{ type: String, lowercase: true, trim: true }],
+    relatedRoles: [{ type: String, lowercase: true, trim: true }],
+    relatedSkills: [{ type: String, lowercase: true, trim: true }],
+    relatedTechnologies: [{ type: String, lowercase: true, trim: true }],
+    attribution: { type: String, default: "" },
+    importStatus: {
+      type: String,
+      enum: ["mapped", "duplicate", "excluded", "failed", ""],
+      default: "",
+      index: true,
+    },
+    exclusionReason: { type: String, default: "" },
+
     difficulty: {
       type: String,
       enum: ["beginner", "intermediate", "advanced", "all"],
@@ -44,6 +71,8 @@ const resourceSchema = new mongoose.Schema(
 // Compound index for fast searching based on AI generated tags
 resourceSchema.index({ technology: 1, tags: 1, difficulty: 1 });
 resourceSchema.index({ branches: 1 });
+resourceSchema.index({ sourceId: 1 }, { unique: true, sparse: true });
+resourceSchema.index({ relatedDomains: 1, relatedRoles: 1 });
 // Text index for standard search bar
 resourceSchema.index({ title: "text", description: "text", tags: "text" });
 

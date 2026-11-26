@@ -300,6 +300,16 @@ export default function Roles() {
               </div>
             )}
 
+            <div className="rd-block rd-block--resources">
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => navigate(`/resources?role=${encodeURIComponent(selectedRole.title)}`)}
+              >
+                Browse curated resources for this role
+              </button>
+            </div>
+
             {user?.role === "student" && (
               <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid var(--border)", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
                 <button className="btn btn-primary" style={{ flex: 1 }} disabled={generating} onClick={() => handleGenerateRoadmap(selectedRole)}>

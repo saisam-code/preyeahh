@@ -6,9 +6,15 @@ import { assertGuideOwnsContent, contributorSnapshot } from "../utils/contentAut
 
 // GET /api/resources   (public)  ?q&technology&branch&difficulty&page&limit
 export const searchResources = asyncHandler(async (req, res) => {
-  const { q, technology, branch, difficulty, page, limit } = req.query;
-  const { items, meta } = await resourceService.searchResources({ query: q, technology, branch, difficulty, page, limit });
+  const { q, ...filters } = req.query;
+  const { items, meta } = await resourceService.searchResources({ query: q, ...filters });
   res.status(200).json(new ApiResponse(200, items, "Resources fetched", meta));
+});
+
+// GET /api/resources/coverage (admin)
+export const getResourceCoverage = asyncHandler(async (req, res) => {
+  const coverage = await resourceService.getResourceCoverage();
+  res.status(200).json(new ApiResponse(200, coverage, "Imported resource coverage fetched"));
 });
 
 // GET /api/resources/:id   (public)
@@ -50,6 +56,20 @@ export const createResource = asyncHandler(async (req, res) => {
     editHistory: [],
   });
   res.status(201).json(new ApiResponse(201, resource, "Resource added"));
+});
+
+// PATCH /api/resources/:id (admin)
+export const updateResource = asyncHandler(async (req, res) => {
+  const allowedFields = [
+    "title", "description", "type", "url", "technology", "category", "provider", "tags", "difficulty",
+    "resourceType", "sourceCategory", "sourceSubcategory", "relatedDomains", "relatedRoles", "relatedSkills",
+    "relatedTechnologies", "attribution", "sourceLicense", "importStatus", "exclusionReason",
+  ];
+  const data = Object.fromEntries(allowedFields
+    .filter((field) => Object.hasOwn(req.body, field))
+    .map((field) => [field, req.body[field]]));
+  const resource = await resourceService.updateResource(req.params.id, data);
+  res.status(200).json(new ApiResponse(200, resource, "Resource updated"));
 });
 
 // DELETE /api/resources/:id   (admin)

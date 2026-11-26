@@ -12,6 +12,7 @@
     "dev": "nodemon server.js",
     "test": "node --test",
     "create-admin": "node scripts/createAdmin.js",
+    "import:sources": "node scripts/importSourceResources.js",
     "seed:resources": "node scripts/seedResources.js",
     "seed:demo": "node scripts/seedDemoAccounts.js",
     "migrate:career-goals": "node scripts/migrateCareerGoals.js",

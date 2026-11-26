@@ -20,6 +20,7 @@ import "./RoleInterest.js";
 import "./RoleRequest.js";
 import "./Chat.js";
 import "./Resource.js";
+import "./SourceInventory.js";
 import "./AIRoadmap.js";
 import "./Quiz.js";
 import "./QuizResult.js";

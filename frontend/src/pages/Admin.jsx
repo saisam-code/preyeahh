@@ -23,6 +23,7 @@ import {
   FaCompass,
   FaBuilding,
   FaClipboardList,
+  FaBookmark,
 } from "react-icons/fa6";
 
 import AdminLogin from "../components/admin/AdminLogin.jsx";
@@ -43,6 +44,7 @@ import AdminInterest from "../components/admin/AdminInterest.jsx";
 import AdminGuides from "../components/admin/AdminGuides.jsx";
 import AdminInstitutions from "../components/admin/AdminInstitutions.jsx";
 import AdminAuditLogs from "../components/admin/AdminAuditLogs.jsx";
+import AdminSourceResources from "../components/admin/AdminSourceResources.jsx";
 
 import {
   fetchAdminMe,
@@ -259,6 +261,8 @@ export default function Admin() {
     ActivePanel = <AdminInstitutions onUpdated={loadBadges} />;
   } else if (section === "audit-logs") {
     ActivePanel = <AdminAuditLogs />;
+  } else if (section === "source-resources") {
+    ActivePanel = <AdminSourceResources />;
   } else if (section === "subdomains") {
     ActivePanel = <AdminSubdomains />;
   } else {
@@ -439,6 +443,14 @@ export default function Admin() {
               >
                 <FaCompass className="nav-item-icon" />
                 <span>Manage Subdomains</span>
+              </button>
+
+              <button
+                className={`sidebar-nav-item ${section === "source-resources" ? "active" : ""}`}
+                onClick={() => navigateTo("source-resources")}
+              >
+                <FaBookmark className="nav-item-icon" />
+                <span>Imported Resources</span>
               </button>
 
               <button

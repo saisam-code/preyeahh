@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { FaMagnifyingGlass } from "react-icons/fa6";
+import { useSearchParams } from "react-router-dom";
 import { searchResources, recordResourceView } from "../services/resourceService.js";
 import { useBranch } from "../context/BranchContext.jsx";
 import ContributorLabel from "../components/ContributorLabel.jsx";
@@ -12,14 +13,28 @@ const TYPE_COLORS = {
 
 export default function Resources() {
   const { branch } = useBranch();
+  const [searchParams] = useSearchParams();
   const [resources, setResources] = useState([]);
   const [meta, setMeta] = useState({ total: 0, page: 1, totalPages: 1 });
   const [loading, setLoading] = useState(true);
-  const [query, setQuery] = useState("");
-  const [technology, setTechnology] = useState("");
+  const [query, setQuery] = useState(() => searchParams.get("q") || "");
+  const [technology, setTechnology] = useState(() => searchParams.get("technology") || "");
+  const [role, setRole] = useState(() => searchParams.get("role") || "");
+  const [skill, setSkill] = useState(() => searchParams.get("skill") || "");
+  const [domain, setDomain] = useState(() => searchParams.get("domain") || "");
+  const [sourceCategory, setSourceCategory] = useState(() => searchParams.get("category") || "");
+  const [resourceType, setResourceType] = useState("");
   const [difficulty, setDifficulty] = useState("all");
   const [page, setPage] = useState(1);
-  const [applied, setApplied] = useState({ q: "", technology: "" });
+  const [applied, setApplied] = useState(() => ({
+    q: searchParams.get("q") || "",
+    technology: searchParams.get("technology") || "",
+    role: searchParams.get("role") || "",
+    skill: searchParams.get("skill") || "",
+    domain: searchParams.get("domain") || "",
+    sourceCategory: searchParams.get("category") || "",
+    resourceType: "",
+  }));
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -27,6 +42,11 @@ export default function Resources() {
       const res = await searchResources({
         q: applied.q || undefined,
         technology: applied.technology || undefined,
+        role: applied.role || undefined,
+        skill: applied.skill || undefined,
+        domain: applied.domain || undefined,
+        sourceCategory: applied.sourceCategory || undefined,
+        resourceType: applied.resourceType || undefined,
         branch: branch || undefined,
         difficulty: difficulty !== "all" ? difficulty : undefined,
         page,
@@ -43,7 +63,18 @@ export default function Resources() {
 
   useEffect(() => { load(); }, [load]);
 
-  const handleSearch = () => { setPage(1); setApplied({ q: query.trim(), technology: technology.trim() }); };
+  const handleSearch = () => {
+    setPage(1);
+    setApplied({
+      q: query.trim(),
+      technology: technology.trim(),
+      role: role.trim(),
+      skill: skill.trim(),
+      domain: domain.trim(),
+      sourceCategory: sourceCategory.trim(),
+      resourceType,
+    });
+  };
 
   const handleOpen = (r) => {
     if (!r.url) return;
@@ -55,20 +86,30 @@ export default function Resources() {
     <div>
       <div className="page-hero">
         <h1>Resource <span>Library</span></h1>
-        <p>Curated learning resources{branch ? ` for ${branch}` : ""} — filter by technology and level</p>
+        <p>Explore learning references and practical builds by career, skill, technology, source category, and level{branch ? ` — including resources for ${branch}` : ""}.</p>
       </div>
 
       <div className="section">
-        <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", marginBottom: "2rem" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "0.75rem", marginBottom: "2rem" }}>
           <div className="search-wrap" style={{ flex: 2, maxWidth: "none" }}>
-            <input className="search-input" placeholder="Search resources..." value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+            <input aria-label="Search resources" className="search-input" placeholder="Title or topic" value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
           </div>
-          <input className="search-input" style={{ flex: 1, minWidth: 140 }} placeholder="Technology (e.g. react)" value={technology} onChange={(e) => setTechnology(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
-          <select
-            value={difficulty}
-            onChange={(e) => { setDifficulty(e.target.value); setPage(1); }}
-            style={{ padding: "0.5rem 1rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--r-full)", color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600 }}
-          >
+          <input aria-label="Technology filter" className="search-input" placeholder="Technology" value={technology} onChange={(e) => setTechnology(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+          <input aria-label="Career role filter" className="search-input" placeholder="Career role" value={role} onChange={(e) => setRole(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+          <input aria-label="Skill filter" className="search-input" placeholder="Skill" value={skill} onChange={(e) => setSkill(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+          <input aria-label="Career domain filter" className="search-input" placeholder="Domain slug (e.g. tech-eng)" value={domain} onChange={(e) => setDomain(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+          <input aria-label="Source category filter" className="search-input" placeholder="Category or subcategory" value={sourceCategory} onChange={(e) => setSourceCategory(e.target.value)} onKeyDown={(e) => e.key === "Enter" && handleSearch()} />
+          <select aria-label="Resource type filter" value={resourceType} onChange={(e) => setResourceType(e.target.value)} style={{ padding: "0.5rem 1rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--r-full)", color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600 }}>
+            <option value="">All resource types</option>
+            <option value="curated-list">Curated lists</option>
+            <option value="tutorial">Tutorials</option>
+            <option value="repository">Repositories</option>
+            <option value="documentation">Documentation</option>
+            <option value="course">Courses</option>
+            <option value="video">Videos</option>
+            <option value="article">Articles</option>
+          </select>
+          <select aria-label="Difficulty filter" value={difficulty} onChange={(e) => { setDifficulty(e.target.value); setPage(1); }} style={{ padding: "0.5rem 1rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--r-full)", color: "var(--text)", fontFamily: "var(--font-display)", fontWeight: 600 }}>
             <option value="all">All Levels</option>
             <option value="beginner">Beginner</option>
             <option value="intermediate">Intermediate</option>
@@ -97,6 +138,12 @@ export default function Resources() {
                       <h3 style={{ fontSize: "var(--font-size-md)" }}>{r.title}</h3>
                       <p style={{ fontSize: "var(--font-size-sm)" }}>{r.description}</p>
                       <ContributorLabel item={r} />
+                      {r.sourceRepository && (
+                        <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
+                          Source: {r.sourceRepository}{r.sourceCategory ? ` · ${r.sourceCategory}` : ""}
+                          {r.sourceSubcategory ? ` / ${r.sourceSubcategory}` : ""}
+                        </div>
+                      )}
                       {r.provider && (
                         <div style={{ fontSize: "var(--font-size-xs)", color: "var(--text-muted)" }}>
                           {r.provider}{r.estimatedDuration > 0 && ` · ${r.estimatedDuration} min`}
@@ -105,6 +152,13 @@ export default function Resources() {
                       {r.tags?.length > 0 && (
                         <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
                           {r.tags.slice(0, 4).map((tag) => (
+                            <span key={tag} style={{ fontSize: "var(--font-size-icon)", padding: "0.15rem 0.5rem", background: "var(--surface-high)", borderRadius: "var(--r-full)", color: "var(--text-muted)" }}>{tag}</span>
+                          ))}
+                        </div>
+                      )}
+                      {r.relatedDomains?.length > 0 && (
+                        <div style={{ display: "flex", gap: "0.35rem", flexWrap: "wrap", marginTop: "0.5rem" }}>
+                          {r.relatedDomains.slice(0, 3).map((tag) => (
                             <span key={tag} style={{ fontSize: "var(--font-size-icon)", padding: "0.15rem 0.5rem", background: "var(--surface-high)", borderRadius: "var(--r-full)", color: "var(--text-muted)" }}>{tag}</span>
                           ))}
                         </div>

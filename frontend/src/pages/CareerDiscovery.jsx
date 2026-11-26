@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FaMagnifyingGlass,
@@ -63,6 +64,7 @@ const CAPABILITY_TABS = [
 
 export default function CareerDiscovery() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("discovery");
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -78,6 +80,9 @@ export default function CareerDiscovery() {
   const [subdomainId, setSubdomainId] = useState("all");
   const [stage, setStage] = useState("all");
   const selectedDomainId = careerDomains.find((item) => item.name === domain)?._id || "";
+  const selectedDomainSlug = careerDomains.find((item) => item.name === domain)?.slug
+    || CAREER_DOMAINS.find((item) => item.title === domain)?.id
+    || "";
   const domainOptions = careerDomains.length
     ? careerDomains.map((item) => ({ id: item._id, title: item.name }))
     : CAREER_DOMAINS.map((item) => ({ id: item.id, title: item.title }));
@@ -461,6 +466,15 @@ export default function CareerDiscovery() {
                 style={{ padding: "0.4rem 0.8rem", borderRadius: "var(--radius)", border: "1px solid var(--border)", background: "var(--card-bg)" }}
               />
             </form>
+            {user && selectedDomainSlug && (
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => navigate(`/resources?domain=${encodeURIComponent(selectedDomainSlug)}`)}
+              >
+                <FaArrowRight /> Browse {domain} learning resources
+              </button>
+            )}
           </div>
 
           {/* Compare Prompt Bar */}
@@ -856,6 +870,16 @@ export default function CareerDiscovery() {
                     ))}
                   </ul>
                 </div>
+              )}
+
+              {user && (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  onClick={() => navigate(`/resources?role=${encodeURIComponent(selectedRole.title)}`)}
+                >
+                  Browse curated resources for this role
+                </button>
               )}
 
               {selectedRole.experiments?.length > 0 && (
