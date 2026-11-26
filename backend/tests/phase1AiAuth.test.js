@@ -6,7 +6,10 @@ import { authLimiter, aiLimiter } from "../middleware/rateLimiters.js";
 import { protect, protectGoogleOnboarding } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import extendedAuthRoutes from "../routes/extendedAuthRoutes.js";
+import branchRoutes from "../routes/branchRoutes.js";
+import careerDomainRoutes from "../routes/careerDomainRoutes.js";
 import guideRoutes from "../routes/guideRoutes.js";
+import roleRoutes from "../routes/roleRoutes.js";
 import studentRoutes from "../routes/studentRoutes.js";
 import careerIntelligenceRoutes from "../routes/careerIntelligenceRoutes.js";
 import governmentCareersRoutes from "../routes/governmentCareersRoutes.js";
@@ -61,6 +64,23 @@ test("AI career routes require authentication and use the shared AI limiter and 
     assert.equal(handlers[1], aiLimiter, `${path} must apply AI rate limiting after auth`);
     assert.ok(handlers.includes(validate), `${path} must validate its body`);
   }
+});
+
+test("catalog data routes require authentication and Google signup uses its onboarding token", () => {
+  for (const [router, path] of [
+    [branchRoutes, "/"],
+    [careerDomainRoutes, "/"],
+    [roleRoutes, "/"],
+    [roleRoutes, "/:id"],
+  ]) {
+    const route = routeFor(router, path);
+    assert.ok(route, `GET ${path} must exist`);
+    assert.equal(route.stack[0].handle, protect, `GET ${path} must require authentication`);
+  }
+
+  const onboardingBranchesRoute = routeFor(studentRoutes, "/google-onboarding/branches");
+  assert.ok(onboardingBranchesRoute);
+  assert.ok(onboardingBranchesRoute.stack.some(({ handle }) => handle === protectGoogleOnboarding));
 });
 
 test("AI request validators cap comparison IDs, slugs, and career-switch input", async () => {

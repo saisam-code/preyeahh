@@ -17,6 +17,7 @@ import {
   updateStudentParentLinkStatus,
   associateWithInstitution,
 } from "../controllers/studentController.js";
+import { getBranches } from "../controllers/branchController.js";
 import {
   listRoleMentors,
   startConversation,
@@ -38,6 +39,7 @@ import {
   institutionAssociationRules,
   changeGoalRules,
 } from "../validators/studentValidator.js";
+import { listBranchesRules } from "../validators/branchValidator.js";
 import {
   roleMentorsRules,
   startConversationRules,
@@ -55,6 +57,7 @@ const refreshLimiter = rateLimit({
 router.post("/login", authLimiter, loginRules, validate, loginStudent);
 router.post("/refresh", refreshLimiter, refreshToken);
 router.post("/logout", logoutStudent);
+router.get("/google-onboarding/branches", authLimiter, protectGoogleOnboarding, listBranchesRules, validate, getBranches);
 
 router.get("/me", protect, authorize("student"), getMe);
 router.get("/goals", protect, authorize("student"), getStudentGoals);

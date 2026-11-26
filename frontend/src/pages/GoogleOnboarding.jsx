@@ -22,7 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 import toast from "react-hot-toast";
 import api from "../services/api.js";
-import { fetchBranches } from "../services/branchService.js";
+import { fetchGoogleOnboardingBranches } from "../services/branchService.js";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 const GOOGLE_SIGNUP_DRAFT_KEY = "pp_google_signup_draft";
@@ -90,8 +90,8 @@ export default function GoogleOnboarding() {
     if (typeof draft?.bio === "string") setGuideBio(draft.bio);
     if (typeof draft?.branch === "string") setSelectedBranch(draft.branch.toUpperCase());
 
-    // Load branches (public endpoint — no auth required)
-    fetchBranches()
+    // Load branches with the short-lived Google onboarding token.
+    fetchGoogleOnboardingBranches(token)
       .then((list) => {
         setBranches(list);
         if (role === "student" && list.length > 0) {

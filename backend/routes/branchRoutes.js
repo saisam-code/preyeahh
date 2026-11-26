@@ -6,7 +6,7 @@ import { createBranchRules, listBranchesRules, updateBranchDomainsRules, branchN
 
 const router = express.Router();
 
-router.get("/", listBranchesRules, validate, getBranches);
+router.get("/", protect, listBranchesRules, validate, getBranches);
 router.get("/manage", protect, authorize("admin"), getManagedBranches);
 router.post("/", protect, authorize("admin"), createBranchRules, validate, createBranch);
 router.put("/:name/domains", protect, authorize("admin"), updateBranchDomainsRules, validate, updateBranchDomains);

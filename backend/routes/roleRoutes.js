@@ -13,10 +13,9 @@ import {
 
 const router = express.Router();
 
-// Public — role browsing needs no login (matches roles.html being viewable pre-auth)
-router.get("/", listQueryRules, validate, getRoles);
+router.get("/", protect, listQueryRules, validate, getRoles);
 router.get("/manage", protect, authorize("admin", "institution"), managedRoleQueryRules, validate, getManagedRoles);
-router.get("/:id", idParamRule, validate, getRoleById);
+router.get("/:id", protect, idParamRule, validate, getRoleById);
 
 // Admin + approved Guide (branch-scoped inside the controller)
 router.post("/", protect, authorize("admin", "guide", "institution"), createRoleRules, validate, createRole);
