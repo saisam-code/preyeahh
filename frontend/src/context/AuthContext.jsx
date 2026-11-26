@@ -29,6 +29,11 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    if (window.location.pathname === "/google-onboarding") {
+      setInitialized(true);
+      return;
+    }
+
     (async () => {
       const role = getActiveRole();
       const cached = loadStoredUser();

@@ -39,7 +39,7 @@ export function getActiveRole() {
 
 api.interceptors.request.use((config) => {
   const token = getAccessToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token && !config.headers.Authorization) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
@@ -71,8 +71,9 @@ api.interceptors.response.use(
       url.includes("/login") ||
       url.includes("/register") ||
       url.includes("/refresh");
+    const isGoogleOnboardingEndpoint = url.includes("/students/google-onboarding");
 
-    if (error.response?.status === 401 && !original._retry && getActiveRole() && !isAuthEndpoint) {
+    if (error.response?.status === 401 && !original._retry && getActiveRole() && !isAuthEndpoint && !isGoogleOnboardingEndpoint) {
       original._retry = true;
       try {
         if (!refreshPromise) refreshPromise = performRefresh().finally(() => { refreshPromise = null; });

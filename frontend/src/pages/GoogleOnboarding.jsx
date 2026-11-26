@@ -20,7 +20,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
-import { setAccessToken, setActiveRole } from "../services/api.js";
 import api from "../services/api.js";
 import { fetchBranches } from "../services/branchService.js";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
@@ -33,6 +32,7 @@ export default function GoogleOnboarding() {
   const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState("");
   const [name, setName] = useState("");
+  const [onboardingToken, setOnboardingToken] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
@@ -45,22 +45,14 @@ export default function GoogleOnboarding() {
     const fragment = window.location.hash.slice(1);
     const params = new URLSearchParams(fragment);
     const token = params.get("token");
-    const role = params.get("role") || "student";
     const displayName = params.get("name") || "";
 
     if (!token) {
-      // Clean up any stale token from a previous attempt
-      setAccessToken(null);
-      setActiveRole(null);
       navigate("/login?google_error=no_token", { replace: true });
       return;
     }
 
-    // Store the onboarding token — it will be used as Bearer for the
-    // POST /students/google-onboarding request. This is NOT a normal
-    // application access token and will be rejected by all other endpoints.
-    setAccessToken(token);
-    setActiveRole(role);
+    setOnboardingToken(token);
 
     // Clear fragment from URL
     window.history.replaceState(null, "", window.location.pathname);
@@ -91,12 +83,18 @@ export default function GoogleOnboarding() {
       setError("Please select your branch.");
       return;
     }
+    if (!onboardingToken) {
+      setError("Your setup link has expired. Please sign in with Google again.");
+      return;
+    }
 
     setLoading(true);
     try {
       const { data } = await api.post("/students/google-onboarding", {
         branch: selectedBranch,
         name: name.trim() || undefined,
+      }, {
+        headers: { Authorization: `Bearer ${onboardingToken}` },
       });
 
       // The response contains the NORMAL application access token + user profile
