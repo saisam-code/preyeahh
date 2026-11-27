@@ -12,7 +12,8 @@
     "dev": "nodemon server.js",
     "test": "node --test",
     "create-admin": "node scripts/createAdmin.js",
-    "migrate": "node migrations/2026-xx-explore-restructure.js"
+    "migrate": "node migrations/2026-xx-explore-restructure.js",
+    "restore-github": "node migrations/2026-restore-github-resources.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
