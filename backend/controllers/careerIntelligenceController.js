@@ -1,5 +1,6 @@
 import Role from "../models/Role.js";
-import { StudentExperiment, CareerComparison, StudentProject, Opportunity } from "../models/StudentDevelopment.js";
+import { StudentExperiment, CareerComparison, StudentProject } from "../models/StudentDevelopment.js";
+import Opportunity from "../models/Opportunity.js";
 import PersonalCareerPlan from "../models/PersonalCareerPlan.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";

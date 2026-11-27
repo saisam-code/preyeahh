@@ -2,8 +2,6 @@ import { body, param, query } from "express-validator";
 
 export const listCareerSubdomainsRules = [
   query("domainId").optional().isMongoId().withMessage("Career domain id must be valid"),
-  query("branchId").optional().isMongoId().withMessage("Branch id must be valid"),
-  query("branchName").optional().trim().isLength({ min: 2, max: 20 }),
 ];
 
 export const createCareerSubdomainRules = [
@@ -13,7 +11,6 @@ export const createCareerSubdomainRules = [
     .withMessage("Slug must use lowercase letters, numbers, and hyphens"),
   body("description").optional().trim().isLength({ max: 500 }),
   body("domainId").isMongoId().withMessage("Career domain id must be valid"),
-  body("branchId").isMongoId().withMessage("Branch id must be valid"),
   body("displayOrder").optional().isInt({ min: 0 }).toInt(),
 ];
 

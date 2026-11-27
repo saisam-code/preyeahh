@@ -8220,3 +8220,150 @@ body.dark .hero-stat-card:hover {
     background: var(--error-bg, color-mix(in srgb, var(--danger) 10%, transparent));
   }
 }
+
+.explore-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(3, minmax(140px, 1fr)) auto;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.explore-toolbar input,
+.explore-toolbar select,
+.explore-toolbar button,
+.explore-empty button,
+.explore-error button,
+.role-detail-drawer button,
+.explore-card button {
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.65rem 0.85rem;
+}
+
+.domain-strip,
+.subdomain-chips {
+  display: flex;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+}
+
+.domain-strip button,
+.subdomain-chips button {
+  min-width: 150px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.65rem;
+  cursor: pointer;
+}
+
+.domain-strip button.active,
+.subdomain-chips button.active {
+  border-color: var(--primary);
+  background: var(--primary-bg);
+}
+
+.domain-strip small {
+  display: block;
+  color: var(--text-muted);
+}
+
+.subdomain-chips button {
+  min-width: auto;
+  white-space: nowrap;
+}
+
+.explore-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.explore-card {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+}
+
+.explore-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.explore-card p {
+  color: var(--text-muted);
+}
+
+.explore-card button,
+.explore-card a {
+  margin-top: auto;
+  align-self: flex-start;
+}
+
+.role-detail-drawer {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 100;
+  width: min(420px, 92vw);
+  padding: 1.25rem;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.role-detail-drawer button:first-child {
+  align-self: flex-end;
+}
+
+.explore-skeleton,
+.explore-empty,
+.explore-error {
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  text-align: center;
+  padding: 1rem;
+}
+
+@media (max-width: 760px) {
+  .explore-toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .domain-strip,
+  .subdomain-chips {
+    margin-inline: -0.25rem;
+  }
+
+  .explore-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

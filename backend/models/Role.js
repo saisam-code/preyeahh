@@ -31,12 +31,15 @@ const roleSchema = new mongoose.Schema(
       trim: true,
       maxlength: 120,
     },
+    slug: { type: String, lowercase: true, trim: true, maxlength: 180, index: true },
     branch: {
       type: String,
-      required: [true, "Branch is required"],
       uppercase: true,
       trim: true,
-      index: true,
+    },
+    branchIds: {
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: "Branch" }],
+      default: [],
     },
     domain: { type: String, default: "Technology & Engineering", trim: true },
     domainId: { type: mongoose.Schema.Types.ObjectId, ref: "CareerDomain", default: null, index: true },
@@ -70,18 +73,16 @@ const roleSchema = new mongoose.Schema(
 );
 
 // Same role title shouldn't be duplicated within a branch (admin UX safety net —
-// not present as a DB constraint in the original schema, but prevents accidental
-// double-adds from the admin/guide "Add Role" modals).
-roleSchema.index({ title: 1, branch: 1, institution: 1 }, { unique: true });
-
-// Cascade delete: mirrors deleteRole() in supabase.js
-// ("await _sb.from('guidance').delete().eq('role_id', id)").
-roleSchema.pre("findOneAndDelete", async function (next) {
-  const role = await this.model.findOne(this.getQuery());
-  if (!role) return next();
-  const Guidance = mongoose.model("Guidance");
-  await Guidance.deleteMany({ role: role._id });
-  next();
-});
+// Global roles are unique by subdomain and slug. Institution copies use the
+// institution scope as part of the unique key.
+roleSchema.index(
+  { subdomainId: 1, slug: 1 },
+  { unique: true, partialFilterExpression: { institution: null } }
+);
+roleSchema.index(
+  { institution: 1, subdomainId: 1, slug: 1 },
+  { unique: true, partialFilterExpression: { institution: { $type: "objectId" } } }
+);
+roleSchema.index({ branchIds: 1 });
 
 export default mongoose.model("Role", roleSchema);

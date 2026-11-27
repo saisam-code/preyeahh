@@ -4,7 +4,6 @@ import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser, FaComme
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchGuideBranchOverview } from "../services/guideService.js";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
-import AdminBeyond from "../components/admin/AdminBeyond.jsx";
 import AdminGuidance from "../components/admin/AdminGuidance.jsx";
 import AdminRequests from "../components/admin/AdminRequests.jsx";
 import GuideResources from "../components/admin/GuideResources.jsx";
@@ -129,13 +128,11 @@ export default function GuidePanel() {
             </button>
             <button type="button" className="dashboard-card" onClick={() => jumpTo("guide-beyond")}>
               <div className="dashboard-card-icon"><FaBullseye /></div>
-              <div><h3>{overview.totalBeyond}</h3><p>Beyond entries</p></div>
             </button>
           </div>
           <div style={{ display: "grid", gap: "2rem" }}>
             <section id="guide-roles" style={{ scrollMarginTop: "5rem" }}><AdminRoles fixedBranch={user.branch} fixedDomainId={user.domainId} /></section>
             <section id="guide-guidance" style={{ scrollMarginTop: "5rem" }}><AdminGuidance fixedBranch={user.branch} currentUserId={user.id} /></section>
-            <section id="guide-beyond" style={{ scrollMarginTop: "5rem" }}><AdminBeyond fixedBranch={user.branch} currentUserId={user.id} /></section>
             <GuideResources branch={user.branch} domainId={user.domainId} />
           </div>
         </>

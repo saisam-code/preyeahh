@@ -26,14 +26,10 @@ const GoogleCallback = lazy(() => import("./pages/GoogleCallback.jsx"));
 const GoogleOnboarding = lazy(() => import("./pages/GoogleOnboarding.jsx"));
 const PersonalCareerPlanner = lazy(() => import("./pages/PersonalCareerPlanner.jsx"));
 const Explore = lazy(() => import("./pages/Explore.jsx"));
-const CareerDiscovery = lazy(() => import("./pages/CareerDiscovery.jsx"));
 const MyRoadmaps = lazy(() => import("./pages/MyRoadmaps.jsx"));
 const RoadmapView = lazy(() => import("./pages/RoadmapView.jsx"));
 const Quiz = lazy(() => import("./pages/Quiz.jsx"));
 const Profile = lazy(() => import("./pages/Profile.jsx"));
-const Resources = lazy(() => import("./pages/Resources.jsx"));
-const Roles = lazy(() => import("./pages/Roles.jsx"));
-const Beyond = lazy(() => import("./pages/Beyond.jsx"));
 const Chat = lazy(() => import("./pages/Chat.jsx"));
 const GuidePanel = lazy(() => import("./pages/GuidePanel.jsx"));
 const ParentPortal = lazy(() => import("./pages/ParentPortal.jsx"));
@@ -143,9 +139,9 @@ export default function App() {
       <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/login" />}>
         <Route element={<RoleLayout />}>
           <Route path="/chat" element={<LegacyStudentRedirect to="/study/chat"><Chat /></LegacyStudentRedirect>} />
-          <Route path="/resources" element={<LegacyStudentRedirect to="/explore?tab=resources"><Resources /></LegacyStudentRedirect>} />
-          <Route path="/roles" element={<LegacyStudentRedirect to="/explore?tab=roles"><Roles /></LegacyStudentRedirect>} />
-          <Route path="/beyond" element={<LegacyStudentRedirect to="/explore?tab=opportunities"><Beyond /></LegacyStudentRedirect>} />
+          <Route path="/resources" element={<Navigate to="/explore?tab=resources" replace />} />
+          <Route path="/roles" element={<Navigate to="/explore?tab=roles" replace />} />
+          <Route path="/beyond" element={<Navigate to="/explore?tab=opportunities" replace />} />
         </Route>
       </Route>
 
@@ -161,7 +157,7 @@ export default function App() {
             <Route path="roadmaps/:id" element={<RoadmapView />} />
             <Route path="quiz" element={<Quiz />} />
             <Route path="chat" element={<Chat />} />
-            <Route path="tools" element={<CareerDiscovery toolsOnly hideHeader />} />
+            <Route path="tools" element={<Navigate to="/explore?tab=roles" replace />} />
           </Route>
           <Route path="/planner" element={<Navigate to="/study/planner" replace />} />
           <Route path="/roadmaps" element={<Navigate to="/study/roadmaps" replace />} />

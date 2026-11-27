@@ -10,7 +10,6 @@ import {
 } from "../validators/resourceValidator.js";
 import {
   searchResources,
-  getResourceCoverage,
   getResource,
   incrementViews,
   recommendResources,
@@ -23,7 +22,6 @@ const router = express.Router();
 
 // Public — browse the library
 router.get("/", optionalAuth, searchRules, validate, searchResources);
-router.get("/coverage", protect, authorize("admin"), getResourceCoverage);
 router.get("/:id", optionalAuth, idParamRule, validate, getResource);
 router.patch("/:id/view", idParamRule, validate, incrementViews);
 router.patch("/:id", protect, authorize("admin", "guide"), updateResourceRules, validate, updateResource);

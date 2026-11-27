@@ -1,7 +1,8 @@
 import Branch from "../models/Branch.js";
 import CareerDomain from "../models/CareerDomain.js";
-import CareerSubdomain from "../models/CareerSubdomain.js";
 import Role from "../models/Role.js";
+import Student from "../models/Student.js";
+import { Institution } from "../models/Institution.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -48,12 +49,12 @@ export const updateBranchDomains = asyncHandler(async (req, res) => {
     .filter((domainId) => !domainIds.includes(domainId));
 
   if (removedDomainIds.length) {
-    const [linkedRole, linkedSubdomain] = await Promise.all([
-      Role.exists({ branch: name, domainId: { $in: removedDomainIds } }),
-      CareerSubdomain.exists({ branchId: branch._id, domainId: { $in: removedDomainIds } }),
-    ]);
-    if (linkedRole || linkedSubdomain) {
-      throw ApiError.conflict("Remove linked roles and subdomains before disassociating this domain");
+    const linkedRole = await Role.exists({
+      branchIds: branch._id,
+      domainId: { $in: removedDomainIds },
+    });
+    if (linkedRole) {
+      throw ApiError.conflict("Remove linked roles before disassociating this domain");
     }
   }
 
@@ -63,10 +64,22 @@ export const updateBranchDomains = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, branch, "Branch domains updated"));
 });
 
-// DELETE /api/branches/:name — admin only, cascades to roles/beyond/guidance via Branch's pre-hook
+// DELETE /api/branches/:name — admin only, no content cascade
 export const deleteBranch = asyncHandler(async (req, res) => {
   const name = req.params.name.trim().toUpperCase();
-  const branch = await Branch.findOneAndDelete({ name });
+  const branch = await Branch.findOne({ name });
   if (!branch) throw ApiError.notFound("Branch not found");
-  res.status(200).json(new ApiResponse(200, null, "Branch deleted (cascaded to its roles/beyond/guidance)"));
+  const [roleUsed, studentUsed, institutionUsed] = await Promise.all([
+    Role.exists({ branchIds: branch._id }),
+    Student.exists({ branch: name }),
+    Institution.exists({ branch: name }),
+  ]);
+  if (roleUsed || studentUsed || institutionUsed) {
+    if (req.query.force !== "true") {
+      throw ApiError.conflict("Branch is in use; pass force=true to remove it as a tag");
+    }
+  }
+  await Role.updateMany({ branchIds: branch._id }, { $pull: { branchIds: branch._id } });
+  await Branch.deleteOne({ _id: branch._id });
+  res.status(200).json(new ApiResponse(200, null, "Branch tag deleted"));
 });

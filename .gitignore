@@ -55,6 +55,7 @@ Thumbs.db
 *.swp
 *.swo
 *~
+.txt
 
 # VS Code workspace state
 .vscode/

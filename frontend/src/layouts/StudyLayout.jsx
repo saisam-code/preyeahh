@@ -3,7 +3,7 @@ import { NavLink, Outlet } from "react-router-dom";
 const STUDY_TABS = [
   { to: "/study/planner", label: "Planner", end: true },
   { to: "/study/roadmaps", label: "Roadmaps" },
-  { to: "/study/quiz", label: "Quiz" },
+  { to: "/study/quiz", label: "Quiz & Learn" },
   { to: "/study/chat", label: "Chat" },
   { to: "/study/tools", label: "Tools", end: true },
 ];

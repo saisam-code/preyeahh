@@ -29,5 +29,11 @@ const chatSchema = new mongoose.Schema(
 
 chatSchema.index({ studentId: 1, isArchived: 1, updatedAt: -1 });
 chatSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+chatSchema.pre("save", function (next) {
+  if (Array.isArray(this.messages) && this.messages.length > 200) {
+    this.messages = this.messages.slice(-200);
+  }
+  next();
+});
 
 export default mongoose.model("Chat", chatSchema);

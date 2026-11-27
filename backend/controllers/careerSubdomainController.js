@@ -1,4 +1,3 @@
-import Branch from "../models/Branch.js";
 import CareerDomain from "../models/CareerDomain.js";
 import CareerSubdomain from "../models/CareerSubdomain.js";
 import Role from "../models/Role.js";
@@ -7,20 +6,11 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const populateContext = (query) =>
-  query
-    .populate({ path: "domainId", select: "name slug" })
-    .populate({ path: "branchId", select: "name" });
+  query.populate({ path: "domainId", select: "name slug" });
 
 export const getCareerSubdomains = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.domainId) filter.domainId = req.query.domainId;
-  if (req.query.branchId) filter.branchId = req.query.branchId;
-  if (req.query.branchName) {
-    const branch = await Branch.findOne({ name: req.query.branchName.trim().toUpperCase() });
-    if (!branch) throw ApiError.notFound("Branch not found");
-    filter.branchId = branch._id;
-  }
-
   const subdomains = await populateContext(
     CareerSubdomain.find(filter).sort({ displayOrder: 1, name: 1 })
   );
@@ -28,22 +18,14 @@ export const getCareerSubdomains = asyncHandler(async (req, res) => {
 });
 
 export const createCareerSubdomain = asyncHandler(async (req, res) => {
-  const [domainExists, branch] = await Promise.all([
-    CareerDomain.exists({ _id: req.body.domainId }),
-    Branch.findById(req.body.branchId),
-  ]);
+  const domainExists = await CareerDomain.exists({ _id: req.body.domainId });
   if (!domainExists) throw ApiError.notFound("Career domain not found");
-  if (!branch) throw ApiError.notFound("Branch not found");
-  if (!branch.domainIds.some((id) => String(id) === req.body.domainId)) {
-    throw ApiError.badRequest("Associate the branch with this domain before adding a subdomain");
-  }
 
   const subdomain = await CareerSubdomain.create({
     name: req.body.name,
     slug: req.body.slug,
     description: req.body.description,
     domainId: req.body.domainId,
-    branchId: req.body.branchId,
     displayOrder: req.body.displayOrder,
   });
   const populated = await populateContext(CareerSubdomain.findById(subdomain._id));

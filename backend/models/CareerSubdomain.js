@@ -27,12 +27,6 @@ const careerSubdomainSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    branchId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Branch",
-      required: true,
-      index: true,
-    },
     displayOrder: {
       type: Number,
       default: 0,
@@ -42,12 +36,12 @@ const careerSubdomainSchema = new mongoose.Schema(
 );
 
 careerSubdomainSchema.index(
-  { domainId: 1, branchId: 1, slug: 1 },
-  { unique: true, name: "domain_branch_slug_unique" }
+  { domainId: 1, slug: 1 },
+  { unique: true, name: "domain_slug_unique" }
 );
 careerSubdomainSchema.index(
-  { domainId: 1, branchId: 1, displayOrder: 1 },
-  { name: "domain_branch_order" }
+  { domainId: 1, displayOrder: 1 },
+  { name: "domain_order" }
 );
 
 export default mongoose.model("CareerSubdomain", careerSubdomainSchema);

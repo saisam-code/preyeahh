@@ -61,45 +61,6 @@ const studentProjectSchema = new mongoose.Schema(
 );
 
 /**
- * Verified Real-World Opportunity (Scholarships, Competitions, Internships, Exams)
- */
-const opportunitySchema = new mongoose.Schema(
-  {
-    title: { type: String, required: true, trim: true },
-    category: {
-      type: String,
-      enum: [
-        "Scholarship",
-        "Competition",
-        "Olympiad",
-        "Internship",
-        "Fellowship",
-        "Entrance Exam",
-        "Workshop",
-        "Higher Education",
-      ],
-      required: true,
-      index: true,
-    },
-    description: { type: String, required: true },
-    eligibility: { type: String, default: "" },
-    educationLevels: {
-      type: [String],
-      default: ["Undergraduate"], // e.g. Class 6-8, Class 9-10, Class 11-12, Undergraduate, Postgraduate, PhD
-      set: normalizeEducationStages,
-    },
-    domainsOrBranches: { type: [String], default: ["ALL"] },
-    location: { type: String, default: "India / Online" },
-    costOrStipend: { type: String, default: "Free" },
-    deadline: { type: Date, default: null },
-    officialUrl: { type: String, default: "" },
-    verification: { type: verificationMetadataSchema, default: () => ({ status: "UNVERIFIED" }) },
-    isActive: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
-
-/**
  * Saved Career Comparisons
  */
 const careerComparisonSchema = new mongoose.Schema(
@@ -114,5 +75,4 @@ const careerComparisonSchema = new mongoose.Schema(
 
 export const StudentExperiment = mongoose.model("StudentExperiment", studentExperimentSchema);
 export const StudentProject = mongoose.model("StudentProject", studentProjectSchema);
-export const Opportunity = mongoose.model("Opportunity", opportunitySchema);
 export const CareerComparison = mongoose.model("CareerComparison", careerComparisonSchema);

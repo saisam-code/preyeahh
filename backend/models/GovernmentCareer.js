@@ -43,6 +43,9 @@ const governmentJobSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true, index: true },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
+    domainId: { type: mongoose.Schema.Types.ObjectId, ref: "CareerDomain", default: null, index: true },
+    subdomainId: { type: mongoose.Schema.Types.ObjectId, ref: "CareerSubdomain", default: null, index: true },
+    examIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Opportunity" }],
     category: {
       type: String,
       required: true,
@@ -68,7 +71,7 @@ const governmentJobSchema = new mongoose.Schema(
       default: "Central Government",
       index: true,
     },
-    stateName: { type: String, default: "All India", index: true },
+    stateName: { type: String, default: "", index: true },
     department: { type: String, required: true },
     ministry: { type: String, default: "" },
     group: {
@@ -88,9 +91,9 @@ const governmentJobSchema = new mongoose.Schema(
     },
     overview: { type: String, required: true },
     responsibilities: { type: [String], default: [] },
-    workEnvironment: { type: String, default: "Office & Field Administration" },
-    postingLocations: { type: String, default: "All India / Pan-India with transfer liability" },
-    transferPolicy: { type: String, default: "Periodic rotational transfers typically every 3–5 years." },
+    workEnvironment: { type: String, default: "" },
+    postingLocations: { type: String, default: "" },
+    transferPolicy: { type: String, default: "" },
 
     // Eligibility Criteria
     eligibility: {
@@ -113,8 +116,8 @@ const governmentJobSchema = new mongoose.Schema(
         index: true,
       },
       requiredSpecialization: { type: String, default: "Any discipline from a recognized University" },
-      minAge: { type: Number, required: true, default: 21 },
-      maxAge: { type: Number, required: true, default: 32 },
+      minAge: { type: Number, default: null },
+      maxAge: { type: Number, default: null },
       ageRelaxations: [
         {
           category: { type: String }, // e.g. "OBC: 3 years", "SC/ST: 5 years", "PwD: 10 years"
@@ -133,7 +136,7 @@ const governmentJobSchema = new mongoose.Schema(
         notes: { type: String, default: "" },
       },
       medicalStandards: { type: String, default: "Must meet standard Central/State government physical fitness criteria." },
-      experienceRequired: { type: String, default: "None (Fresh graduates eligible)" },
+      experienceRequired: { type: String, default: "" },
     },
 
     // Examination & Selection Procedure
@@ -157,11 +160,11 @@ const governmentJobSchema = new mongoose.Schema(
         required: true,
       },
       selectionStages: { type: [String], default: ["Preliminary Examination", "Main Examination", "Personal Interview / Document Verification"] },
-      examFrequency: { type: String, default: "Annual" },
+      examFrequency: { type: String, default: "" },
       attemptsAllowed: {
-        general: { type: mongoose.Schema.Types.Mixed, default: "Unlimited within age limit" },
-        obc: { type: mongoose.Schema.Types.Mixed, default: "Unlimited within age limit" },
-        scSt: { type: mongoose.Schema.Types.Mixed, default: "Unlimited till age limit" },
+        general: { type: mongoose.Schema.Types.Mixed, default: null },
+        obc: { type: mongoose.Schema.Types.Mixed, default: null },
+        scSt: { type: mongoose.Schema.Types.Mixed, default: null },
       },
     },
 
@@ -174,10 +177,10 @@ const governmentJobSchema = new mongoose.Schema(
 
     // Salary Structure & 7th CPC Matrix
     salary: {
-      payLevel: { type: String, required: true, default: "Pay Level 7 (7th CPC)" },
-      payScale: { type: String, default: "₹44,900 - ₹1,42,400" },
-      basicPay: { type: Number, required: true, default: 44900 },
-      gradePay: { type: Number, default: 4600 },
+      payLevel: { type: String, default: "" },
+      payScale: { type: String, default: "" },
+      basicPay: { type: Number, default: null },
+      gradePay: { type: Number, default: null },
       approxGrossMonthly: {
         classXCity: { type: Number, default: 75000 }, // Tier 1 metro
         classYCity: { type: Number, default: 68000 }, // Tier 2

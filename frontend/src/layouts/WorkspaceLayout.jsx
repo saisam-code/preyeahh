@@ -53,6 +53,7 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems, hideSid
         <nav className="workspace-sidebar-nav" aria-label="Workspace pages">
           {navItems.map((item) => {
             const Icon = item.icon;
+            if (!item.to) return <div key={item.groupLabel} className="workspace-sidebar-group-label">{item.groupLabel}</div>;
             return (
               <Fragment key={item.to}>
                 {item.groupLabel && <div className="workspace-sidebar-group-label">{item.groupLabel}</div>}
@@ -134,6 +135,7 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems, hideSid
             <nav className="workspace-quick-grid" aria-label="Workspace pages">
               {navItems.map((item) => {
                 const Icon = item.icon;
+                if (!item.to) return null;
                 return (
                   <NavLink
                     key={item.to}

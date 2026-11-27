@@ -16,7 +16,6 @@ import studentRoutes from "./routes/studentRoutes.js";
 import guideRoutes from "./routes/guideRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import branchRoutes from "./routes/branchRoutes.js";
-import beyondRoutes from "./routes/beyondRoutes.js";
 import guidanceRoutes from "./routes/guidanceRoutes.js";
 import roleRequestRoutes from "./routes/roleRequestRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
@@ -33,6 +32,8 @@ import extendedAuthRoutes from "./routes/extendedAuthRoutes.js";
 import governmentCareersRoutes from "./routes/governmentCareersRoutes.js";
 import careerDomainRoutes from "./routes/careerDomainRoutes.js";
 import careerSubdomainRoutes from "./routes/careerSubdomainRoutes.js";
+import exploreRoutes from "./routes/exploreRoutes.js";
+import mentorshipRoutes from "./routes/mentorshipRoutes.js";
 
 const app = express();
 
@@ -94,7 +95,6 @@ app.get("/api/health", (req, res) => {
 app.use("/api/roles", roleRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/branches", branchRoutes);
-app.use("/api/beyond", beyondRoutes);
 app.use("/api/guides", guideRoutes);
 app.use("/api/guidance", guidanceRoutes);
 app.use("/api/admin", adminRoutes);
@@ -117,6 +117,8 @@ app.use("/api/development", studentDevelopmentRoutes);
 app.use("/api/government-careers", governmentCareersRoutes);
 app.use("/api/career-domains", careerDomainRoutes);
 app.use("/api/career-subdomains", careerSubdomainRoutes);
+app.use("/api/explore", exploreRoutes);
+app.use("/api/mentorship", mentorshipRoutes);
 
 // ── 404 + centralized error handler (must be last) ───────────────
 app.use(notFound);

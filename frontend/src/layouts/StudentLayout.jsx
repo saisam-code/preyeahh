@@ -10,7 +10,7 @@ const STUDENT_NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: FaHouse, end: true },
   { to: "/explore", label: "Explore", icon: FaCompass, groupLabel: "DISCOVER" },
   { to: "/study", label: "Study", icon: FaBookOpen, groupLabel: "LEARN" },
-  { to: "/profile", label: "My Profile", icon: FaUser },
+  { to: "/profile", label: "Profile", icon: FaUser },
 ];
 
 export default function StudentLayout() {

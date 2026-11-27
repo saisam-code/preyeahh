@@ -1,4 +1,5 @@
-import { StudentProject, Opportunity } from "../models/StudentDevelopment.js";
+import { StudentProject } from "../models/StudentDevelopment.js";
+import Opportunity from "../models/Opportunity.js";
 import { Institution, InstitutionMembership } from "../models/Institution.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";

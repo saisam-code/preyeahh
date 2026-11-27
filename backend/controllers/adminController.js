@@ -1,7 +1,6 @@
 import Admin from "../models/Admin.js";
 import Branch from "../models/Branch.js";
 import Role from "../models/Role.js";
-import Beyond from "../models/Beyond.js";
 import Guidance from "../models/Guidance.js";
 import Guide from "../models/Guide.js";
 import RoleRequest from "../models/RoleRequest.js";
@@ -70,13 +69,13 @@ export const getMe = asyncHandler(async (req, res) => {
 });
 
 export const getDashboardStats = asyncHandler(async (req, res) => {
-  const [branchCount, roleCount, coreCount, nonCoreCount, beyondCount, guidanceCount, pendingGuides, pendingRequests] =
+  const [branchCount, roleCount, coreCount, nonCoreCount, opportunityCount, guidanceCount, pendingGuides, pendingRequests] =
     await Promise.all([
       Branch.countDocuments(),
       Role.countDocuments(),
       Role.countDocuments({ type: "core" }),
       Role.countDocuments({ type: "non-core" }),
-      Beyond.countDocuments(),
+      mongoose.model("Opportunity").countDocuments(),
       Guidance.countDocuments(),
       Guide.countDocuments({ status: "pending" }),
       RoleRequest.countDocuments({ status: "pending" }),
@@ -88,7 +87,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
       totalRoles: roleCount,
       coreRoles: coreCount,
       nonCoreRoles: nonCoreCount,
-      beyondEntries: beyondCount,
+      opportunityEntries: opportunityCount,
       guidanceEntries: guidanceCount,
       pendingGuideRequests: pendingGuides,
       pendingRoleRequests: pendingRequests,
@@ -512,3 +511,4 @@ export const getAdminAuditLogs = asyncHandler(async (req, res) => {
     })
   );
 });
+import mongoose from "mongoose";

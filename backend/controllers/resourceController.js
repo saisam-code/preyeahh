@@ -25,22 +25,13 @@ export const searchResources = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, items, "Resources fetched", meta));
 });
 
-// GET /api/resources/coverage (admin)
-export const getResourceCoverage = asyncHandler(async (req, res) => {
-  const coverage = await resourceService.getResourceCoverage();
-  res.status(200).json(new ApiResponse(200, coverage, "Imported resource coverage fetched"));
-});
-
 // GET /api/resources/:id   (public)
 export const getResource = asyncHandler(async (req, res) => {
   const resource = await resourceService.getResourceById(req.params.id);
   if (req.user?.role === "guide") {
     const domain = await getGuideDomain(req.user);
-    if (
-      !resource.relatedDomains?.includes(domain.slug)
-      || !resource.branches?.includes(String(req.user.branch || "").toUpperCase())
-    ) {
-      throw ApiError.forbidden("You can only view resources assigned to your career domain and branch");
+    if (!resource.domainIds?.some((id) => String(id) === String(domain._id))) {
+      throw ApiError.forbidden("You can only view resources assigned to your career domain");
     }
   }
   res.status(200).json(new ApiResponse(200, resource, "Resource fetched"));
@@ -63,17 +54,15 @@ export const createResource = asyncHandler(async (req, res) => {
   let relatedDomains;
   if (req.user?.role === "guide") {
     const domain = await getGuideDomain(req.user);
-    relatedDomains = [domain.slug];
-    req.body.branches = [req.user.branch];
+    relatedDomains = [domain._id];
   }
 
   // 1.10 — Whitelist fields: only accept validated fields, never spread raw req.body
-  const { title, description, type, url, technology, category, provider, tags, branches, difficulty, estimatedDuration } = req.body;
+  const { title, description, type, url, provider, tags, difficulty, educationStages, skills } = req.body;
   const resource = await resourceService.createResource({
-    title, description, type, url, technology, category, provider, tags,
-    branches: req.user?.role === "guide" ? [req.user.branch] : branches,
-    ...(relatedDomains ? { relatedDomains } : {}),
-    difficulty, estimatedDuration,
+    title, description, type, url, provider, tags,
+    ...(relatedDomains ? { domainIds: relatedDomains } : {}),
+    difficulty, educationStages, skills,
     createdBy: contributorSnapshot(req.user),
     editHistory: [],
   });
@@ -85,13 +74,12 @@ export const updateResource = asyncHandler(async (req, res) => {
   if (req.user?.role === "guide") {
     const domain = await getGuideDomain(req.user);
     const resource = await resourceService.getResourceById(req.params.id);
-    const belongsToDomain = resource.relatedDomains?.includes(domain.slug);
-    const belongsToBranch = resource.branches?.includes(String(req.user.branch || "").toUpperCase());
-    if (!belongsToDomain || !belongsToBranch) {
-      throw ApiError.forbidden("You can only edit resources assigned to your career domain and branch");
+    const belongsToDomain = resource.domainIds?.some((id) => String(id) === String(domain._id));
+    if (!belongsToDomain) {
+      throw ApiError.forbidden("You can only edit resources assigned to your career domain");
     }
 
-    const guideFields = ["title", "description", "type", "url", "technology", "category", "provider", "tags", "difficulty"];
+    const guideFields = ["title", "description", "type", "url", "provider", "tags", "difficulty", "educationStages", "skills"];
     const data = Object.fromEntries(guideFields
       .filter((field) => Object.hasOwn(req.body, field))
       .map((field) => [field, req.body[field]]));
@@ -103,9 +91,8 @@ export const updateResource = asyncHandler(async (req, res) => {
   }
 
   const allowedFields = [
-    "title", "description", "type", "url", "technology", "category", "provider", "tags", "difficulty",
-    "resourceType", "sourceCategory", "sourceSubcategory", "relatedDomains", "relatedRoles", "relatedSkills",
-    "relatedTechnologies", "attribution", "sourceLicense", "importStatus", "exclusionReason",
+    "title", "description", "type", "url", "provider", "tags", "difficulty", "educationStages",
+    "domainIds", "subdomainIds", "roleIds", "skills", "isActive",
   ];
   const data = Object.fromEntries(allowedFields
     .filter((field) => Object.hasOwn(req.body, field))
@@ -119,13 +106,8 @@ export const deleteResource = asyncHandler(async (req, res) => {
   const resource = await resourceService.getResourceById(req.params.id);
   if (req.user?.role === "guide") {
     const domain = await getGuideDomain(req.user);
-    if (!resource.relatedDomains?.includes(domain.slug)) {
+    if (!resource.domainIds?.some((id) => String(id) === String(domain._id))) {
       throw ApiError.forbidden("You can only delete resources assigned to your career domain");
-    }
-    const branchList = Array.isArray(resource.branches) ? resource.branches : [];
-    const ownsBranch = branchList.length > 0 && branchList.every((value) => String(value).toUpperCase() === String(req.user.branch || "").toUpperCase());
-    if (!ownsBranch) {
-      throw ApiError.forbidden("You can only delete resources relevant to your own branch");
     }
   }
   await resourceService.deleteResource(req.params.id);

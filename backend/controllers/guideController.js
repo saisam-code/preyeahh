@@ -2,7 +2,6 @@ import Student from "../models/Student.js";
 import Role from "../models/Role.js";
 import RoleInterest from "../models/RoleInterest.js";
 import Guidance from "../models/Guidance.js";
-import Beyond from "../models/Beyond.js";
 import Quiz from "../models/Quiz.js";
 import AIRoadmap from "../models/AIRoadmap.js";
 import Guide from "../models/Guide.js";
@@ -11,6 +10,7 @@ import CareerDomain from "../models/CareerDomain.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import Opportunity from "../models/Opportunity.js";
 import { verifyRefreshToken, issueTokens, clearRefreshCookie } from "../services/tokenService.js";
 
 export const completeGoogleGuideOnboarding = asyncHandler(async (req, res) => {
@@ -102,12 +102,12 @@ export const getGuideBranchOverview = asyncHandler(async (req, res) => {
   const domainId = req.user.doc.domainId;
   if (!domainId) throw ApiError.forbidden("Ask an administrator to assign your career domain");
 
-  const [students, branchRoleInterests, totalRoles, totalGuidance, totalBeyond] = await Promise.all([
+  const [students, branchRoleInterests, totalRoles, totalGuidance, totalOpportunities] = await Promise.all([
     Student.find({ branch }).select("name email branch preferences createdAt").sort({ createdAt: -1 }).lean(),
     RoleInterest.find({ branch }).populate("role", "title branch domainId").sort({ createdAt: -1 }).lean(),
     Role.countDocuments({ branch, domainId }),
     Guidance.countDocuments({ $or: [{ branch }, { branch: "All" }] }),
-    Beyond.countDocuments({ $or: [{ branch }, { branch: "All" }] }),
+    Opportunity.countDocuments({ domainIds: domainId }),
   ]);
 
   const assignedRoleNames = (req.user.doc.roleNames || []).map((name) => String(name).trim().toLowerCase());
@@ -215,7 +215,7 @@ export const getGuideBranchOverview = asyncHandler(async (req, res) => {
     totalProfileSharedStudents: studentsWithProgress.filter((student) => student.profile).length,
     totalRoles,
     totalGuidance,
-    totalBeyond,
+    totalOpportunities,
     students: studentsWithProgress,
   }, "Branch overview retrieved"));
 });

@@ -117,6 +117,7 @@ const studentSchema = new mongoose.Schema(
     googlePendingOnboarding: { type: Boolean, default: false },
     parentLinkCodeHash: { type: String, default: "", select: false, index: true },
     parentLinkCodeExpiresAt: { type: Date, default: null, select: false },
+    linkCode: { type: String, unique: true, sparse: true, select: false },
 
     preferences: { type: preferencesSchema, default: () => ({}) },
     refreshTokenVersion: { type: Number, default: 0, select: false },
