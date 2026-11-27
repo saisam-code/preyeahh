@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -13,7 +13,7 @@ import ThemeToggle from "../components/ThemeToggle.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 
-export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
+export default function WorkspaceLayout({ roleLabel, homePath, navItems, hideSidebar = false }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -34,11 +34,12 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
   };
 
   return (
-    <div className="workspace-shell">
-      <aside
-        className={`workspace-sidebar${collapsed ? " workspace-sidebar--collapsed" : ""}`}
-        aria-label={`${roleLabel} navigation`}
-      >
+    <div className={`workspace-shell${hideSidebar ? " workspace-shell--no-sidebar" : ""}`}>
+      {!hideSidebar && (
+        <aside
+          className={`workspace-sidebar${collapsed ? " workspace-sidebar--collapsed" : ""}`}
+          aria-label={`${roleLabel} navigation`}
+        >
         <div className="workspace-sidebar-brand">
           <Link to={homePath} className="workspace-brand-link" aria-label="Preyeahh home">
             <img src={preyeahhLogo} alt="" />
@@ -53,17 +54,19 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                title={item.label}
-                aria-label={item.label}
-                className={({ isActive }) => `workspace-sidebar-link${isActive ? " active" : ""}`}
-              >
-                <Icon aria-hidden="true" />
-                <span className="workspace-sidebar-label">{item.label}</span>
-              </NavLink>
+              <Fragment key={item.to}>
+                {item.groupLabel && <div className="workspace-sidebar-group-label">{item.groupLabel}</div>}
+                <NavLink
+                  to={item.to}
+                  end={item.end}
+                  title={item.label}
+                  aria-label={item.label}
+                  className={({ isActive }) => `workspace-sidebar-link${isActive ? " active" : ""}`}
+                >
+                  <Icon aria-hidden="true" />
+                  <span className="workspace-sidebar-label">{item.label}</span>
+                </NavLink>
+              </Fragment>
             );
           })}
         </nav>
@@ -85,19 +88,22 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
             <span className="workspace-sidebar-label">Sign out</span>
           </button>
         </div>
-      </aside>
+        </aside>
+      )}
 
       <main className="workspace-main">
         <header className="workspace-topbar">
-          <button
-            type="button"
-            className="workspace-menu-toggle workspace-menu-toggle--desktop"
-            onClick={() => setCollapsed((value) => !value)}
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
-          </button>
+          {!hideSidebar && (
+            <button
+              type="button"
+              className="workspace-menu-toggle workspace-menu-toggle--desktop"
+              onClick={() => setCollapsed((value) => !value)}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
+            </button>
+          )}
           <div className="workspace-topbar-spacer" />
           <ThemeToggle />
         </header>
@@ -106,7 +112,7 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
         </div>
       </main>
 
-      {quickMenuOpen && (
+      {!hideSidebar && quickMenuOpen && (
         <>
           <button
             type="button"
@@ -178,19 +184,21 @@ export default function WorkspaceLayout({ roleLabel, homePath, navItems }) {
             <span>{user?.role === "student" ? "Profile" : "Account"}</span>
           </button>
         </div>
-        <button
-          type="button"
-          className={`workspace-mobile-dock-button${quickMenuOpen ? " active" : ""}`}
-          onClick={() => {
-            setAccountMenuOpen(false);
-            setQuickMenuOpen((open) => !open);
-          }}
-          aria-label="Open navigation menu"
-          aria-expanded={quickMenuOpen}
-        >
-          <FaBars aria-hidden="true" />
-          <span>Menu</span>
-        </button>
+        {!hideSidebar && (
+          <button
+            type="button"
+            className={`workspace-mobile-dock-button${quickMenuOpen ? " active" : ""}`}
+            onClick={() => {
+              setAccountMenuOpen(false);
+              setQuickMenuOpen((open) => !open);
+            }}
+            aria-label="Open navigation menu"
+            aria-expanded={quickMenuOpen}
+          >
+            <FaBars aria-hidden="true" />
+            <span>Menu</span>
+          </button>
+        )}
       </nav>
     </div>
   );

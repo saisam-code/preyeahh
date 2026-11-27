@@ -1,5 +1,5 @@
 import express from "express";
-import { protect, authorize } from "../middleware/auth.js";
+import { protect, authorize, optionalAuth } from "../middleware/auth.js";
 import validate from "../middleware/validate.js";
 import {
   idParamRule,
@@ -22,11 +22,11 @@ import {
 const router = express.Router();
 
 // Public — browse the library
-router.get("/", searchRules, validate, searchResources);
+router.get("/", optionalAuth, searchRules, validate, searchResources);
 router.get("/coverage", protect, authorize("admin"), getResourceCoverage);
-router.get("/:id", idParamRule, validate, getResource);
+router.get("/:id", optionalAuth, idParamRule, validate, getResource);
 router.patch("/:id/view", idParamRule, validate, incrementViews);
-router.patch("/:id", protect, authorize("admin"), updateResourceRules, validate, updateResource);
+router.patch("/:id", protect, authorize("admin", "guide"), updateResourceRules, validate, updateResource);
 
 // Student
 router.post("/recommend", protect, authorize("student"), recommendRules, validate, recommendResources);

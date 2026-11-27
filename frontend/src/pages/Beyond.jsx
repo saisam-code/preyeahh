@@ -5,11 +5,8 @@ import { fetchBeyond } from "../services/beyondService.js";
 import ContributorLabel from "../components/ContributorLabel.jsx";
 
 const CAT_META = {
-  college: { label: "In College", icon: "fa-school", color: "var(--info-text)" },
-  startup: { label: "Startup", icon: "fa-rocket", color: "var(--warning-text)" },
-  gate: { label: "GATE & Higher Studies", icon: "fa-graduation-cap", color: "var(--info-text)" },
-  national: { label: "National", icon: "fa-flag", color: "var(--info-text)" },
-  international: { label: "International", icon: "fa-globe", color: "var(--success)" },
+  exam: { label: "Exams", icon: "fa-graduation-cap", color: "var(--info-text)" },
+  opportunity: { label: "Opportunities", icon: "fa-compass", color: "var(--success)" },
 };
 
 function parseResource(str) {
@@ -34,7 +31,7 @@ export default function Beyond() {
   useEffect(() => {
     setLoading(true);
     fetchBeyond({ limit: 100 })
-      .then((res) => setList(res.data))
+      .then((res) => setList(res.data || []))
       .finally(() => setLoading(false));
   }, []);
 
@@ -51,8 +48,8 @@ export default function Beyond() {
   return (
     <div>
       <div className="page-hero">
-        <h1>Career <span>Opportunities</span></h1>
-        <p>Explore startups, higher studies, national and international opportunities across domains.</p>
+        <h1>Exams &amp; <span>Opportunities</span></h1>
+        <p>Explore exams and practical opportunities beyond college-based pathways.</p>
       </div>
 
       <div className="section">

@@ -23,11 +23,11 @@ const beyondSchema = new mongoose.Schema(
     category: {
       type: String,
       enum: {
-        values: ["college", "startup", "gate", "national", "international"],
+        values: ["exam", "opportunity"],
         message: "Invalid category",
       },
       required: true,
-      default: "college",
+      default: "opportunity",
     },
     description: { type: String, default: "", trim: true, maxlength: 500 },
     howto: { type: String, default: "", trim: true, maxlength: 1000 },

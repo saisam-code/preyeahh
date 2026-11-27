@@ -1,6 +1,6 @@
 import { FaCheck, FaPlus, FaArrowRight } from "react-icons/fa6";
 import { Link } from "react-router-dom";
-import { wheelLabelPresentation } from "../../utils/contrast.js";
+import { wheelLabelPresentation } from "./wheelLabelPresentation.js";
 
 export default function CareerCategoryDetails({
   domain,
@@ -92,9 +92,9 @@ export default function CareerCategoryDetails({
         {domain.description}
       </p>
 
-      {domain.id === "law-public" && (
-        <Link to="/government-careers" className="btn btn-outline domain-government-link">
-          Explore Government Careers <FaArrowRight aria-hidden="true" />
+      {domain.id === "government-careers" && (
+        <Link to="/explore-careers?section=exams" className="btn btn-outline domain-government-link">
+          Explore Government Exams <FaArrowRight aria-hidden="true" />
         </Link>
       )}
 

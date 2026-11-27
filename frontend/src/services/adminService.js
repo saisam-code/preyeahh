@@ -37,6 +37,10 @@ export function fetchStudentById(studentId) {
   return api.get(`/admin/students/${studentId}`).then((r) => r.data);
 }
 
+export function deleteAdminStudent(studentId) {
+  return api.delete(`/admin/students/${studentId}`).then((r) => r.data);
+}
+
 export function fetchStudentChats(studentId) {
   return api.get(`/admin/students/${studentId}/chats`).then((r) => r.data);
 }

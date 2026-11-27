@@ -27,6 +27,8 @@ coverage/
 test-results/
 playwright-report/
 backend/reports/source-content-coverage.json
+backend/reports/prune.json
+backend/backups/
 
 # Local databases / backups
 *.sqlite

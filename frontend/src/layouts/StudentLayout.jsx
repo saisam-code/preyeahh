@@ -1,7 +1,4 @@
 import {
-  FaBookmark,
-  FaBullseye,
-  FaBuildingColumns,
   FaCalendarCheck,
   FaCommentDots,
   FaCompass,
@@ -14,15 +11,11 @@ import WorkspaceLayout from "./WorkspaceLayout.jsx";
 
 const STUDENT_NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: FaHouse, end: true },
-  { to: "/discovery", label: "Career Discovery", icon: FaCompass },
-  { to: "/planner", label: "Career Planner", icon: FaCalendarCheck },
+  { to: "/explore", label: "Explore", icon: FaCompass },
+  { to: "/planner", label: "Career Planner", icon: FaCalendarCheck, groupLabel: "Study Area" },
   { to: "/roadmaps", label: "Roadmaps", icon: FaMap },
   { to: "/quiz", label: "Quiz & Learn", icon: FaGraduationCap },
-  { to: "/resources", label: "Resources", icon: FaBookmark },
   { to: "/chat", label: "Mentorship Chat", icon: FaCommentDots },
-  { to: "/roles", label: "Roles Catalog", icon: FaCompass },
-  { to: "/beyond", label: "Beyond Degree", icon: FaBullseye },
-  { to: "/government-careers", label: "Government Careers", icon: FaBuildingColumns },
   { to: "/profile", label: "My Profile", icon: FaUser },
 ];
 

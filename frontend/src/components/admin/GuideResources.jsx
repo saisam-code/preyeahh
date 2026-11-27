@@ -1,26 +1,40 @@
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { searchResources, createResource, deleteResource } from "../../services/resourceService.js";
+import { searchResources, createResource, updateResource, deleteResource } from "../../services/resourceService.js";
+import { fetchCareerDomains } from "../../services/careerDomainService.js";
 
 const initialForm = { title: "", description: "", type: "article", url: "", technology: "", difficulty: "all" };
 
-export default function GuideResources({ branch, currentUserId }) {
+export default function GuideResources({ branch, domainId }) {
   const [items, setItems] = useState([]);
+  const [domain, setDomain] = useState(null);
   const [form, setForm] = useState(initialForm);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+
+  useEffect(() => {
+    fetchCareerDomains()
+      .then((domains) => setDomain(domains.find((item) => item._id === domainId) || null))
+      .catch((error) => toast.error(error.response?.data?.message || "Could not load career domain"));
+  }, [domainId]);
 
   const load = useCallback(async () => {
+    if (!domain?.slug) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const result = await searchResources({ branch, limit: 50 });
-      setItems((result.data || []).filter((item) => item.branches?.includes(branch)));
+      const result = await searchResources({ branch, domain: domain.slug, limit: 50 });
+      setItems((result.data || []).filter((item) => item.branches?.includes(branch) && item.relatedDomains?.includes(domain.slug)));
     } catch (error) {
-      toast.error(error.response?.data?.message || "Could not load branch resources");
+      toast.error(error.response?.data?.message || "Could not load domain resources");
     } finally {
       setLoading(false);
     }
-  }, [branch]);
+  }, [branch, domain]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -28,15 +42,32 @@ export default function GuideResources({ branch, currentUserId }) {
     event.preventDefault();
     setSaving(true);
     try {
-      await createResource({ ...form, branches: [branch] });
+      if (editingId) {
+        await updateResource(editingId, form);
+      } else {
+        await createResource({ ...form, branches: [branch] });
+      }
       setForm(initialForm);
-      toast.success("Resource added");
+      setEditingId(null);
+      toast.success(editingId ? "Resource updated" : "Resource added");
       await load();
     } catch (error) {
       toast.error(error.response?.data?.message || "Could not add resource");
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+    setForm({
+      title: item.title,
+      description: item.description,
+      type: item.type,
+      url: item.url,
+      technology: item.technology,
+      difficulty: item.difficulty,
+    });
   };
 
   const handleDelete = async (id) => {
@@ -52,7 +83,7 @@ export default function GuideResources({ branch, currentUserId }) {
 
   return (
     <section>
-      <div className="admin-header"><h2>Manage Branch Resources</h2></div>
+      <div className="admin-header"><h2>Manage {domain?.name || "Domain"} Resources</h2></div>
       <form className="role-form-section" onSubmit={handleSave}>
         <div className="form-row">
           <div className="form-group">
@@ -88,7 +119,10 @@ export default function GuideResources({ branch, currentUserId }) {
             </select>
           </div>
         </div>
-        <button className="btn btn-primary" type="submit" disabled={saving}>{saving ? "Adding..." : "Add Resource"}</button>
+        <button className="btn btn-primary" type="submit" disabled={saving || !domain}>
+          {saving ? "Saving..." : editingId ? "Save Changes" : "Add Resource"}
+        </button>
+        {editingId && <button className="btn btn-outline" type="button" onClick={() => { setEditingId(null); setForm(initialForm); }}>Cancel</button>}
       </form>
       {loading ? <div className="empty"><p>Loading...</p></div> : (
         <table className="admin-table">
@@ -98,7 +132,10 @@ export default function GuideResources({ branch, currentUserId }) {
               <tr key={item.id}>
                 <td>{item.title}</td><td>{item.technology}</td><td>{item.type}</td>
                 <td>{item.createdBy?.name || "Original contributor not recorded"}{item.editHistory?.length > 0 && ` · Edited by ${[...new Set(item.editHistory.map((edit) => edit.name).filter(Boolean))].join(", ")}`}</td>
-                <td><button type="button" className="btn btn-danger btn-sm" disabled={String(item.createdBy?.userId || "") !== currentUserId} title={String(item.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Delete"} onClick={() => handleDelete(item.id)}>Delete</button></td>
+                <td>
+                  <button type="button" className="btn btn-outline btn-sm" onClick={() => handleEdit(item)}>Edit</button>{" "}
+                  <button type="button" className="btn btn-danger btn-sm" onClick={() => handleDelete(item.id)}>Delete</button>
+                </td>
               </tr>
             ))}
             {!items.length && <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--muted)" }}>No branch resources found</td></tr>}

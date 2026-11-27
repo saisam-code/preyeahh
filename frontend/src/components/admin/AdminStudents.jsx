@@ -12,8 +12,9 @@ import {
   FaUser,
   FaCheck,
   FaUserClock,
+  FaTrashCan,
 } from "react-icons/fa6";
-import { fetchAllStudents } from "../../services/adminService.js";
+import { deleteAdminStudent, fetchAllStudents } from "../../services/adminService.js";
 import AdminStudentDrawer from "./AdminStudentDrawer.jsx";
 
 const BRANCH_OPTIONS = [
@@ -50,6 +51,7 @@ export default function AdminStudents({
 
   // Drawer selected student
   const [selectedStudent, setSelectedStudent] = useState(null);
+  const [deletingStudentId, setDeletingStudentId] = useState(null);
 
   // Active dropdown row menu
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -132,6 +134,26 @@ export default function AdminStudents({
     setVerified("all");
     setSortBy("newest");
     setPage(1);
+  };
+
+  const handleDeleteStudent = async (student) => {
+    const confirmed = window.confirm(
+      `Permanently remove ${student.name || "this student"} and all of their chats, roadmaps, plans, quizzes, progress, and links? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setDeletingStudentId(student._id);
+    try {
+      await deleteAdminStudent(student._id);
+      setStudents((current) => current.filter((item) => item._id !== student._id));
+      setMeta((current) => ({ ...current, total: Math.max(0, current.total - 1) }));
+      setSelectedStudent((current) => current?._id === student._id ? null : current);
+      toast.success("Student and associated data deleted");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not delete student");
+    } finally {
+      setDeletingStudentId(null);
+    }
   };
 
   const hasActiveFilters =
@@ -410,6 +432,16 @@ export default function AdminStudents({
                                   }}
                                 >
                                   <FaMap /> View AI Roadmaps
+                                </button>
+                                <button
+                                  className="dropdown-menu-item danger"
+                                  disabled={deletingStudentId === student._id}
+                                  onClick={() => {
+                                    setOpenMenuId(null);
+                                    handleDeleteStudent(student);
+                                  }}
+                                >
+                                  <FaTrashCan /> {deletingStudentId === student._id ? "Removing…" : "Remove student and data"}
                                 </button>
                               </div>
                             )}

@@ -116,6 +116,7 @@ test("student and guide signup use Google verification and guide setup is token-
   assert.deepEqual(await validateRules(googleGuideOnboardingRules, {
     name: "Guide",
     branch: "OTHER",
+    domainId: "650000000000000000000001",
     roleNames: ["Mentor"],
     bio: "",
   }), []);

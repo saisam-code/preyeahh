@@ -25,7 +25,6 @@ import {
   startExperiment,
   getStudentExperiments,
   completeExperiment,
-  submitReport,
 } from "../services/careerIntelligenceService.js";
 import { fetchBranches } from "../services/branchService.js";
 import { fetchCareerDomains } from "../services/careerDomainService.js";
@@ -59,7 +58,6 @@ const CAPABILITY_TABS = [
   { id: "experiments", label: "Practical Experiments" },
   { id: "financial", label: "Financial ROI Planner" },
   { id: "outcomes", label: "Alumni & Outcomes" },
-  { id: "safety", label: "Trust & Safety Center" },
 ];
 
 export default function CareerDiscovery() {
@@ -115,10 +113,6 @@ export default function CareerDiscovery() {
   const [outcomes, setOutcomes] = useState([]);
   const [studentExperiments, setStudentExperiments] = useState([]);
   const [experimentReflection, setExperimentReflection] = useState({});
-
-  // Report state
-  const [reportReason, setReportReason] = useState("Inappropriate behavior");
-  const [reportDetails, setReportDetails] = useState("");
 
   const loadCareers = async () => {
     try {
@@ -305,21 +299,6 @@ export default function CareerDiscovery() {
     }
   };
 
-  const handleSendReport = async (e) => {
-    e.preventDefault();
-    try {
-      await submitReport({
-        reportedUserId: "650000000000000000000001",
-        reason: reportReason,
-        details: reportDetails,
-      });
-      toast.success("Report submitted securely to platform moderation.");
-      setReportDetails("");
-    } catch {
-      toast.error("Please login to submit moderation reports");
-    }
-  };
-
   return (
     <div style={{ maxWidth: 1150, margin: "0 auto", padding: "1.5rem 0" }}>
       {/* ── HEADER ── */}
@@ -470,7 +449,7 @@ export default function CareerDiscovery() {
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={() => navigate(`/resources?domain=${encodeURIComponent(selectedDomainSlug)}`)}
+                onClick={() => navigate(`/explore?section=resources&domain=${encodeURIComponent(selectedDomainSlug)}`)}
               >
                 <FaArrowRight /> Browse {domain} learning resources
               </button>
@@ -767,44 +746,6 @@ export default function CareerDiscovery() {
         </div>
       )}
 
-      {/* ── 6. TRUST & SAFETY TAB ── */}
-      {activeTab === "safety" && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.75rem", maxWidth: 650 }}>
-          <h2 style={{ fontSize: "var(--font-size-lg)", margin: "0 0 0.5rem" }}>Trust, Safety & Moderation Center</h2>
-          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)", margin: "0 0 1.5rem" }}>
-            File a confidential moderation report regarding inappropriate conduct, false advice, or credentials.
-          </p>
-
-          <form onSubmit={handleSendReport}>
-            <div className="form-group">
-              <label>Report Reason</label>
-              <select value={reportReason} onChange={(e) => setReportReason(e.target.value)}>
-                <option value="Inappropriate behavior">Inappropriate behavior</option>
-                <option value="False or misleading career advice">False or misleading career advice</option>
-                <option value="Harassment">Harassment</option>
-                <option value="Fraud or fake credentials">Fraud or fake credentials</option>
-                <option value="Spam">Spam</option>
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label>Additional Details</label>
-              <textarea
-                value={reportDetails}
-                onChange={(e) => setReportDetails(e.target.value)}
-                placeholder="Describe the incident objectively..."
-                style={{ minHeight: 90 }}
-                required
-              />
-            </div>
-
-            <button type="submit" className="btn btn-primary">
-              <FaShieldHalved /> Submit Report to Moderation
-            </button>
-          </form>
-        </div>
-      )}
-
       {/* ── DETAIL REALITY MODAL ── */}
       {selectedRole && (
         <div className="modal-backdrop">
@@ -876,7 +817,7 @@ export default function CareerDiscovery() {
                 <button
                   type="button"
                   className="btn btn-outline"
-                  onClick={() => navigate(`/resources?role=${encodeURIComponent(selectedRole.title)}`)}
+                  onClick={() => navigate(`/explore?section=resources&role=${encodeURIComponent(selectedRole.title)}`)}
                 >
                   Browse curated resources for this role
                 </button>

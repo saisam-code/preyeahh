@@ -1,18 +1,19 @@
 import { createHash } from "node:crypto";
+import { calculateSourceRelevance, createKnownSkillSet } from "./sourceRelevance.js";
 
 const DOMAIN_RULES = [
   ["med-health", /\b(medical|medicine|health|clinical|nursing|pharma|patient|biomedical|mental health|bioinformatics|parasite)\b/i],
   ["arts-media", /\b(art|design|creative|film|cinema|animation|music|audio|media|photograph|typography|illustration|radio|visualization|colorful|framer|translat\w*|i18n|l10n)\b/i],
   ["business-ent", /\b(business|entrepreneur|startup|finance|marketing|sales|product management|accounting|economics|venture|analytics|trading|credit modeling|amazon[- ]sellers?|payment processors?|discount|commerce|advertis|adtech|ads?|fintech|crypto currency|coinmarketcap)\b/i],
   ["science-res", /\b(science|research|physics|chemistry|biology|astronomy|mathematics|quantum|genetics|geology|statistics|scientific|computational geometry|hpc|astrophotography|connectivity data|cytodata|biological image|biological[- ]visualiz\w*|markov|urban planning|regional planning|transportation|transit|gtfs|geospatial|gis|mobility|cheminformatics)\b/i],
-  ["law-public", /\b(law|legal|policy|government|civic|public service|human rights|politics|activism|ethic|digital rights|uncopyright|ad-free)\b/i],
-  ["edu-psych", /\b(education|teaching|learning|psychology|cognitive|pedagogy|curriculum|student|beginner-friendly|kata|ama|answers|falsehood|translation|readme|wiki|read the docs|women in tech|girls in tech|awesome4girls)\b/i],
+  ["government-careers", /\b(government (?:career|jobs?|exam|service|services)|civil services?|civil servant|public administration|public sector|upsc|ssc|state psc|public service commission|government recruitment)\b/i],
+  ["edu-psych", /\b(education|teaching|learning|psychology|cognitive|pedagogy|curriculum|student|instructional design|educational research|school psychology|behavioral science|career counselling)\b/i],
   ["sports-fit", /\b(sport|fitness|athletic|coaching|exercise|biomechanics)\b/i],
-  ["agri-env", /\b(agri\w*|environment|climate|ecolog|conservation|sustainab|wildlife|forestry|renewable energy|vegan\w*|food|earth)\b/i],
+  ["agri-env", /\b(agri\w*|environmental science|climate|ecolog\w*|conservation|sustainab\w*|wildlife|forestry|renewable energy|vegan\w*|food|earth)\b/i],
   ["trades-voc", /\b(trade|vocational|manufactur|mechanical|automotive|construction|welding|carpentry|cad|industrial)\b/i],
   ["aviation-def", /\b(aviation|aerospace|aircraft|flight|defen[cs]e|military|drone|uav)\b/i],
   ["emerging-unconv", /\b(gaming|game development|esports|blockchain|cryptocurrency|crypto currency|web3|virtual reality|augmented reality|metaverse|pok[eé]mon|geocaching|steam|webxr)\b/i],
-  ["tech-eng", /\b(software|programming|developer|computer|technology|engineering|code|database|cloud|network|security|hardware|robotics|internet of things|iot|python|javascript|typescript|rust|golang|java|kotlin|swift|react|node\.js|linux|android|ios|web|api|json|geojson|csv|rest|graphql|microservices|ci\/cd|continuous integration|markdown|latex|tikz|dtrace|userscripts|regex|wp-cli|magento|prometheus|open source|self hosted|container|developer tool|cms|content management|decentralized|ethereum|cosmos|openstreetmap|gulp|unicode|bots?|homematic|calculators?|captcha|stacks|chatgpt|whisper|gemini|permacomputing|boilerplate|production app|github wiki|readme|free for developers|framer|student developer|foss|vulkan|directx|opengl|graphics|rendering|shader|mqtt|ansible|chatops|quarto|jupyter|sap commerce|prisma|irc|standards|cheminformatics|katas?|algorithms?|coding challenge|women in tech|girls in tech|awesome4girls|urban planning|transit|gtfs|webxr|dev[- ]fun|scriptable|vorpal|event[- ]driven|orchestration|choreography|inspectit|opentracing|observability|ledger|tech[- ]ethics|bitcoin payment processors?|awesome-naming)\b/i],
+  ["tech-eng", /\b(software|programming|developer|computer|technology|engineering|code|database|cloud|network|security|hardware|robotics|internet of things|iot|python|javascript|typescript|rust|golang|java|kotlin|swift|react|node\.js|linux|android|ios|web|api|json|geojson|csv|rest|graphql|microservices|ci\/cd|continuous integration|markdown|latex|tikz|dtrace|userscripts|regex|wp-cli|magento|prometheus|open source|self hosted|container|developer tool|cms|content management|decentralized|ethereum|cosmos|openstreetmap|gulp|unicode|bots?|homematic|calculators?|captcha|stacks|chatgpt|whisper|gemini|permacomputing|boilerplate|production app|framer|foss|vulkan|directx|opengl|graphics|rendering|shader|mqtt|ansible|chatops|quarto|jupyter|sap commerce|prisma|irc|standards|cheminformatics|katas?|algorithms?|coding challenge|webxr|scriptable|vorpal|event[- ]driven|orchestration|choreography|inspectit|opentracing|observability|ledger|bitcoin payment processors?|awesome-naming)\b/i],
 ];
 
 const DIRECTORY_DOMAINS = [
@@ -37,7 +38,7 @@ const ROLE_RULES = [
   ["graphic designer", /\b(graphic design|illustration|typography|visual design)\b/i],
   ["business analyst", /\b(business|economics|market research|process|amazon seller|payment processor|finance|advertising|commerce)\b/i],
   ["product manager", /\b(product management|product design|startup|product strategy)\b/i],
-  ["environmental scientist", /\b(environment|climate|ecolog|conservation|sustainab)\b/i],
+  ["environmental scientist", /\b(climate|ecolog\w*|conservation|sustainab\w*|wildlife|forestry|renewable energy|habitat|ecosystem)\b/i],
   ["aerospace systems engineer", /\b(aviation|aerospace|aircraft|flight|drone|uav)\b/i],
   ["instructional designer", /\b(education|teaching|learning|curriculum|pedagogy)\b/i],
 ];
@@ -85,6 +86,26 @@ function resourceUrl(value, baseUrl) {
 function sourceId(repository, url) {
   const digest = createHash("sha256").update(url).digest("hex").slice(0, 24);
   return `${repository}:${digest}`;
+}
+
+export function applySourceRelevance(items, { roleSkills = [], minScore = 2 } = {}) {
+  const knownSkills = createKnownSkillSet(roleSkills);
+
+  return items.map((item) => {
+    const relevance = calculateSourceRelevance(item, knownSkills);
+    const output = { ...item, relatedDomains: relevance.relatedDomains, score: relevance.score };
+    if (item.importStatus !== "mapped") return output;
+    if (relevance.reason) {
+      output.importStatus = "excluded";
+      output.exclusionReason = relevance.reason;
+      return output;
+    }
+    if (relevance.score < minScore) {
+      output.importStatus = "excluded";
+      output.exclusionReason = "LOW_SCORE";
+    }
+    return output;
+  });
 }
 
 function getDescription(line, markdownLink) {

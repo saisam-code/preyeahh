@@ -119,7 +119,7 @@ export default function Dashboard() {
     title: "Explore careers across every domain",
     description: "Browse roles by interest, current skills, and skills you want to learn without committing to a branch.",
     action: "Discover careers",
-    onClick: () => navigate("/discovery"),
+    onClick: () => navigate("/explore"),
   };
   if (performance && !performance.profileComplete) {
     nextStep = {
@@ -133,7 +133,7 @@ export default function Dashboard() {
       title: "Build your first roadmap",
       description: `Choose a ${user.branch || "career"} role and turn it into a sequence of manageable milestones.`,
       action: "Explore roles",
-      onClick: () => navigate(`/roles${branchTarget}`),
+      onClick: () => navigate(`/explore?section=roles${branchTarget ? `&${branchTarget.slice(1)}` : ""}`),
     };
   } else if (weakestTopic) {
     nextStep = {
@@ -163,7 +163,7 @@ export default function Dashboard() {
       title: "Discover Careers Across Domains",
       description: "Explore film, aviation, design, technology, skilled trades, research, and other career domains.",
       icon: FaCompass,
-      to: "/discovery",
+      to: "/explore",
       highlight: true,
     },
     {
@@ -227,12 +227,6 @@ export default function Dashboard() {
       icon: FaComments,
       to: "/chat?mode=mentor",
     },
-    {
-      title: "Profile & Learning Goals",
-      description: "Keep your interests, preferences, and AI profile aligned with the roles that matter to you.",
-      icon: FaUser,
-      to: "/profile",
-    },
   ];
 
   return (
@@ -267,7 +261,7 @@ export default function Dashboard() {
                   type="button"
                   onClick={() => {
                     dismissRoleNotification(notif._id);
-                    navigate("/roles");
+                    navigate("/explore?section=roles");
                   }}
                 >
                   Explore Role <FaArrowRight />
@@ -388,7 +382,7 @@ export default function Dashboard() {
                     else if (/quiz|revise|strong in/i.test(suggestion.title))
                       navigate("/quiz", { state: { topic: weakestTopic?.topic || "" } });
                     else if (/roadmap|resume/i.test(suggestion.title)) navigate("/roadmaps");
-                    else navigate(`/roles${branchTarget}`);
+                    else navigate(`/explore?section=roles${branchTarget ? `&${branchTarget.slice(1)}` : ""}`);
                   }}
                 >
                   <span

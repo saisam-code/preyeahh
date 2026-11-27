@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaXmark, FaFire, FaEye, FaPaperPlane, FaHandPointer } from "react-icons/fa6";
 
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchRoles } from "../services/rolesService.js";
+import { fetchCareerDomains } from "../services/careerDomainService.js";
+import { fetchCareerSubdomains } from "../services/careerSubdomainService.js";
 import { fetchGuidanceForRole } from "../services/guidanceService.js";
 import { getInterestForRole, recordInterest } from "../services/studentService.js";
 import { submitRoleRequest } from "../services/roleRequestService.js";
@@ -27,12 +29,17 @@ export default function Roles() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const [generating, setGenerating] = useState(false);
 
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [careerDomains, setCareerDomains] = useState([]);
+  const [selectedDomainId, setSelectedDomainId] = useState("");
+  const [subdomains, setSubdomains] = useState([]);
+  const [selectedSubdomainId, setSelectedSubdomainId] = useState("");
 
   const [selectedRole, setSelectedRole] = useState(null);
   const [roadmap, setRoadmap] = useState(null);
@@ -45,11 +52,53 @@ export default function Roles() {
   const [requestOk, setRequestOk] = useState(false);
 
   useEffect(() => {
+    fetchCareerDomains()
+      .then((domains) => {
+        setCareerDomains(domains);
+        const requestedSlug = searchParams.get("domain");
+        const requestedDomain = domains.find((domain) => domain.slug === requestedSlug || domain._id === requestedSlug);
+        if (requestedDomain) setSelectedDomainId(requestedDomain._id);
+      })
+      .catch((error) => toast.error(error.response?.data?.message || "Could not load career domains"));
+  }, [searchParams]);
+
+  useEffect(() => {
+    let active = true;
     setLoading(true);
-    fetchRoles({ limit: 100 })
-      .then((res) => setRoles(res.data))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchRoles({
+      limit: 100,
+      ...(selectedDomainId ? { domainId: selectedDomainId } : {}),
+      ...(selectedSubdomainId ? { subdomainId: selectedSubdomainId } : {}),
+    })
+      .then((res) => {
+        if (active) setRoles(res.data || []);
+      })
+      .catch((error) => {
+        if (active) toast.error(error.response?.data?.message || "Could not load roles");
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [selectedDomainId, selectedSubdomainId]);
+
+  useEffect(() => {
+    if (!selectedDomainId) {
+      setSubdomains([]);
+      setSelectedSubdomainId("");
+      return;
+    }
+    let active = true;
+    fetchCareerSubdomains({ domainId: selectedDomainId })
+      .then((list) => {
+        if (!active) return;
+        setSubdomains(list);
+      })
+      .catch((error) => {
+        if (active) toast.error(error.response?.data?.message || "Could not load domain roles");
+      });
+    return () => { active = false; };
+  }, [selectedDomainId]);
 
   const filteredRoles = useMemo(() => {
     let list = roles;
@@ -179,6 +228,29 @@ export default function Roles() {
               </div>
             ))}
           </div>
+          <select
+            className="filter-select"
+            aria-label="Filter roles by career domain"
+            value={selectedDomainId}
+            onChange={(event) => {
+              setSelectedDomainId(event.target.value);
+              setSelectedSubdomainId("");
+            }}
+          >
+            <option value="">All domains</option>
+            {careerDomains.map((item) => <option key={item._id} value={item._id}>{item.name}</option>)}
+          </select>
+          {selectedDomainId && (
+            <select
+              className="filter-select"
+              aria-label="Filter roles by subdomain"
+              value={selectedSubdomainId}
+              onChange={(event) => setSelectedSubdomainId(event.target.value)}
+            >
+              <option value="">All subdomains</option>
+              {subdomains.map((item) => <option key={item._id} value={item._id}>{item.name}</option>)}
+            </select>
+          )}
           <div className="search-wrap">
             <input
               className="search-input"
@@ -304,7 +376,7 @@ export default function Roles() {
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={() => navigate(`/resources?role=${encodeURIComponent(selectedRole.title)}`)}
+                onClick={() => navigate(`/explore?section=resources&role=${encodeURIComponent(selectedRole.title)}`)}
               >
                 Browse curated resources for this role
               </button>

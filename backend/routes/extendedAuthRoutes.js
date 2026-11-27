@@ -23,6 +23,7 @@ import {
   extendedLoginRules,
   institutionRefreshRules,
   institutionRegisterRules,
+  parentLinkRequestRules,
   parentRefreshRules,
   parentRegisterRules,
 } from "../validators/extendedAuthValidator.js";
@@ -36,7 +37,7 @@ router.post("/parent/refresh", authLimiter, parentRefreshRules, validate, refres
 router.get("/parent/me", protect, authorize("parent"), getExtendedMe);
 router.get("/parent/wards", protect, authorize("parent"), getParentWards);
 router.get("/parent/wards/:studentId", protect, authorize("parent"), getParentWardDetail);
-router.post("/parent/links/request", protect, authorize("parent"), requestParentLink);
+router.post("/parent/links/request", protect, authorize("parent"), authLimiter, parentLinkRequestRules, validate, requestParentLink);
 router.post("/parent/logout", protect, authorize("parent"), logoutExtended);
 
 // ── INSTITUTION AUTH & COHORT MANAGEMENT ──

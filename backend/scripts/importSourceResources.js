@@ -4,11 +4,12 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import mongoose from "mongoose";
+import Role from "../models/Role.js";
 import Resource from "../models/Resource.js";
 import SourceInventory from "../models/SourceInventory.js";
 import logger from "../utils/logger.js";
-import { parseAwesomeMarkdown, parseBuildYourOwnX } from "../services/sourceImportParser.js";
-import { assignUniqueInventoryIds } from "../services/sourceImportInventory.js";
+import { applySourceRelevance, parseAwesomeMarkdown, parseBuildYourOwnX } from "../services/sourceImportParser.js";
+import { assignUniqueInventoryIds, markSparseLists } from "../services/sourceImportInventory.js";
 import { CAREER_DOMAIN_CATALOG } from "../../shared/careerDomainCatalog.js";
 
 const REPOSITORIES = [
@@ -19,16 +20,21 @@ const REQUEST_TIMEOUT_MS = 10000;
 const MAX_README_BYTES = 2_000_000;
 
 function optionsFromArgs(args) {
-  const options = { dryRun: false, crawlAwesome: true, allowProduction: false, reportPath: "" };
+  const options = { dryRun: false, crawlAwesome: true, allowProduction: false, reportPath: "", minScore: 2 };
   for (let index = 0; index < args.length; index += 1) {
     if (args[index] === "--dry-run") options.dryRun = true;
     else if (args[index] === "--skip-awesome-crawl") options.crawlAwesome = false;
     else if (args[index] === "--allow-production") options.allowProduction = true;
+    else if (args[index] === "--min-score") {
+      options.minScore = Number(args[index + 1]);
+      if (!Number.isInteger(options.minScore) || options.minScore < 0) throw new Error("--min-score must be a non-negative integer");
+      index += 1;
+    }
     else if (args[index] === "--report") {
       options.reportPath = args[index + 1];
       index += 1;
     } else if (args[index] === "--help") {
-      console.log("Usage: node scripts/importSourceResources.js [--dry-run] [--skip-awesome-crawl] [--allow-production] [--report <path>]");
+      console.log("Usage: node scripts/importSourceResources.js [--dry-run] [--min-score <number>] [--skip-awesome-crawl] [--allow-production] [--report <path>]");
       process.exit(0);
     } else {
       throw new Error(`Unknown option: ${args[index]}`);
@@ -171,8 +177,9 @@ async function loadSourceItems(tempDirectory, versions, { crawlAwesome }) {
   const failedRepositories = [];
 
   if (crawlAwesome) {
+    const validDomains = new Set(CAREER_DOMAIN_CATALOG.map(({ slug }) => slug));
     const candidates = [...new Map(awesomeItems
-      .filter((item) => item.url.includes("#readme"))
+      .filter((item) => item.url.includes("#readme") && item.relatedDomains.some((domain) => validDomains.has(domain)))
       .map((item) => {
         const coordinates = githubCoordinates(item.url);
         return coordinates ? [`${coordinates.owner}/${coordinates.repo}`, { ...coordinates, item }] : null;
@@ -186,7 +193,7 @@ async function loadSourceItems(tempDirectory, versions, { crawlAwesome }) {
       return true;
     });
 
-    while (pending.length) {
+    if (pending.length) {
       console.log(`Reading ${pending.length} linked lists (${seenRepositories.size} repositories discovered; ${items.length} items inventoried)`);
       const fetched = await mapConcurrent(pending, 6, async (candidate) => {
         const listRepository = `${candidate.owner}/${candidate.repo}`;
@@ -209,20 +216,9 @@ async function loadSourceItems(tempDirectory, versions, { crawlAwesome }) {
         }
       });
 
-      const next = new Map();
       for (const result of fetched) {
         for (const item of result.parsed) items.push(item);
-        for (const item of result.parsed) {
-          if (!item.url.includes("#readme")) continue;
-          const coordinates = githubCoordinates(item.url);
-          if (!coordinates || (!/awesome/i.test(item.title) && !/awesome/i.test(coordinates.repo))) continue;
-          const key = `${coordinates.owner}/${coordinates.repo}`.toLowerCase();
-          if (seenRepositories.has(key)) continue;
-          seenRepositories.add(key);
-          next.set(key, { ...coordinates, item });
-        }
       }
-      pending = [...next.values()];
     }
   }
 
@@ -238,7 +234,9 @@ async function ensureResourceIndexes() {
   }
   const parallelArrayIndex = indexes.find(({ key }) => key.relatedDomains && key.relatedRoles);
   if (parallelArrayIndex) await Resource.collection.dropIndex(parallelArrayIndex.name);
-  await Resource.collection.createIndex({ relatedDomains: 1 });
+  const legacyDomainIndex = indexes.find(({ key }) => key.relatedDomains && Object.keys(key).length === 1);
+  if (legacyDomainIndex) await Resource.collection.dropIndex(legacyDomainIndex.name);
+  await Resource.collection.createIndex({ relatedDomains: 1, score: -1 });
   await Resource.collection.createIndex({ relatedRoles: 1 });
 }
 
@@ -373,14 +371,16 @@ async function writeResources(inventory, dryRun, sourceVersions) {
   }
   if (dbStatus.available && !dryRun) {
     const fields = [
-      "title", "description", "type", "url", "sourceRepository", "sourceListRepository", "sourceCategory", "sourceSubcategory", "sourceId",
-      "sourceReference", "sourceUrl", "sourceLicense", "resourceType", "relatedDomains", "relatedRoles", "relatedSkills",
-      "relatedTechnologies", "attribution", "importStatus", "technology", "category", "tags", "difficulty", "provider",
+      "title", "description", "type", "url", "sourceRepository", "sourceListId", "sourceCategory", "sourceSubcategory", "sourceId",
+      "sourceListMappedCount",
+      "sourceUrl", "sourceLicense", "resourceType", "relatedDomains", "relatedRoles", "relatedSkills",
+      "relatedTechnologies", "attribution", "importStatus", "technology", "category", "tags", "difficulty", "provider", "score",
     ];
     const operations = records
       .filter((item) => item.importStatus !== "duplicate")
       .map((item) => {
         const data = Object.fromEntries(fields.map((field) => [field, item[field]]));
+        data.sourceListId = item.sourceListRepository || "";
         if (!data.description) {
           data.description = item.resourceType === "tutorial"
             ? `Practical build for ${item.sourceSubcategory} using ${item.technology}; the source does not provide a separate description.`
@@ -396,7 +396,9 @@ async function writeResources(inventory, dryRun, sourceVersions) {
         };
       });
     await writeBulkBatches(Resource, operations, "resources");
-    const inventoryOperations = inventory.map((item) => ({
+    const inventoryOperations = inventory
+      .filter((item) => item.importStatus === "mapped")
+      .map((item) => ({
       updateOne: {
         filter: { sourceId: item.sourceId },
         update: {
@@ -404,7 +406,7 @@ async function writeResources(inventory, dryRun, sourceVersions) {
             ...Object.fromEntries([
               "sourceRepository", "sourceListRepository", "sourceCategory", "sourceSubcategory", "title", "description", "url",
               "sourceReference", "sourceUrl", "sourceLicense", "type", "resourceType", "technology", "relatedDomains",
-              "relatedRoles", "relatedSkills", "relatedTechnologies", "importStatus", "exclusionReason", "sourceLine", "duplicateOf",
+              "relatedRoles", "relatedSkills", "relatedTechnologies", "importStatus", "exclusionReason", "sourceLine", "duplicateOf", "score",
             ].map((field) => [field, item[field]])),
             sourceVersion: sourceVersions[item.sourceRepository] || "",
             lastSeenAt: new Date(),
@@ -413,7 +415,7 @@ async function writeResources(inventory, dryRun, sourceVersions) {
         },
         upsert: true,
       },
-    }));
+      }));
     await writeBulkBatches(SourceInventory, inventoryOperations, "inventory records");
     totals.imported = totals.added + totals.updated;
   } else {
@@ -435,8 +437,17 @@ async function main() {
       sourceVersions[repository.slug] = cloneRepository(repository, path.join(tempDirectory, repository.folder));
     }
     const { items, failedRepositories } = await loadSourceItems(tempDirectory, sourceVersions, options);
-    const report = duplicateAndCoverage(items, failedRepositories, sourceVersions);
+    if (!mongoose.connection.readyState && process.env.MONGO_URI) {
+      await mongoose.connect(process.env.MONGO_URI, { autoIndex: false });
+    }
+    const roleSkills = mongoose.connection.readyState
+      ? await Role.distinct("guidance.skills").maxTimeMS(30000)
+      : [];
+    const scoredItems = applySourceRelevance(items, { roleSkills, minScore: options.minScore });
+    const eligibleItems = markSparseLists(scoredItems);
+    const report = duplicateAndCoverage(eligibleItems, failedRepositories, sourceVersions);
     report.dryRun = options.dryRun;
+    report.minScore = options.minScore;
     const result = await writeResources(report.inventory, options.dryRun, sourceVersions);
     report.database = result.database;
     report.totals = report.inventory.reduce((counts, item) => {

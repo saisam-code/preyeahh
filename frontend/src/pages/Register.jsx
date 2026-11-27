@@ -92,7 +92,6 @@ export default function Register() {
       bio: "",
       phone: "",
       relationship: "Guardian",
-      studentEmail: "",
       code: "",
       category: "College / Institute",
       location: "",
@@ -181,7 +180,6 @@ export default function Register() {
           password: values.password,
           phone: values.phone,
           relationship: values.relationship,
-          studentEmail: values.studentEmail ? values.studentEmail.trim().toLowerCase() : undefined,
         });
         setSuccessMsg("Parent account created! You can now log in to the Parent Portal.");
         setTimeout(() => navigate(`/login?role=parent`), 2000);
@@ -535,15 +533,6 @@ export default function Register() {
                           <option value="Guardian">Guardian</option>
                         </select>
                       </div>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="reg-studentEmail">Ward's Student Email</label>
-                      <input
-                        id="reg-studentEmail"
-                        type="email"
-                        placeholder="ward@example.com"
-                        {...register("studentEmail")}
-                      />
                     </div>
                   </>
                 )}

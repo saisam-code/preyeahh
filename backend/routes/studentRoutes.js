@@ -15,6 +15,7 @@ import {
   completeGoogleOnboarding,
   getStudentParentLinks,
   updateStudentParentLinkStatus,
+  createParentLinkCode,
   associateWithInstitution,
 } from "../controllers/studentController.js";
 import { getBranches } from "../controllers/branchController.js";
@@ -82,6 +83,7 @@ router.post("/google-onboarding", protectGoogleOnboarding, googleOnboardingRules
 // Parent links & Parental consent (Phase 1.3, 1.12)
 router.get("/parent-links", protect, authorize("student"), getStudentParentLinks);
 router.put("/parent-links/:id/status", protect, authorize("student"), updateStudentParentLinkStatus);
+router.post("/parent-link-code", protect, authorize("student"), authLimiter, createParentLinkCode);
 
 // Institution Association (Phase 1.4)
 router.post(

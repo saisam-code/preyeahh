@@ -5,7 +5,7 @@ import { fetchBranches } from "../../services/branchService.js";
 import { fetchRoles } from "../../services/rolesService.js";
 import ContributorLabel from "../ContributorLabel.jsx";
 
-const emptyForm = { title: "", branch: "All", role: "", points: "" };
+const emptyForm = { title: "", branch: "All", role: "", overview: "", durationWeeks: 4, points: "", resources: "" };
 
 function linesToArray(str) {
   return str.split("\n").map((s) => s.trim()).filter(Boolean);
@@ -56,7 +56,15 @@ export default function AdminGuidance({ fixedBranch = null, currentUserId = null
   const openAdd = () => { setEditingId(null); setForm({ ...emptyForm, branch: fixedBranch || emptyForm.branch }); setRolesByBranch([]); setModalOpen(true); };
   const openEdit = async (g) => {
     setEditingId(g._id);
-    setForm({ title: g.title, branch: g.branch, role: g.role || "", points: g.points.join("\n") });
+    setForm({
+      title: g.title,
+      branch: g.branch,
+      role: g.role || "",
+      overview: g.overview || "",
+      durationWeeks: g.durationWeeks || 4,
+      points: g.points.join("\n"),
+      resources: (g.resources || []).join("\n"),
+    });
     await loadRolesForBranch(g.branch);
     setModalOpen(true);
   };
@@ -72,7 +80,16 @@ export default function AdminGuidance({ fixedBranch = null, currentUserId = null
     const points = linesToArray(form.points);
     if (!points.length) return toast.error("Add at least one bullet point");
 
-    const payload = { title: form.title.trim(), branch: form.branch, points, role: form.role || null };
+    const resources = linesToArray(form.resources);
+    const payload = {
+      title: form.title.trim(),
+      branch: form.branch,
+      role: form.role || null,
+      overview: form.overview.trim(),
+      durationWeeks: Number(form.durationWeeks),
+      points,
+      resources,
+    };
     try {
       if (editingId) await updateGuidance(editingId, payload);
       else await createGuidance(payload);
@@ -102,7 +119,10 @@ const visibleEntries = entries.filter((g) => {
   return (
     <div>
       <div className="admin-header">
-        <h2>Manage Guidance</h2><div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
+        <div>
+          <h2>Manage Guidance</h2>
+          {fixedBranch && <p className="label-hint">Choose an existing plan to edit, or create a new branch or role plan. Guidance plans cannot be deleted by guides.</p>}
+        </div><div style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap" }}>
           {!fixedBranch && (
             <select className="filter-select" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
               <option value="all">All Branches</option>
@@ -133,7 +153,7 @@ const visibleEntries = entries.filter((g) => {
                 <td>
                   <div className="table-actions">
                     <button className="btn btn-outline btn-sm" disabled={Boolean(fixedBranch && String(g.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(g.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Edit"} onClick={() => openEdit(g)}>Edit</button>
-                    <button className="btn btn-danger btn-sm" disabled={Boolean(fixedBranch && String(g.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(g.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Delete"} onClick={() => handleDelete(g._id)}>Delete</button>
+                    {!fixedBranch && <button className="btn btn-danger btn-sm" onClick={() => handleDelete(g._id)}>Delete</button>}
                   </div>
                 </td>
               </tr>
@@ -163,9 +183,35 @@ const visibleEntries = entries.filter((g) => {
               {rolesByBranch.map((r) => <option key={r._id} value={r._id}>{r.title}</option>)}
             </select>
           </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Plan overview</label>
+              <textarea
+                style={{ minHeight: 75 }}
+                maxLength={1500}
+                value={form.overview}
+                onChange={(e) => setForm({ ...form, overview: e.target.value })}
+                placeholder="Describe the goal and expected outcome of this plan"
+              />
+            </div>
+            <div className="form-group">
+              <label>Duration (weeks)</label>
+              <input
+                type="number"
+                min="1"
+                max="52"
+                value={form.durationWeeks}
+                onChange={(e) => setForm({ ...form, durationWeeks: e.target.value })}
+              />
+            </div>
+          </div>
           <div className="form-group">
-            <label>Bullet Points <span style={{ fontWeight: 400, color: "var(--muted)" }}>(one per line)</span></label>
-            <textarea style={{ minHeight: 110 }} value={form.points} onChange={(e) => setForm({ ...form, points: e.target.value })} placeholder={"Learn C/C++\nBuild a GitHub profile\nJoin the coding club"} />
+            <label>Milestones <span style={{ fontWeight: 400, color: "var(--muted)" }}>(one per line, in order)</span></label>
+            <textarea style={{ minHeight: 110 }} value={form.points} onChange={(e) => setForm({ ...form, points: e.target.value })} placeholder={"Explore the field and prerequisites\nComplete a guided project\nReview progress with your guide"} />
+          </div>
+          <div className="form-group">
+            <label>Recommended resources <span className="label-hint">(one per line)</span></label>
+            <textarea style={{ minHeight: 75 }} value={form.resources} onChange={(e) => setForm({ ...form, resources: e.target.value })} placeholder={"Official syllabus | https://example.gov"} />
           </div>
           <div className="modal-actions">
             <button className="btn btn-outline" onClick={closeModal}>Cancel</button>

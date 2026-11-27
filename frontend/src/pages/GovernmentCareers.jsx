@@ -67,6 +67,14 @@ const EDUCATION_STAGES = ["all", ...CANONICAL_EDUCATION_STAGES];
 export default function GovernmentCareers() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const setGovernmentTab = (tab) => {
+    setActiveTab(tab);
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("tab", tab);
+      return next;
+    });
+  };
 
   // Tab State: "jobs", "syllabus", "notifications", "compare"
   const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "jobs");
@@ -195,25 +203,25 @@ export default function GovernmentCareers() {
       <div className="tabs" style={{ marginBottom: "2rem", display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
         <button
           className={`tab ${activeTab === "jobs" ? "active" : ""}`}
-          onClick={() => { setActiveTab("jobs"); setSearchParams({ tab: "jobs" }); }}
+          onClick={() => setGovernmentTab("jobs")}
         >
           <FaBuildingColumns /> Government Posts &amp; Careers ({jobs.length})
         </button>
         <button
           className={`tab ${activeTab === "syllabus" ? "active" : ""}`}
-          onClick={() => { setActiveTab("syllabus"); setSearchParams({ tab: "syllabus" }); }}
+          onClick={() => setGovernmentTab("syllabus")}
         >
           <FaBookOpen /> Examination &amp; Syllabus Library
         </button>
         <button
           className={`tab ${activeTab === "notifications" ? "active" : ""}`}
-          onClick={() => { setActiveTab("notifications"); setSearchParams({ tab: "notifications" }); }}
+          onClick={() => setGovernmentTab("notifications")}
         >
           <FaCalendarDays /> Recruitment Notifications
         </button>
         <button
           className={`tab ${activeTab === "compare" ? "active" : ""}`}
-          onClick={() => { setActiveTab("compare"); setSearchParams({ tab: "compare" }); }}
+          onClick={() => setGovernmentTab("compare")}
         >
           <FaScaleBalanced /> Career Comparison {selectedForCompare.length > 0 && `(${selectedForCompare.length})`}
         </button>

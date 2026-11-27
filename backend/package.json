@@ -13,10 +13,9 @@
     "test": "node --test",
     "create-admin": "node scripts/createAdmin.js",
     "import:sources": "node scripts/importSourceResources.js",
-    "seed:resources": "node scripts/seedResources.js",
-    "seed:demo": "node scripts/seedDemoAccounts.js",
     "migrate:career-goals": "node scripts/migrateCareerGoals.js",
     "migrate:career-domains": "node scripts/migrateCareerDomains.js",
+    "migrate:government-careers": "node scripts/migrateGovernmentCareersDomain.js",
     "migrate:role-institution-scope": "node scripts/migrateRoleInstitutionScope.js",
     "migrate:institution-codes": "node scripts/migrateInstitutionAssociationCodes.js"
   },

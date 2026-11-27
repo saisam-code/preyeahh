@@ -1,0 +1,105 @@
+.institution-portal {
+  max-width: 1180px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+}
+
+.institution-portal .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.institution-portal .eyebrow {
+  color: var(--primary);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  margin: 0 0 0.4rem;
+}
+
+.institution-portal .tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.institution-portal .institution-stat-grid,
+.institution-portal .institution-directory {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.institution-portal .card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+.institution-portal .institution-stat-grid .card {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.institution-portal .institution-stat-grid strong {
+  font-size: var(--font-size-2xl);
+}
+
+.institution-portal .institution-member-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.institution-portal .institution-member {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.institution-portal .institution-member p,
+.institution-portal .institution-directory p {
+  color: var(--text-muted);
+  margin: 0.35rem 0;
+}
+
+.institution-portal .institution-member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.institution-portal .badge {
+  display: inline-block;
+  border-radius: 999px;
+  background: var(--surface-mid);
+  color: var(--text-muted);
+  font-size: var(--font-size-xs);
+  padding: 0.2rem 0.55rem;
+}
+
+.institution-portal .empty-state,
+.institution-portal .error-state {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  padding: 1.5rem;
+}
+
+.institution-portal .error-state {
+  border-color: var(--error);
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+  .institution-portal .page-header,
+  .institution-portal .institution-member {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

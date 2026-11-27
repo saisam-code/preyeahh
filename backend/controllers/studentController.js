@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from "node:crypto";
 import Student from "../models/Student.js";
 import Role from "../models/Role.js";
 import Branch from "../models/Branch.js";
@@ -288,6 +289,16 @@ export const updateStudentParentLinkStatus = asyncHandler(async (req, res) => {
   await link.save();
 
   res.status(200).json(new ApiResponse(200, link, `Parent link ${status.toLowerCase()} successfully`));
+});
+
+export const createParentLinkCode = asyncHandler(async (req, res) => {
+  const code = randomBytes(9).toString("base64url").toUpperCase().replace(/[-_]/g, "").slice(0, 12);
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const student = req.user.doc;
+  student.parentLinkCodeHash = createHash("sha256").update(code).digest("hex");
+  student.parentLinkCodeExpiresAt = expiresAt;
+  await student.save();
+  res.status(200).json(new ApiResponse(200, { code, expiresAt }, "Parent link code generated"));
 });
 
 /**

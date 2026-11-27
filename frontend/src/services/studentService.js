@@ -1,5 +1,17 @@
 import api from "./api.js";
 
+export function createParentLinkCode() {
+  return api.post("/students/parent-link-code").then((r) => r.data.data);
+}
+
+export function getStudentParentLinks() {
+  return api.get("/students/parent-links").then((r) => r.data.data || []);
+}
+
+export function updateStudentParentLinkStatus(linkId, status) {
+  return api.put(`/students/parent-links/${linkId}/status`, { status }).then((r) => r.data.data);
+}
+
 export function getInterestForRole(roleId) {
   return api.get(`/students/interest/${roleId}`).then((r) => r.data.data);
 }

@@ -8,6 +8,7 @@ import {
   listGuides,
   setGuideStatus,
   assignGuideRoles,
+  assignGuideDomain,
   deleteGuide,
   refreshToken,
   logoutGuide,
@@ -26,6 +27,7 @@ import {
   idParamRule,
   setStatusRules,
   assignRolesRules,
+  assignDomainRules,
 } from "../validators/guideValidator.js";
 import { conversationIdRule, sendMentorshipMessageRules } from "../validators/mentorshipValidator.js";
 import { authLimiter } from "../middleware/rateLimiters.js";
@@ -51,6 +53,7 @@ router.post("/me/conversations/:id/messages", protect, authorize("guide"), sendM
 router.get("/", protect, authorize("admin"), listGuides);
 router.put("/:id/status", protect, authorize("admin"), setStatusRules, validate, setGuideStatus);
 router.put("/:id/roles", protect, authorize("admin"), assignRolesRules, validate, assignGuideRoles);
+router.put("/:id/domain", protect, authorize("admin"), assignDomainRules, validate, assignGuideDomain);
 router.delete("/:id", protect, authorize("admin"), idParamRule, validate, deleteGuide);
 
 export default router;

@@ -16,3 +16,21 @@ export function assignUniqueInventoryIds(items) {
     return output;
   });
 }
+
+export function markSparseLists(items) {
+  const mappedByList = new Map();
+  for (const item of items) {
+    if (item.importStatus !== "mapped" || !item.sourceListRepository || item.sourceListRepository === item.sourceRepository) continue;
+    mappedByList.set(item.sourceListRepository, (mappedByList.get(item.sourceListRepository) || 0) + 1);
+  }
+
+  return items.map((item) => {
+    if (item.importStatus !== "mapped" || !item.sourceListRepository || item.sourceListRepository === item.sourceRepository) {
+      return item;
+    }
+    const sourceListMappedCount = mappedByList.get(item.sourceListRepository) || 0;
+    return sourceListMappedCount < 3
+      ? { ...item, sourceListMappedCount, importStatus: "excluded", exclusionReason: "SPARSE_LIST" }
+      : { ...item, sourceListMappedCount };
+  });
+}

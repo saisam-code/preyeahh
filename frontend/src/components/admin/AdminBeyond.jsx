@@ -5,18 +5,15 @@ import { fetchBranches } from "../../services/branchService.js";
 import ContributorLabel from "../ContributorLabel.jsx";
 
 const CATEGORIES = [
-  { value: "college", label: "In College" },
-  { value: "startup", label: "Startups" },
-  { value: "gate", label: "GATE & Higher Studies" },
-  { value: "national", label: "National" },
-  { value: "international", label: "International" },
+  { value: "exam", label: "Exams" },
+  { value: "opportunity", label: "Opportunities" },
 ];
 
 function linesToArray(str) {
   return str.split("\n").map((s) => s.trim()).filter(Boolean);
 }
 
-const emptyForm = { title: "", branch: "All", category: "college", description: "", howto: "", skills: "", resources: "" };
+const emptyForm = { title: "", branch: "All", category: "opportunity", description: "", howto: "", skills: "", resources: "" };
 
 export default function AdminBeyond({ fixedBranch = null, currentUserId = null } = {}) {
   const [branches, setBranches] = useState([]);

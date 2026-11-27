@@ -7,14 +7,17 @@ import { protect } from "../middleware/auth.js";
 
 test("Resource schema stores source attribution and stable mapping metadata", () => {
   for (const field of [
-    "sourceRepository", "sourceListRepository", "sourceCategory", "sourceSubcategory", "sourceId", "sourceReference", "sourceUrl", "sourceLicense",
-    "resourceType", "relatedDomains", "relatedRoles", "relatedSkills", "relatedTechnologies", "importStatus",
+    "sourceRepository", "sourceListId", "sourceCategory", "sourceSubcategory", "sourceId", "sourceUrl", "sourceLicense",
+    "resourceType", "relatedDomains", "relatedRoles", "relatedSkills", "relatedTechnologies", "importStatus", "score",
   ]) {
     assert.ok(Resource.schema.path(field), `Resource.${field} must exist`);
   }
+  for (const field of ["thumbnail", "bookmarks", "learningObjectives", "sourceListRepository", "sourceReference"]) {
+    assert.equal(Resource.schema.path(field), undefined, `Resource.${field} must be removed`);
+  }
   assert.ok(Resource.schema.indexes().some(([fields, options]) => fields.sourceId === 1 && options.unique && options.sparse));
   const indexes = Resource.schema.indexes().map(([fields]) => fields);
-  assert.ok(indexes.some((fields) => fields.relatedDomains === 1 && !fields.relatedRoles));
+  assert.ok(indexes.some((fields) => fields.relatedDomains === 1 && fields.score === -1));
   assert.ok(indexes.some((fields) => fields.relatedRoles === 1 && !fields.relatedDomains));
   assert.ok(!indexes.some((fields) => fields.relatedDomains && fields.relatedRoles));
 });
@@ -60,7 +63,7 @@ test("resource search combines career, category, difficulty, and pagination filt
   }
 });
 
-test("resource import coverage and resource editing are admin-only routes", () => {
+test("resource import coverage is admin-only and guides can edit their assigned resources", () => {
   const coverageRoute = resourceRoutes.stack.find((layer) => layer.route?.path === "/coverage")?.route;
   const updateRoute = resourceRoutes.stack.find((layer) => layer.route?.path === "/:id" && layer.route.methods.patch)?.route;
   assert.ok(coverageRoute?.methods.get);
@@ -72,6 +75,9 @@ test("resource import coverage and resource editing are admin-only routes", () =
     assert.equal(allowed, true);
     assert.throws(() => route.stack[1].handle({ user: { role: "student" } }, {}, () => {}), /permission/i);
   }
+  let guideCanEdit = false;
+  updateRoute.stack[1].handle({ user: { role: "guide" } }, {}, () => { guideCanEdit = true; });
+  assert.equal(guideCanEdit, true);
 });
 
 test("roadmap recommendations can match a selected role and topic skill", async () => {

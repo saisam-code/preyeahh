@@ -86,7 +86,7 @@ test("Role domain resolution links known names and slugs and preserves unknown l
   const { resolveCareerDomain } = await import("../utils/resolveCareerDomain.js");
   const records = [
     { _id: "650000000000000000000001", slug: "tech-eng", name: "Technology & Engineering" },
-    { _id: "650000000000000000000002", slug: "law-public", name: "Law & Public Services" },
+    { _id: "650000000000000000000002", slug: "government-careers", name: "Government Careers" },
   ];
   const CareerDomain = {
     findById: async (id) => records.find((record) => record._id === id) || null,
@@ -100,7 +100,7 @@ test("Role domain resolution links known names and slugs and preserves unknown l
     records[0]._id
   );
   assert.equal(
-    (await resolveCareerDomain(CareerDomain, { domain: "law-public" }))._id,
+    (await resolveCareerDomain(CareerDomain, { domain: "government-careers" }))._id,
     records[1]._id
   );
   assert.equal(await resolveCareerDomain(CareerDomain, { domain: "Legacy custom domain" }), null);
@@ -115,6 +115,13 @@ test("Shared career domain catalog uses unique stable slugs", async () => {
   assert.equal(CAREER_DOMAIN_CATALOG.length, 12);
   assert.equal(new Set(CAREER_DOMAIN_CATALOG.map((domain) => domain.slug)).size, 12);
   assert.ok(CAREER_DOMAIN_CATALOG.every((domain) => domain.name && domain.description));
+  assert.ok(CAREER_DOMAIN_CATALOG.some((domain) => domain.slug === "government-careers" && domain.name === "Government Careers"));
+  assert.ok(CAREER_DOMAIN_CATALOG.every((domain) => domain.slug !== "law-public" && domain.name !== "Law & Public Services"));
+});
+
+test("Beyond entries distinguish exams from non-academic opportunities", async () => {
+  const Beyond = (await import("../models/Beyond.js")).default;
+  assert.deepEqual(Beyond.schema.path("category").enumValues, ["exam", "opportunity"]);
 });
 
 test("Branch and subdomain admin validators require valid domain relationships", async () => {

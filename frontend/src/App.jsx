@@ -15,37 +15,29 @@ import RoleLayout from "./layouts/RoleLayout.jsx";
 // Guards
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
-// Public Pages
-import Home from "./pages/Home.jsx";
-import About from "./pages/About.jsx";
-
-// Auth Experience Pages
-import Login from "./pages/Login.jsx";
-import Register from "./pages/Register.jsx";
-import GetStarted from "./pages/GetStarted.jsx";
-import StudentOnboarding from "./pages/StudentOnboarding.jsx";
-import GoogleCallback from "./pages/GoogleCallback.jsx";
-import GoogleOnboarding from "./pages/GoogleOnboarding.jsx";
-
-// Authenticated Pages
-import PersonalCareerPlanner from "./pages/PersonalCareerPlanner.jsx";
-import CareerDiscovery from "./pages/CareerDiscovery.jsx";
-import MyRoadmaps from "./pages/MyRoadmaps.jsx";
-import RoadmapView from "./pages/RoadmapView.jsx";
-import Quiz from "./pages/Quiz.jsx";
-import Profile from "./pages/Profile.jsx";
-import Resources from "./pages/Resources.jsx";
-import Roles from "./pages/Roles.jsx";
-import Beyond from "./pages/Beyond.jsx";
-import Chat from "./pages/Chat.jsx";
-
-import GuidePanel from "./pages/GuidePanel.jsx";
-import ParentPortal from "./pages/ParentPortal.jsx";
-import InstitutionPortal from "./pages/InstitutionPortal.jsx";
-import Admin from "./pages/Admin.jsx";
-import GovernmentCareers from "./pages/GovernmentCareers.jsx";
-import Dashboard from "./pages/Dashboard.jsx";
-const DesignSystem = import.meta.env.DEV ? lazy(() => import("./pages/DesignSystem.jsx")) : null;
+const Home = lazy(() => import("./pages/Home.jsx"));
+const About = lazy(() => import("./pages/About.jsx"));
+const Login = lazy(() => import("./pages/Login.jsx"));
+const Register = lazy(() => import("./pages/Register.jsx"));
+const GetStarted = lazy(() => import("./pages/GetStarted.jsx"));
+const StudentOnboarding = lazy(() => import("./pages/StudentOnboarding.jsx"));
+const GoogleCallback = lazy(() => import("./pages/GoogleCallback.jsx"));
+const GoogleOnboarding = lazy(() => import("./pages/GoogleOnboarding.jsx"));
+const PersonalCareerPlanner = lazy(() => import("./pages/PersonalCareerPlanner.jsx"));
+const Explore = lazy(() => import("./pages/Explore.jsx"));
+const MyRoadmaps = lazy(() => import("./pages/MyRoadmaps.jsx"));
+const RoadmapView = lazy(() => import("./pages/RoadmapView.jsx"));
+const Quiz = lazy(() => import("./pages/Quiz.jsx"));
+const Profile = lazy(() => import("./pages/Profile.jsx"));
+const Resources = lazy(() => import("./pages/Resources.jsx"));
+const Roles = lazy(() => import("./pages/Roles.jsx"));
+const Beyond = lazy(() => import("./pages/Beyond.jsx"));
+const Chat = lazy(() => import("./pages/Chat.jsx"));
+const GuidePanel = lazy(() => import("./pages/GuidePanel.jsx"));
+const ParentPortal = lazy(() => import("./pages/ParentPortal.jsx"));
+const InstitutionPortal = lazy(() => import("./pages/InstitutionPortal.jsx"));
+const Admin = lazy(() => import("./pages/Admin.jsx"));
+const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
 
 export default function App() {
   const [searchParams] = useSearchParams();
@@ -72,7 +64,7 @@ export default function App() {
     const storedOverride = localStorage.getItem("pp_stage_override") || "auto";
     const educationStage = user?.preferences?.educationStage || location.state?.onboardingData?.educationStage;
     const isAdmin = location.pathname === "/admin";
-    const roleRoute = /^\/(dashboard|discovery|government-careers|planner|roadmaps|roadmap|quiz|profile|resources|roles|beyond|chat|guide-panel|parent-portal|institution-portal)(\/|$)/.test(location.pathname);
+    const roleRoute = /^\/(dashboard|explore|discovery|government-careers|planner|roadmaps|roadmap|quiz|profile|resources|roles|beyond|chat|guide-panel|parent-portal|institution-portal)(\/|$)/.test(location.pathname);
     const stage = storedOverride !== "auto"
       ? storedOverride
       : educationStage
@@ -98,15 +90,15 @@ export default function App() {
   }
 
   return (
+    <Suspense fallback={<div className="route-loading" role="status">Loading page...</div>}>
     <Routes>
-      {import.meta.env.DEV && <Route path="/dev/design-system" element={<Suspense fallback={null}><DesignSystem /></Suspense>} />}
       {/* ── EXPERIENCE A: PUBLIC WEBSITE (Home, About & Government Careers) ── */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        <Route path="/explore-careers" element={<CareerDiscovery />} />
-        <Route path="/government-careers" element={<GovernmentCareers />} />
-        <Route path="/discovery/government" element={<GovernmentCareers />} />
+        <Route path="/explore-careers" element={<Explore />} />
+        <Route path="/government-careers" element={<Navigate to="/explore-careers?section=exams" replace />} />
+        <Route path="/discovery/government" element={<Navigate to="/explore-careers?section=exams" replace />} />
       </Route>
 
       {/* ── EXPERIENCE B: AUTHENTICATION EXPERIENCE ── */}
@@ -133,9 +125,8 @@ export default function App() {
       <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/login" />}>
         <Route element={<StudentLayout />}>
           <Route path="/planner" element={<PersonalCareerPlanner />} />
-          <Route path="/discovery" element={<CareerDiscovery />} />
-          <Route path="/government-careers" element={<GovernmentCareers />} />
-          <Route path="/discovery/government" element={<GovernmentCareers />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/discovery" element={<Explore />} />
           <Route path="/roadmaps" element={<MyRoadmaps />} />
           <Route path="/roadmap/:id" element={<RoadmapView />} />
           <Route path="/quiz" element={<Quiz />} />
@@ -171,5 +162,6 @@ export default function App() {
       {/* ── CATCH-ALL REDIRECT ── */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 }

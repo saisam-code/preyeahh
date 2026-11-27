@@ -19,7 +19,6 @@ export const parentRegisterRules = [
   passwordRule(),
   body("phone").optional().isString().trim().isLength({ max: 30 }),
   body("relationship").optional().isString().trim().isLength({ max: 40 }),
-  body("studentEmail").optional({ values: "falsy" }).trim().isEmail().normalizeEmail(),
 ];
 
 export const institutionRegisterRules = [
@@ -41,6 +40,10 @@ export const extendedLoginRules = [
 
 export const parentRefreshRules = [
   cookie("pp_rt_parent").optional().isString().isLength({ max: 4096 }),
+];
+
+export const parentLinkRequestRules = [
+  body("studentCode").isString().trim().isLength({ min: 8, max: 24 }).withMessage("Enter a valid student link code"),
 ];
 
 export const institutionRefreshRules = [

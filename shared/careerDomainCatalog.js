@@ -35,9 +35,9 @@ export const CAREER_DOMAIN_CATALOG = Object.freeze([
     displayOrder: 4,
   },
   {
-    slug: "law-public",
-    name: "Law & Public Services",
-    description: "Uphold justice, craft public policy, defend civil rights, and govern societal institutions.",
+    slug: "government-careers",
+    name: "Government Careers",
+    description: "Explore public-sector roles, competitive examinations, and government service pathways.",
     color: "#7B4FD6",
     displayOrder: 5,
   },

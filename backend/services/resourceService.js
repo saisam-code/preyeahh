@@ -34,7 +34,7 @@ export async function searchResources({
   }
 
   const find = Resource.find(filter);
-  if (query) find.select({ score: { $meta: "textScore" } }).sort({ score: { $meta: "textScore" } });
+  if (query) find.select({ textScore: { $meta: "textScore" } }).sort({ textScore: { $meta: "textScore" } });
   else find.sort({ views: -1, createdAt: -1 });
 
   const [items, total] = await Promise.all([

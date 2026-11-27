@@ -115,6 +115,8 @@ const studentSchema = new mongoose.Schema(
     googleId: { type: String, unique: true, sparse: true, index: true },
     // Marks a Google-created account that hasn't completed branch onboarding yet
     googlePendingOnboarding: { type: Boolean, default: false },
+    parentLinkCodeHash: { type: String, default: "", select: false, index: true },
+    parentLinkCodeExpiresAt: { type: Date, default: null, select: false },
 
     preferences: { type: preferencesSchema, default: () => ({}) },
     refreshTokenVersion: { type: Number, default: 0, select: false },

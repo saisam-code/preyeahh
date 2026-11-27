@@ -5,8 +5,12 @@ export function getParentWards() {
   return api.get("/auth/extended/parent/wards").then((r) => r.data.data || []);
 }
 
-export function requestParentLink(studentEmail) {
-  return api.post("/auth/extended/parent/links/request", { studentEmail }).then((r) => r.data);
+export function getParentWardDetail(studentId) {
+  return api.get(`/auth/extended/parent/wards/${studentId}`).then((r) => r.data.data);
+}
+
+export function requestParentLink(studentCode) {
+  return api.post("/auth/extended/parent/links/request", { studentCode }).then((r) => r.data);
 }
 
 export function getExtendedMe() {

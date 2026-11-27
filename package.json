@@ -7,10 +7,6 @@
     "dev": "concurrently -n API,WEB -c blue,green \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
     "install:all": "npm install && npm install --prefix backend && npm install --prefix frontend",
     "build:frontend": "npm run build --prefix frontend",
-    "encoding:check": "node scripts/fix-encoding.mjs --check",
-    "encoding:dry-run": "node scripts/fix-encoding.mjs --dry-run",
-    "seed:resources": "npm run seed:resources --prefix backend",
-    "seed:demo": "npm run seed:demo --prefix backend",
     "create-admin": "npm run create-admin --prefix backend"
   },
   "devDependencies": {

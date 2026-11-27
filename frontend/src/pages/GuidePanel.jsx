@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser, FaComments, FaBookmark, FaArrowRight } from "react-icons/fa6";
+import { FaUsers, FaBullseye, FaCompass, FaBookOpen, FaEnvelope, FaUser, FaComments } from "react-icons/fa6";
 import { useAuth } from "../context/AuthContext.jsx";
 import { fetchGuideBranchOverview } from "../services/guideService.js";
 import AdminRoles from "../components/admin/AdminRoles.jsx";
@@ -13,7 +13,7 @@ export default function GuidePanel() {
   const { user, initialized } = useAuth();
   const navigate = useNavigate();
   const [overview, setOverview] = useState(null);
-  const [activeSection, setActiveSection] = useState("students");
+  const [activeSection, setActiveSection] = useState("duties");
 
   useEffect(() => {
     if (!initialized || !user || user.role !== "guide") return;
@@ -36,43 +36,19 @@ export default function GuidePanel() {
         <p>Keep student management separate from your branch content duties.</p>
       </div>
 
-      <section aria-label="Guide workspace shortcuts" style={{ marginBottom: "1.5rem" }}>
-        <h2 style={{ margin: "0 0 0.75rem" }}>Workspace shortcuts</h2>
-        <div className="dashboard-grid">
-          <button type="button" className="dashboard-card" onClick={() => navigate("/chat")}>
-            <div className="dashboard-card-icon"><FaComments /></div>
-            <div><h3>Mentorship Inbox</h3><p>Continue conversations with students.</p></div>
-            <div className="dashboard-card-footer">Open <FaArrowRight /></div>
+      <div className="guide-dashboard-layout">
+        <nav className="guide-dashboard-nav" aria-label="Guide dashboard sections">
+          <button type="button" className={activeSection === "duties" ? "active" : ""} aria-current={activeSection === "duties" ? "page" : undefined} onClick={() => setActiveSection("duties")}>
+            <FaCompass /> Content duties
           </button>
-          <button type="button" className="dashboard-card" onClick={() => navigate("/roles")}>
-            <div className="dashboard-card-icon"><FaCompass /></div>
-            <div><h3>Roles Catalog</h3><p>Browse career roles across the platform.</p></div>
-            <div className="dashboard-card-footer">Open <FaArrowRight /></div>
+          <button type="button" className={activeSection === "students" ? "active" : ""} aria-current={activeSection === "students" ? "page" : undefined} onClick={() => setActiveSection("students")}>
+            <FaUsers /> Students
           </button>
-          <button type="button" className="dashboard-card" onClick={() => navigate("/resources")}>
-            <div className="dashboard-card-icon"><FaBookmark /></div>
-            <div><h3>Resources</h3><p>Find materials and learning references.</p></div>
-            <div className="dashboard-card-footer">Open <FaArrowRight /></div>
+          <button type="button" className={activeSection === "requests" ? "active" : ""} aria-current={activeSection === "requests" ? "page" : undefined} onClick={() => setActiveSection("requests")}>
+            <FaEnvelope /> Role Requests
           </button>
-          <button type="button" className="dashboard-card" onClick={() => navigate("/beyond")}>
-            <div className="dashboard-card-icon"><FaBullseye /></div>
-            <div><h3>Beyond Degree</h3><p>Explore opportunities outside formal courses.</p></div>
-            <div className="dashboard-card-footer">Open <FaArrowRight /></div>
-          </button>
-        </div>
-      </section>
-
-      <div className="type-tabs" role="tablist" aria-label="Guide dashboard sections" style={{ margin: "0 0 1.5rem" }}>
-        <button type="button" role="tab" aria-selected={activeSection === "students"} className={`tab ${activeSection === "students" ? "active" : ""}`} onClick={() => setActiveSection("students")}>
-          <FaUsers /> Student management
-        </button>
-        <button type="button" role="tab" aria-selected={activeSection === "duties"} className={`tab ${activeSection === "duties" ? "active" : ""}`} onClick={() => setActiveSection("duties")}>
-          <FaCompass /> Content duties
-        </button>
-        <button type="button" role="tab" aria-selected={activeSection === "requests"} className={`tab ${activeSection === "requests" ? "active" : ""}`} onClick={() => setActiveSection("requests")}>
-          <FaEnvelope /> Role Requests
-        </button>
-      </div>
+        </nav>
+        <div className="guide-dashboard-content">
 
       {activeSection === "students" && overview && (
         <>
@@ -157,10 +133,10 @@ export default function GuidePanel() {
             </button>
           </div>
           <div style={{ display: "grid", gap: "2rem" }}>
-            <section id="guide-roles" style={{ scrollMarginTop: "5rem" }}><AdminRoles fixedBranch={user.branch} currentUserId={user.id} /></section>
+            <section id="guide-roles" style={{ scrollMarginTop: "5rem" }}><AdminRoles fixedBranch={user.branch} fixedDomainId={user.domainId} /></section>
             <section id="guide-guidance" style={{ scrollMarginTop: "5rem" }}><AdminGuidance fixedBranch={user.branch} currentUserId={user.id} /></section>
             <section id="guide-beyond" style={{ scrollMarginTop: "5rem" }}><AdminBeyond fixedBranch={user.branch} currentUserId={user.id} /></section>
-            <GuideResources branch={user.branch} currentUserId={user.id} />
+            <GuideResources branch={user.branch} domainId={user.domainId} />
           </div>
         </>
       )}
@@ -170,6 +146,8 @@ export default function GuidePanel() {
           <AdminRequests />
         </section>
       )}
+        </div>
+      </div>
     </div>
   );
 }

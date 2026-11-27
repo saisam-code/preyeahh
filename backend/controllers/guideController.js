@@ -6,6 +6,8 @@ import Beyond from "../models/Beyond.js";
 import Quiz from "../models/Quiz.js";
 import AIRoadmap from "../models/AIRoadmap.js";
 import Guide from "../models/Guide.js";
+import Branch from "../models/Branch.js";
+import CareerDomain from "../models/CareerDomain.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
@@ -17,17 +19,27 @@ export const completeGoogleGuideOnboarding = asyncHandler(async (req, res) => {
   if (!guide.googlePendingOnboarding) throw ApiError.badRequest("Guide onboarding has already been completed");
 
   const branch = typeof req.body.branch === "string" ? req.body.branch.trim().toUpperCase() : "";
+  const domainId = req.body.domainId;
   const roleNames = Array.isArray(req.body.roleNames)
     ? [...new Set(req.body.roleNames.map((roleName) => roleName.trim()).filter(Boolean))]
     : [];
   if (!branch || !roleNames.length) {
     throw ApiError.badRequest("Branch and at least one guide role are required");
   }
+  const [branchRecord, domainRecord] = await Promise.all([
+    Branch.findOne({ name: branch }).select("domainIds"),
+    CareerDomain.findById(domainId).select("_id"),
+  ]);
+  if (!branchRecord || !domainRecord) throw ApiError.badRequest("Choose a valid branch and career domain");
+  if (!branchRecord.domainIds.some((id) => String(id) === String(domainRecord._id))) {
+    throw ApiError.badRequest("This career domain is not associated with the selected branch");
+  }
 
   if (typeof req.body.name === "string" && req.body.name.trim()) {
     guide.name = req.body.name.trim();
   }
   guide.branch = branch;
+  guide.domainId = domainRecord._id;
   guide.roleNames = roleNames;
   guide.bio = typeof req.body.bio === "string" ? req.body.bio.trim() : "";
   guide.googlePendingOnboarding = false;
@@ -87,19 +99,22 @@ export const getMe = asyncHandler(async (req, res) => {
 
 export const getGuideBranchOverview = asyncHandler(async (req, res) => {
   const branch = String(req.user.branch || "").toUpperCase();
+  const domainId = req.user.doc.domainId;
+  if (!domainId) throw ApiError.forbidden("Ask an administrator to assign your career domain");
 
   const [students, branchRoleInterests, totalRoles, totalGuidance, totalBeyond] = await Promise.all([
     Student.find({ branch }).select("name email branch preferences createdAt").sort({ createdAt: -1 }).lean(),
-    RoleInterest.find({ branch }).populate("role", "title branch").sort({ createdAt: -1 }).lean(),
-    Role.countDocuments({ branch }),
+    RoleInterest.find({ branch }).populate("role", "title branch domainId").sort({ createdAt: -1 }).lean(),
+    Role.countDocuments({ branch, domainId }),
     Guidance.countDocuments({ $or: [{ branch }, { branch: "All" }] }),
     Beyond.countDocuments({ $or: [{ branch }, { branch: "All" }] }),
   ]);
 
   const assignedRoleNames = (req.user.doc.roleNames || []).map((name) => String(name).trim().toLowerCase());
-  const roleInterests = assignedRoleNames.length
-    ? branchRoleInterests.filter((interest) => assignedRoleNames.includes(String(interest.roleName || interest.role?.title || "").trim().toLowerCase()))
-    : branchRoleInterests;
+  const roleInterests = branchRoleInterests.filter((interest) => (
+    String(interest.role?.domainId || "") === String(domainId)
+    && (!assignedRoleNames.length || assignedRoleNames.includes(String(interest.roleName || interest.role?.title || "").trim().toLowerCase()))
+  ));
 
   const interestMap = new Map();
   for (const interest of roleInterests) {
@@ -226,6 +241,18 @@ export const assignGuideRoles = asyncHandler(async (req, res) => {
   guide.roleNames = req.body.roleNames;
   await guide.save();
   res.status(200).json(new ApiResponse(200, guide.toSafeJSON(), "Assigned roles updated"));
+});
+
+export const assignGuideDomain = asyncHandler(async (req, res) => {
+  const guide = await Guide.findById(req.params.id);
+  if (!guide) throw ApiError.notFound("Guide not found");
+  const branch = await Branch.findOne({ name: guide.branch }).select("domainIds");
+  if (!branch || !branch.domainIds.some((id) => String(id) === req.body.domainId)) {
+    throw ApiError.badRequest("The selected career domain is not assigned to this guide's branch");
+  }
+  guide.domainId = req.body.domainId;
+  await guide.save();
+  res.status(200).json(new ApiResponse(200, guide.toSafeJSON(), "Guide career domain assigned"));
 });
 
 export const deleteGuide = asyncHandler(async (req, res) => {

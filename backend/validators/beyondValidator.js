@@ -1,6 +1,6 @@
 import { body, param, query } from "express-validator";
 
-const CATEGORIES = ["college", "startup", "gate", "national", "international"];
+const CATEGORIES = ["exam", "opportunity"];
 
 export const createBeyondRules = [
   body("title").trim().notEmpty().withMessage("Title is required").isLength({ max: 150 }),

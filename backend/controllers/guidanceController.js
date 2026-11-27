@@ -39,7 +39,7 @@ export const getGuidanceForRole = asyncHandler(async (req, res) => {
  * POST /api/guidance — admin (any branch) or approved guide (own branch only).
  */
 export const createGuidance = asyncHandler(async (req, res) => {
-  const { title, points } = req.body;
+  const { title, points, overview = "", resources = [], durationWeeks = 4 } = req.body;
   let branch = req.body.branch;
   const roleId = req.body.role || null;
 
@@ -55,7 +55,16 @@ export const createGuidance = asyncHandler(async (req, res) => {
     }
   }
 
-  const entry = await Guidance.create({ title, branch, points, role: roleId, createdBy: contributorSnapshot(req.user) });
+  const entry = await Guidance.create({
+    title,
+    branch,
+    points,
+    overview,
+    resources,
+    durationWeeks,
+    role: roleId,
+    createdBy: contributorSnapshot(req.user),
+  });
   res.status(201).json(new ApiResponse(201, entry, "Guidance entry created"));
 });
 
@@ -71,7 +80,7 @@ export const updateGuidance = asyncHandler(async (req, res) => {
     delete req.body.branch;
   }
 
-  const fields = ["title", "branch", "points", "role"];
+  const fields = ["title", "branch", "points", "overview", "resources", "durationWeeks", "role"];
   fields.forEach((f) => {
     if (req.body[f] !== undefined) entry[f] = req.body[f];
   });
@@ -90,13 +99,11 @@ export const updateGuidance = asyncHandler(async (req, res) => {
 });
 
 export const deleteGuidance = asyncHandler(async (req, res) => {
+  if (req.user.role === "guide") {
+    throw ApiError.forbidden("Guides cannot delete guidance plans");
+  }
   const entry = await Guidance.findById(req.params.id);
   if (!entry) throw ApiError.notFound("Guidance entry not found");
-
-  if (req.user.role === "guide" && entry.branch !== req.user.branch) {
-    throw ApiError.forbidden("You can only delete guidance entries in your own branch");
-  }
-  assertGuideOwnsContent(entry, req.user);
 
   await entry.deleteOne();
   res.status(200).json(new ApiResponse(200, null, "Guidance entry deleted"));

@@ -23,6 +23,7 @@ const sourceInventorySchema = new mongoose.Schema(
     relatedSkills: [{ type: String, lowercase: true, trim: true }],
     relatedTechnologies: [{ type: String, lowercase: true, trim: true }],
     importStatus: { type: String, enum: ["mapped", "duplicate", "excluded", "failed"], required: true, index: true },
+    score: { type: Number, default: 0 },
     exclusionReason: { type: String, default: "" },
     sourceLine: { type: String, default: "" },
     lastSeenAt: { type: Date, default: Date.now },

@@ -24,9 +24,9 @@ function toFact(val) {
       "₹3.5 LPA - ₹6 LPA",
       "₹8 LPA - ₹15 LPA",
       "₹20 LPA - ₹40+ LPA",
-      "â‚¹3.5 LPA - â‚¹6 LPA",
-      "â‚¹8 LPA - â‚¹15 LPA",
-      "â‚¹20 LPA - â‚¹40+ LPA",
+      "\u00e2\u201a\u00b93.5 LPA - \u00e2\u201a\u00b96 LPA",
+      "\u00e2\u201a\u00b98 LPA - \u00e2\u201a\u00b915 LPA",
+      "\u00e2\u201a\u00b920 LPA - \u00e2\u201a\u00b940+ LPA",
       "High",
     ];
     if (fakeDefaults.includes(val.trim())) {

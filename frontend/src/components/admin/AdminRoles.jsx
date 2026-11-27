@@ -18,7 +18,7 @@ function linesToArray(str) {
   return str.split("\n").map((s) => s.trim()).filter(Boolean);
 }
 
-export default function AdminRoles({ fixedBranch = null, currentUserId = null, institutionMode = false } = {}) {
+export default function AdminRoles({ fixedBranch = null, fixedDomainId = null, institutionMode = false } = {}) {
   const [branches, setBranches] = useState([]);
   const [branchFilter, setBranchFilter] = useState(fixedBranch || "all");
   const [roles, setRoles] = useState([]);
@@ -27,7 +27,6 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
   const [institutions, setInstitutions] = useState([]);
   const [scopeFilter, setScopeFilter] = useState("platform");
   const [search, setSearch] = useState("");
-  const [domainFilter, setDomainFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -41,6 +40,7 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
     try {
       const params = { limit: 100 };
       if (branchFilter !== "all") params.branch = branchFilter;
+      if (fixedDomainId) params.domainId = fixedDomainId;
       if (!fixedBranch) params.institutionId = scopeFilter;
       const res = fixedBranch ? await fetchRoles(params) : await fetchManagedRoles(params);
       setRoles(res.data);
@@ -49,7 +49,7 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
     } finally {
       setLoading(false);
     }
-  }, [branchFilter, fixedBranch, scopeFilter]);
+  }, [branchFilter, fixedBranch, fixedDomainId, scopeFilter]);
 
   useEffect(() => {
     if (institutionMode || fixedBranch) return;
@@ -62,6 +62,12 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
       .then(setCareerDomains)
       .catch((error) => toast.error(error.response?.data?.message || "Failed to load career domains"));
   }, []);
+  useEffect(() => {
+    const assignedDomain = careerDomains.find((domain) => domain._id === fixedDomainId);
+    if (assignedDomain) {
+      setForm((current) => ({ ...current, domain: assignedDomain.name }));
+    }
+  }, [careerDomains, fixedDomainId]);
   useEffect(() => {
     if (!modalOpen || !selectedDomainId || !form.branch) {
       setSubdomains([]);
@@ -96,9 +102,11 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
 
   const openAdd = () => {
     setEditingId(null);
+    const fixedDomain = careerDomains.find((domain) => domain._id === fixedDomainId);
     setForm({
       ...emptyRole,
       branch: fixedBranch || branches[0] || "",
+      domain: fixedDomain?.name || emptyRole.domain,
       institutionId: scopeFilter === "all" || scopeFilter === "platform" ? "" : scopeFilter,
     });
     setRoadmap([]);
@@ -209,9 +217,8 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
   };
 
   const visibleRoles = roles.filter((role) => {
-    const matchesDomain = domainFilter === "all" || role.domain === domainFilter;
     const matchesSearch = !search.trim() || `${role.title} ${role.branch} ${role.description}`.toLowerCase().includes(search.trim().toLowerCase());
-    return matchesDomain && matchesSearch;
+    return matchesSearch;
   });
 
   return (
@@ -248,10 +255,6 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
           placeholder="Search role, branch, or description"
           aria-label="Search roles"
         />
-        <select className="filter-select" value={domainFilter} onChange={(event) => setDomainFilter(event.target.value)} aria-label="Filter by career domain">
-          <option value="all">All career domains</option>
-          {CAREER_DOMAINS.map((domain) => <option key={domain.id} value={domain.title}>{domain.title}</option>)}
-        </select>
         <span className="label-hint" style={{ alignSelf: "center" }}>{visibleRoles.length} role{visibleRoles.length === 1 ? "" : "s"}</span>
       </div>
 
@@ -271,8 +274,8 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
                 <td><ContributorLabel item={r} /></td>
                 <td>
                   <div className="table-actions">
-                    <button className="btn btn-outline btn-sm" disabled={Boolean(fixedBranch && String(r.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(r.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Edit"} onClick={() => openEdit(r)}>Edit</button>
-                    <button className="btn btn-danger btn-sm" disabled={Boolean(fixedBranch && String(r.createdBy?.userId || "") !== currentUserId)} title={fixedBranch && String(r.createdBy?.userId || "") !== currentUserId ? "Ask the original contributor or an admin" : "Delete"} onClick={() => handleDelete(r._id)}>Delete</button>
+                    <button className="btn btn-outline btn-sm" onClick={() => openEdit(r)}>Edit</button>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(r._id)}>Delete</button>
                   </div>
                 </td>
               </tr>
@@ -297,7 +300,7 @@ export default function AdminRoles({ fixedBranch = null, currentUserId = null, i
             </div>
             <div className="form-group">
               <label>Career Domain</label>
-              <select className="filter-select" value={form.domain} onChange={(e) => setForm({ ...form, domain: e.target.value, subdomainId: "" })}>
+              <select className="filter-select" value={form.domain} disabled={Boolean(fixedDomainId)} onChange={(e) => setForm({ ...form, domain: e.target.value, subdomainId: "" })}>
                 {CAREER_DOMAINS.map((domain) => <option key={domain.id} value={domain.title}>{domain.title}</option>)}
               </select>
             </div>

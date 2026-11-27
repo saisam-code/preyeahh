@@ -9,6 +9,7 @@ import {
   logoutAdmin,
   getAllStudents,
   getStudentById,
+  deleteStudent,
   getStudentChats,
   getStudentChatDetail,
   getStudentRoadmaps,
@@ -45,6 +46,7 @@ router.get("/interest", protect, authorize("admin"), interestQueryRules, validat
 router.get("/overview-stats", protect, authorize("admin"), getAdminOverviewStats);
 router.get("/recent", protect, authorize("admin"), getDashboardRecent);
 router.get("/students", protect, authorize("admin"), getAllStudents);
+router.delete("/students/:studentId", protect, authorize("admin"), deleteStudent);
 router.get("/students/:studentId", protect, authorize("admin"), getStudentById);
 router.get("/students/:studentId/chats", protect, authorize("admin"), getStudentChats);
 router.get("/students/:studentId/chats/:chatId", protect, authorize("admin"), getStudentChatDetail);

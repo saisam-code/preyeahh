@@ -1,0 +1,79 @@
+.parent-portal {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.parent-privacy-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  color: var(--text-muted);
+  background: var(--primary-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.parent-privacy-notice svg {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+  color: var(--primary);
+}
+
+.parent-privacy-notice p,
+.parent-linked-student p {
+  margin: 0;
+}
+
+.parent-portal .empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.parent-portal .empty-state h2,
+.parent-portal .empty-state p {
+  margin: 0;
+}
+
+.parent-linked-students {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.parent-linked-student {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.parent-linked-student h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.parent-linked-student-badge {
+  padding: 0.25rem 0.6rem;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.parent-linked-student-badge.is-verified {
+  color: var(--primary);
+  background: var(--primary-bg);
+}
+
+@media (max-width: 520px) {
+  .parent-linked-student {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

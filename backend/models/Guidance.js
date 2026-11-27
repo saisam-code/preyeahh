@@ -40,6 +40,9 @@ const guidanceSchema = new mongoose.Schema(
         message: "At least one bullet point is required",
       },
     },
+    overview: { type: String, default: "", trim: true, maxlength: 1500 },
+    resources: { type: [String], default: [] },
+    durationWeeks: { type: Number, min: 1, max: 52, default: 4 },
     role: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Role",

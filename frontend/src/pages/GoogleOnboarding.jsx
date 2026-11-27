@@ -23,6 +23,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 import toast from "react-hot-toast";
 import api from "../services/api.js";
 import { fetchGoogleOnboardingBranches } from "../services/branchService.js";
+import { fetchCareerDomains } from "../services/careerDomainService.js";
 import preyeahhLogo from "../assets/preyeahh-logo.png";
 
 const GOOGLE_SIGNUP_DRAFT_KEY = "pp_google_signup_draft";
@@ -33,7 +34,9 @@ export default function GoogleOnboarding() {
   const tokenStored = useRef(false);
 
   const [branches, setBranches] = useState([]);
+  const [careerDomains, setCareerDomains] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState("");
+  const [selectedDomainId, setSelectedDomainId] = useState("");
   const [name, setName] = useState("");
   const [signupRole, setSignupRole] = useState("student");
   const [signupDraft, setSignupDraft] = useState(null);
@@ -91,16 +94,17 @@ export default function GoogleOnboarding() {
     if (typeof draft?.branch === "string") setSelectedBranch(draft.branch.toUpperCase());
 
     // Load branches with the short-lived Google onboarding token.
-    fetchGoogleOnboardingBranches(token)
-      .then((list) => {
+    Promise.all([fetchGoogleOnboardingBranches(token), fetchCareerDomains()])
+      .then(([list, domains]) => {
         setBranches(list);
+        setCareerDomains(domains);
         if (role === "student" && list.length > 0) {
           setSelectedBranch((current) => list.includes(current) ? current : list[0]);
         }
         setReady(true);
       })
       .catch(() => {
-        setError("Could not load branches. Please refresh.");
+        setError("Could not load setup options. Please refresh.");
         setReady(true);
       });
   }, [navigate]);
@@ -122,6 +126,10 @@ export default function GoogleOnboarding() {
       setError("Please enter at least one guide role.");
       return;
     }
+    if (signupRole === "guide" && !selectedDomainId) {
+      setError("Please choose your career domain.");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -129,7 +137,7 @@ export default function GoogleOnboarding() {
         ? "/guides/google-onboarding"
         : "/students/google-onboarding";
       const payload = signupRole === "guide"
-        ? { branch: selectedBranch, name: name.trim() || undefined, roleNames, bio: guideBio }
+        ? { branch: selectedBranch, domainId: selectedDomainId, name: name.trim() || undefined, roleNames, bio: guideBio }
         : { branch: selectedBranch, name: name.trim() || undefined, profile: signupDraft?.profile };
       const { data } = await api.post(endpoint, payload, {
         headers: { Authorization: `Bearer ${onboardingToken}` },
@@ -234,6 +242,16 @@ export default function GoogleOnboarding() {
 
           {signupRole === "guide" && (
             <>
+              <div className="form-group">
+                <label htmlFor="guide-career-domain">Career domain</label>
+                <select id="guide-career-domain" value={selectedDomainId} onChange={(event) => setSelectedDomainId(event.target.value)} required>
+                  <option value="">Choose your domain</option>
+                  {careerDomains.map((domain) => (
+                    <option key={domain._id} value={domain._id}>{domain.name}</option>
+                  ))}
+                </select>
+                <small>Guide access is scoped to the chosen domain and selected branch.</small>
+              </div>
               <div className="form-group">
                 <label>Guide Role(s), comma-separated</label>
                 <input

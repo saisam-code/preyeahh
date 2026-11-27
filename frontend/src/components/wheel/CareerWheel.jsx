@@ -1,6 +1,6 @@
 import { useState } from "react";
 import preyeahhLogo from "../../assets/preyeahh-logo.png";
-import { wheelLabelPresentation } from "../../utils/contrast.js";
+import { wheelLabelPresentation } from "./wheelLabelPresentation.js";
 
 /**
  * Helper to calculate SVG arc path between two angles

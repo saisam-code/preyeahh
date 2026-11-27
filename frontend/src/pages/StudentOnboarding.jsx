@@ -35,7 +35,7 @@ const INTERESTS_LIST = [
   "Arts, Design & Media",
   "Business & Entrepreneurship",
   "Science & Research",
-  "Law & Public Services",
+  "Government Careers",
   "Education & Psychology",
   "Sports & Fitness",
   "Agriculture & Environment",

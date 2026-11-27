@@ -4,7 +4,7 @@ import {
   FaPalette,
   FaBriefcase,
   FaMicroscope,
-  FaScaleBalanced,
+  FaBuildingColumns,
   FaBookOpen,
   FaDumbbell,
   FaSeedling,
@@ -13,215 +13,39 @@ import {
   FaRocket,
 } from "react-icons/fa6";
 import { CAREER_DOMAIN_CATALOG } from "../../../shared/careerDomainCatalog.js";
+import { CAREER_CATALOG } from "../../../shared/careerCatalog.js";
+
+const DOMAIN_ICONS = Object.freeze({
+  "tech-eng": FaLaptopCode,
+  "med-health": FaHeartPulse,
+  "arts-media": FaPalette,
+  "business-ent": FaBriefcase,
+  "science-res": FaMicroscope,
+  "government-careers": FaBuildingColumns,
+  "edu-psych": FaBookOpen,
+  "sports-fit": FaDumbbell,
+  "agri-env": FaSeedling,
+  "trades-voc": FaWrench,
+  "aviation-def": FaPlaneDeparture,
+  "emerging-unconv": FaRocket,
+});
 
 export const WHEEL_DOMAIN_COLORS = Object.freeze(
   Object.fromEntries(CAREER_DOMAIN_CATALOG.map((domain) => [domain.slug, domain.color]))
 );
 
-const CAREER_DOMAIN_PRESENTATION = [
-  {
-    id: "tech-eng",
-    shortTitle: "Tech",
-    icon: FaLaptopCode,
-    careers: [
-      { name: "Software Engineer", desc: "Design and build web, mobile, and cloud software systems." },
-      { name: "AI / ML Specialist", desc: "Train neural networks and develop predictive intelligence models." },
-      { name: "Cybersecurity Analyst", desc: "Protect organizational networks and defend against digital threats." },
-      { name: "Robotics Engineer", desc: "Create autonomous hardware-software robotic mechanisms." },
-      { name: "Cloud Architect", desc: "Plan secure, reliable cloud infrastructure for modern services." },
-      { name: "Civil Engineer", desc: "Design and oversee buildings, transport, and public infrastructure." },
-      { name: "Data Engineer", desc: "Build reliable systems that collect, transform, and deliver data." },
-      { name: "Electrical Engineer", desc: "Design electrical systems, devices, and power networks." },
-    ],
-    specializations: ["Cloud Architecture", "Full-Stack Web", "Embedded Systems", "Data Engineering"],
-  },
-  {
-    id: "med-health",
-    shortTitle: "Health",
-    icon: FaHeartPulse,
-    careers: [
-      { name: "Physician / Doctor", desc: "Diagnose, treat, and heal patients in specialized medical branches." },
-      { name: "Biomedical Scientist", desc: "Research medical breakthroughs, diagnostics, and treatments." },
-      { name: "Clinical Psychologist", desc: "Provide evidence-based therapy and mental healthcare." },
-      { name: "Public Health Officer", desc: "Design healthcare access strategies and epidemiologic solutions." },
-      { name: "Nurse", desc: "Provide clinical care, coordinate treatment, and support patients." },
-      { name: "Pharmacist", desc: "Prepare and dispense medicines and advise on their safe use." },
-      { name: "Physiotherapist", desc: "Help people restore movement and recover from injury or illness." },
-      { name: "Medical Laboratory Scientist", desc: "Analyze samples that help diagnose and monitor illness." },
-    ],
-    specializations: ["Surgery", "Neurobiology", "Pharmacology", "Pediatrics"],
-  },
-  {
-    id: "arts-media",
-    shortTitle: "Arts",
-    icon: FaPalette,
-    careers: [
-      { name: "UI/UX Designer", desc: "Craft intuitive, accessible digital interfaces and products." },
-      { name: "Filmmaker / Director", desc: "Direct cinematic narratives, documentaries, and visual media." },
-      { name: "Digital Animator", desc: "Create 2D/3D characters, visual effects, and gaming assets." },
-      { name: "Sound Designer", desc: "Engineer audio environments, mixing, and music composition." },
-      { name: "Graphic Designer", desc: "Create visual identities and communication for print and digital media." },
-      { name: "Journalist", desc: "Research, verify, and communicate news and public-interest stories." },
-      { name: "Photographer", desc: "Create and edit images for editorial, commercial, or documentary work." },
-      { name: "Content Strategist", desc: "Plan useful, consistent content for audiences and organizations." },
-    ],
-    specializations: ["Design Systems", "Cinematography", "Motion Graphics", "Creative Direction"],
-  },
-  {
-    id: "business-ent",
-    shortTitle: "Business",
-    icon: FaBriefcase,
-    careers: [
-      { name: "Startup Founder", desc: "Identify market opportunities and build high-growth businesses." },
-      { name: "Product Manager", desc: "Guide cross-functional teams to build market-defining products." },
-      { name: "Financial Analyst", desc: "Evaluate corporate investments, assets, and valuation models." },
-      { name: "Marketing Strategist", desc: "Drive brand adoption, customer acquisition, and campaign strategy." },
-      { name: "Business Analyst", desc: "Turn business needs and data into clear process improvements." },
-      { name: "Accountant", desc: "Prepare financial records and support accurate reporting and compliance." },
-      { name: "Human Resources Specialist", desc: "Support hiring, employee development, and workplace practices." },
-      { name: "Supply Chain Manager", desc: "Coordinate sourcing, production, and delivery of goods." },
-    ],
-    specializations: ["Venture Capital", "Growth Strategy", "Fintech", "Operations"],
-  },
-  {
-    id: "science-res",
-    shortTitle: "Science",
-    icon: FaMicroscope,
-    careers: [
-      { name: "Astrophysicist", desc: "Study cosmological bodies, gravitational fields, and space missions." },
-      { name: "Geneticist", desc: "Analyze DNA sequencing, gene therapy, and biological inheritance." },
-      { name: "Quantum Physicist", desc: "Research subatomic particles and quantum computing principles." },
-      { name: "Data Scientist", desc: "Extract scientific insights and patterns from large datasets." },
-      { name: "Chemist", desc: "Study substances and develop materials, products, or processes." },
-      { name: "Ecologist", desc: "Research how organisms interact with each other and their environment." },
-      { name: "Research Associate", desc: "Plan experiments, analyze findings, and support research projects." },
-      { name: "Geologist", desc: "Study Earth's materials, history, and natural processes." },
-    ],
-    specializations: ["Quantum Mechanics", "Bioinformatics", "Materials Science", "Nanotechnology"],
-  },
-  {
-    id: "law-public",
-    shortTitle: "Law",
-    icon: FaScaleBalanced,
-    careers: [
-      { name: "Corporate Lawyer", desc: "Navigate contracts, mergers, intellectual property, and compliance." },
-      { name: "Civil Services Officer", desc: "Lead administrative districts, departments, and government policies." },
-      { name: "Human Rights Advocate", desc: "Defend public interest and constitutional civil liberties." },
-      { name: "Public Policy Analyst", desc: "Draft legislative research and regulatory frameworks." },
-      { name: "Judge", desc: "Interpret and apply the law while hearing cases and evidence." },
-      { name: "Government Lawyer", desc: "Advise public institutions and represent them in legal matters." },
-      { name: "Diplomat", desc: "Represent a country and build relationships through foreign affairs." },
-      { name: "Public Administrator", desc: "Plan and deliver public programs, services, and policy." },
-    ],
-    specializations: ["Constitutional Law", "Tech Policy", "International Relations", "Litigation"],
-  },
-  {
-    id: "edu-psych",
-    shortTitle: "Education",
-    icon: FaBookOpen,
-    careers: [
-      { name: "Professor / Lecturer", desc: "Teach specialized academic disciplines and publish research." },
-      { name: "Instructional Designer", desc: "Architect modern curriculum and interactive learning systems." },
-      { name: "Cognitive Scientist", desc: "Study memory, neural perception, and decision mechanisms." },
-      { name: "Career Counsellor", desc: "Guide students toward fulfilling pathways and opportunities." },
-      { name: "School Teacher", desc: "Teach a subject and support students' academic development." },
-      { name: "Special Education Teacher", desc: "Adapt teaching to support learners with diverse needs." },
-      { name: "School Psychologist", desc: "Support student learning, wellbeing, and development in schools." },
-      { name: "Education Researcher", desc: "Study teaching and learning to improve education systems." },
-    ],
-    specializations: ["EdTech", "Behavioral Psychology", "Curriculum Design", "STEM Pedagogy"],
-  },
-  {
-    id: "sports-fit",
-    shortTitle: "Sports",
-    icon: FaDumbbell,
-    careers: [
-      { name: "Professional Athlete", desc: "Compete at national and international competitive sporting levels." },
-      { name: "Sports Physiotherapist", desc: "Prevent and rehabilitate sports injuries and enhance recovery." },
-      { name: "Performance Coach", desc: "Develop high-performance training and athletic conditioning." },
-      { name: "Sports Data Analyst", desc: "Extract tactical game insights and statistical performance." },
-      { name: "Sports Psychologist", desc: "Help athletes build focus, confidence, and mental resilience." },
-      { name: "Strength and Conditioning Coach", desc: "Develop safe training programs for strength and performance." },
-      { name: "Sports Nutritionist", desc: "Plan nutrition strategies to support training and recovery." },
-      { name: "Sports Journalist", desc: "Report on competitions, teams, athletes, and the sports industry." },
-    ],
-    specializations: ["Biomechanics", "Sports Nutrition", "Kinesiology", "Tactical Coaching"],
-  },
-  {
-    id: "agri-env",
-    shortTitle: "Agri",
-    icon: FaSeedling,
-    careers: [
-      { name: "Agritech Specialist", desc: "Deploy IoT, drones, and precision technology in agriculture." },
-      { name: "Environmental Scientist", desc: "Protect natural habitats, clean water, and conservation areas." },
-      { name: "Renewable Energy Engineer", desc: "Design solar, wind, and sustainable power infrastructures." },
-      { name: "Wildlife Biologist", desc: "Track species biodiversity, ecosystems, and conservation." },
-      { name: "Agricultural Scientist", desc: "Improve crops, soil health, and sustainable farming practices." },
-      { name: "Climate Analyst", desc: "Assess climate data and support adaptation and mitigation planning." },
-      { name: "Conservation Officer", desc: "Protect habitats and support responsible natural-resource use." },
-      { name: "Water Resource Engineer", desc: "Plan systems for water supply, quality, and flood management." },
-    ],
-    specializations: ["Precision Farming", "Hydrology", "Forest Ecology", "Carbon Accounting"],
-  },
-  {
-    id: "trades-voc",
-    shortTitle: "Trades",
-    icon: FaWrench,
-    careers: [
-      { name: "Precision CNC Machinist", desc: "Fabricate aerospace-grade metal and precision mechanisms." },
-      { name: "Automotive Specialist", desc: "Service and optimize electric vehicle and combustion systems." },
-      { name: "Electrical Master", desc: "Install high-voltage, industrial, and smart automation systems." },
-      { name: "HVAC & Energy Specialist", desc: "Install building climate control and industrial energy systems." },
-      { name: "Welder", desc: "Join and repair metal components across construction and manufacturing." },
-      { name: "Plumber", desc: "Install and maintain water, drainage, and heating systems." },
-      { name: "Carpenter", desc: "Build, install, and repair structures and fittings from wood." },
-      { name: "Industrial Maintenance Technician", desc: "Inspect and repair equipment used in industrial operations." },
-    ],
-    specializations: ["EV Diagnostics", "Industrial Robotics", "Smart Automation", "Welding Arts"],
-  },
-  {
-    id: "aviation-def",
-    shortTitle: "Aviation",
-    icon: FaPlaneDeparture,
-    careers: [
-      { name: "Commercial Pilot", desc: "Fly passenger and cargo aircraft across global routes." },
-      { name: "Air Traffic Controller", desc: "Coordinate airspace safety, departures, and landings." },
-      { name: "Aerospace Systems Engineer", desc: "Design aircraft fuselages, avionics, and jet engines." },
-      { name: "Defence Technology Specialist", desc: "Develop tactical communications, radar, and security systems." },
-      { name: "Aircraft Maintenance Engineer", desc: "Inspect, maintain, and certify aircraft systems for safe operation." },
-      { name: "Flight Operations Officer", desc: "Coordinate flight schedules, dispatch, and operational safety." },
-      { name: "Aeronautical Engineer", desc: "Design and test aircraft and related flight technologies." },
-      { name: "Defence Services Officer", desc: "Serve in leadership and operational roles in the armed forces." },
-    ],
-    specializations: ["Avionics", "Flight Operations", "UAV / Drones", "Navigation Systems"],
-  },
-  {
-    id: "emerging-unconv",
-    shortTitle: "Emerging",
-    icon: FaRocket,
-    careers: [
-      { name: "Content Creator / Streamer", desc: "Build independent media brands and digital communities." },
-      { name: "Game Developer", desc: "Code interactive gameplay, physics, and gaming mechanics." },
-      { name: "Executive Chef / Gastronomist", desc: "Create culinary artistry, restaurant ventures, and food science." },
-      { name: "Ethical Hacker", desc: "Perform penetration testing to protect systems from intrusion." },
-      { name: "Esports Coach", desc: "Train players and teams in strategy, preparation, and performance." },
-      { name: "Podcast Producer", desc: "Develop, record, and edit audio programs for digital audiences." },
-      { name: "Food Scientist", desc: "Apply science to food quality, safety, and product development." },
-      { name: "Virtual Production Artist", desc: "Create digital environments for interactive and screen productions." },
-    ],
-    specializations: ["Esports Strategy", "Culinary Science", "Game Mechanics", "Virtual Reality"],
-  },
-];
-
 const domainMetadataBySlug = new Map(CAREER_DOMAIN_CATALOG.map((domain) => [domain.slug, domain]));
 
-export const CAREER_DOMAINS = CAREER_DOMAIN_PRESENTATION.map((domain) => {
-  const metadata = domainMetadataBySlug.get(domain.id);
+export const CAREER_DOMAINS = CAREER_CATALOG.map((domain) => {
+  const metadata = domainMetadataBySlug.get(domain.domainSlug);
   return {
     ...domain,
-    slug: domain.id,
+    id: domain.domainSlug,
+    slug: domain.domainSlug,
+    icon: DOMAIN_ICONS[domain.domainSlug],
     title: metadata.name,
     description: metadata.description,
     color: metadata.color,
+    careers: domain.careers.map(({ name, desc }) => ({ name, desc })),
   };
 });

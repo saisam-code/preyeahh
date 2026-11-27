@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext.jsx";
-import { changeStudentGoal, extractProfile, getStudentGoals, updatePreferences } from "../services/studentService.js";
+import {
+  changeStudentGoal,
+  createParentLinkCode,
+  extractProfile,
+  getStudentGoals,
+  getStudentParentLinks,
+  updatePreferences,
+  updateStudentParentLinkStatus,
+} from "../services/studentService.js";
 
 const card = { background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "1.5rem", marginBottom: "1.5rem" };
 const selectStyle = { width: "100%", padding: "0.55rem 0.75rem", background: "var(--surface)", border: "1.5px solid var(--border)", borderRadius: "var(--radius)", color: "var(--text)" };
@@ -16,16 +24,33 @@ export default function Profile() {
   const [extracting, setExtracting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [careerGoals, setCareerGoals] = useState([]);
+  const [parentLinks, setParentLinks] = useState([]);
   const [newGoalTitle, setNewGoalTitle] = useState("");
   const [newGoalType, setNewGoalType] = useState("ALTERNATIVE");
   const [newGoalOrigin, setNewGoalOrigin] = useState("DISCOVERY");
   const [goalChangeReason, setGoalChangeReason] = useState("");
+  const [parentLinkCode, setParentLinkCode] = useState("");
+  const [parentLinkCodeExpiresAt, setParentLinkCodeExpiresAt] = useState(null);
+  const [generatingParentLinkCode, setGeneratingParentLinkCode] = useState(false);
 
   useEffect(() => {
     getStudentGoals()
       .then(setCareerGoals)
       .catch(() => toast.error("Career goal history could not be loaded."));
+    getStudentParentLinks()
+      .then(setParentLinks)
+      .catch(() => toast.error("Parent link requests could not be loaded."));
   }, []);
+
+  const handleParentLinkStatus = async (link, status) => {
+    try {
+      const updated = await updateStudentParentLinkStatus(link._id, status);
+      setParentLinks((current) => current.map((item) => item._id === updated._id ? { ...item, ...updated } : item));
+      toast.success(status === "ACTIVE" ? "Parent access approved" : "Parent access revoked");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not update parent access");
+    }
+  };
 
   const handleGoalChange = async (goal, status) => {
     try {
@@ -64,6 +89,20 @@ export default function Profile() {
       toast.success("Career goal saved with its history.");
     } catch (err) {
       toast.error(err.response?.data?.message || "Could not save career goal.");
+    }
+  };
+
+  const handleGenerateParentLinkCode = async () => {
+    setGeneratingParentLinkCode(true);
+    try {
+      const result = await createParentLinkCode();
+      setParentLinkCode(result.code);
+      setParentLinkCodeExpiresAt(result.expiresAt);
+      toast.success("New parent link code generated");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Could not generate a parent link code");
+    } finally {
+      setGeneratingParentLinkCode(false);
     }
   };
   const [themePreference, setThemePreference] = useState(() => localStorage.getItem("pp_theme") || "system");
@@ -220,6 +259,43 @@ export default function Profile() {
             <input value={goalChangeReason} onChange={(e) => setGoalChangeReason(e.target.value)} placeholder="Reason for this direction (optional)" maxLength={500} />
             <button type="submit" className="btn btn-primary" style={{ justifySelf: "start" }}>Save career direction</button>
           </form>
+        </div>
+        <div style={card}>
+          <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "0.5rem" }}>Connect a parent or guardian</div>
+          <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>
+            Share a temporary code with your parent or guardian. You must still approve their link request before they can view anything.
+          </p>
+          {parentLinkCode && (
+            <p role="status" style={{ fontSize: "var(--font-size-md)" }}>
+              Code: <strong><code>{parentLinkCode}</code></strong>
+              {parentLinkCodeExpiresAt && ` · Expires ${new Date(parentLinkCodeExpiresAt).toLocaleDateString()}`}
+            </p>
+          )}
+          <button type="button" className="btn btn-outline" onClick={handleGenerateParentLinkCode} disabled={generatingParentLinkCode}>
+            {generatingParentLinkCode ? "Generating..." : parentLinkCode ? "Generate a new code" : "Generate parent link code"}
+          </button>
+        </div>
+        <div style={card}>
+          <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "0.75rem" }}>Parent and guardian access</div>
+          {parentLinks.length === 0 ? (
+            <p style={{ color: "var(--text-muted)", fontSize: "var(--font-size-sm)" }}>No parent link requests.</p>
+          ) : (
+            <div style={{ display: "grid", gap: "0.65rem" }}>
+              {parentLinks.map((link) => (
+                <div key={link._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.75rem", flexWrap: "wrap", borderBottom: "1px solid var(--border)", paddingBottom: "0.65rem" }}>
+                  <span>{link.parent?.name || "Parent or guardian"} · {link.status}</span>
+                  {link.status === "PENDING" ? (
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                      <button type="button" className="btn btn-primary btn-sm" onClick={() => handleParentLinkStatus(link, "ACTIVE")}>Approve</button>
+                      <button type="button" className="btn btn-outline btn-sm" onClick={() => handleParentLinkStatus(link, "REVOKED")}>Decline</button>
+                    </div>
+                  ) : link.status === "ACTIVE" ? (
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => handleParentLinkStatus(link, "REVOKED")}>Revoke access</button>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div style={card}>
           <div style={{ fontWeight: 700, color: "var(--text)", marginBottom: "1rem" }}>Appearance</div>

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { fetchGuides, setGuideStatus, assignGuideRoles, deleteGuide } from "../../services/guideService.js";
+import { fetchGuides, setGuideStatus, assignGuideRoles, assignGuideDomain, deleteGuide } from "../../services/guideService.js";
 import { fetchRoles } from "../../services/rolesService.js";
+import { fetchCareerDomains } from "../../services/careerDomainService.js";
 
 export default function AdminGuides() {
   const [guides, setGuides] = useState([]);
@@ -9,6 +10,8 @@ export default function AdminGuides() {
   const [assignModal, setAssignModal] = useState(null); // guide being edited
   const [branchRoles, setBranchRoles] = useState([]);
   const [checked, setChecked] = useState(new Set());
+  const [careerDomains, setCareerDomains] = useState([]);
+  const [selectedDomains, setSelectedDomains] = useState({});
 
   const load = async () => {
     setLoading(true);
@@ -20,6 +23,11 @@ export default function AdminGuides() {
   };
 
   useEffect(() => { load(); }, []);
+  useEffect(() => {
+    fetchCareerDomains()
+      .then(setCareerDomains)
+      .catch((error) => toast.error(error.response?.data?.message || "Could not load career domains"));
+  }, []);
 
   const handleStatus = async (id, status) => {
     try {
@@ -69,6 +77,19 @@ export default function AdminGuides() {
     }
   };
 
+  const saveDomain = async (guide) => {
+    const domainId = selectedDomains[guide.id] || guide.domainId;
+    if (!domainId) return toast.error("Choose a career domain.");
+    try {
+      await assignGuideDomain(guide.id, domainId);
+      toast.success("Guide career domain assigned");
+      setSelectedDomains((current) => ({ ...current, [guide.id]: domainId }));
+      load();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error assigning career domain");
+    }
+  };
+
   return (
     <div>
       <div className="admin-header"><h2>Guide Requests</h2></div>
@@ -79,13 +100,30 @@ export default function AdminGuides() {
         <div className="empty"><div className="icon"><i className="fa fa-compass" /></div><p>No guide registrations yet.</p></div>
       ) : (
         <table className="admin-table">
-          <thead><tr><th>Name</th><th>Email</th><th>Branch</th><th>Roles</th><th>Bio</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead><tr><th>Name</th><th>Email</th><th>Branch</th><th>Career Domain</th><th>Roles</th><th>Bio</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody>
             {guides.map((g) => (
               <tr key={g.id}>
                 <td><strong>{g.name}</strong></td>
                 <td style={{ fontSize: "var(--font-size-sm)", color: "var(--muted)" }}>{g.email}</td>
                 <td><span className="branch-tag">{g.branch}</span></td>
+                <td>
+                  <select
+                    value={selectedDomains[g.id] || g.domainId || ""}
+                    onChange={(event) => setSelectedDomains((current) => ({ ...current, [g.id]: event.target.value }))}
+                    aria-label={`Career domain for ${g.name}`}
+                  >
+                    <option value="">Select domain</option>
+                    {careerDomains.map((domain) => <option key={domain._id} value={domain._id}>{domain.name}</option>)}
+                  </select>
+                  <button
+                    className="btn btn-outline btn-sm"
+                    disabled={!(selectedDomains[g.id] || g.domainId)}
+                    onClick={() => saveDomain(g)}
+                  >
+                    Save
+                  </button>
+                </td>
                 <td style={{ fontSize: "var(--font-size-sm)" }}>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem" }}>
                     {(g.roleNames || []).map((r) => <span className="detail-tag" key={r}>{r}</span>)}

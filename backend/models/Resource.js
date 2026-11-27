@@ -11,7 +11,6 @@ const resourceSchema = new mongoose.Schema(
       required: true,
     },
     url: { type: String, required: true, unique: true },
-    thumbnail: { type: String, default: "" },
     provider: { type: String, default: "" }, // e.g., "YouTube", "React Docs", "FreeCodeCamp"
 
     // Core search/matching fields
@@ -23,11 +22,11 @@ const resourceSchema = new mongoose.Schema(
     branches: [{ type: String, uppercase: true, trim: true }],
 
     sourceRepository: { type: String, default: "", trim: true, index: true },
-    sourceListRepository: { type: String, default: "", trim: true },
+    sourceListId: { type: String, default: "", trim: true },
+    sourceListMappedCount: { type: Number, default: 0, min: 0 },
     sourceCategory: { type: String, default: "", trim: true, index: true },
     sourceSubcategory: { type: String, default: "", trim: true },
     sourceId: { type: String, trim: true },
-    sourceReference: { type: String, default: "" },
     sourceUrl: { type: String, default: "", trim: true },
     sourceLicense: { type: String, default: "" },
     resourceType: {
@@ -48,6 +47,7 @@ const resourceSchema = new mongoose.Schema(
       index: true,
     },
     exclusionReason: { type: String, default: "" },
+    score: { type: Number, default: 0 },
 
     difficulty: {
       type: String,
@@ -57,9 +57,7 @@ const resourceSchema = new mongoose.Schema(
     estimatedDuration: { type: Number, default: 0 }, // in minutes
 
     // Metadata / Stats
-    learningObjectives: { type: [String], default: [] },
     views: { type: Number, default: 0 },
-    bookmarks: { type: Number, default: 0 },
 
     // Audit
     isCurated: { type: Boolean, default: true },
@@ -72,8 +70,9 @@ const resourceSchema = new mongoose.Schema(
 resourceSchema.index({ technology: 1, tags: 1, difficulty: 1 });
 resourceSchema.index({ branches: 1 });
 resourceSchema.index({ sourceId: 1 }, { unique: true, sparse: true });
-resourceSchema.index({ relatedDomains: 1 });
+resourceSchema.index({ relatedDomains: 1, score: -1 });
 resourceSchema.index({ relatedRoles: 1 });
+resourceSchema.index({ sourceListId: 1, importStatus: 1 });
 // Text index for standard search bar
 resourceSchema.index({ title: "text", description: "text", tags: "text" });
 

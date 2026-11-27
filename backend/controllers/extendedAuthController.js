@@ -1,6 +1,8 @@
+import { createHash } from "node:crypto";
 import Parent from "../models/Parent.js";
 import Student from "../models/Student.js";
 import ParentLink from "../models/ParentLink.js";
+import RoleInterest from "../models/RoleInterest.js";
 import { Institution, InstitutionMembership } from "../models/Institution.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
@@ -10,13 +12,14 @@ import {
   verifyRefreshToken,
   clearRefreshCookie,
 } from "../services/tokenService.js";
+import { getLearningProgress, getQuizProgress } from "../services/progressService.js";
 
 /**
  * POST /api/auth/extended/parent/register
- * Creates Parent account and optionally a PENDING ParentLink. No auto-link.
+ * Creates a Parent account. A student link is requested later with their code.
  */
 export const registerParent = asyncHandler(async (req, res) => {
-  const { name, email, password, phone, relationship, studentEmail } = req.body;
+  const { name, email, password, phone, relationship } = req.body;
   if (!name || !email || !password) throw ApiError.badRequest("Name, email and password are required");
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -32,24 +35,6 @@ export const registerParent = asyncHandler(async (req, res) => {
     isVerified: false,
     refreshTokenVersion: 0,
   });
-
-  // If a studentEmail was provided, initiate a PENDING link request (never auto-link as active)
-  if (studentEmail) {
-    const student = await Student.findOne({ email: studentEmail.trim().toLowerCase() });
-    if (student) {
-      await ParentLink.findOneAndUpdate(
-        { parent: parent._id, student: student._id },
-        {
-          parent: parent._id,
-          student: student._id,
-          status: "PENDING",
-          createdBy: "PARENT",
-          parentalConsentGranted: false,
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
-      );
-    }
-  }
 
   const accessToken = issueTokens(res, parent, "parent");
   res.status(201).json(
@@ -108,17 +93,18 @@ export const refreshParent = asyncHandler(async (req, res) => {
 
 /**
  * GET /api/auth/extended/parent/wards
- * Returns student data ONLY for ACTIVE parent-student links and only permitted fields
+ * Returns active links and pending requests without exposing student details.
  */
 export const getParentWards = asyncHandler(async (req, res) => {
-  const links = await ParentLink.find({ parent: req.user.id, status: "ACTIVE" })
+  const links = await ParentLink.find({ parent: req.user.id, status: { $in: ["ACTIVE", "PENDING"] } })
     .populate("student", "name email branch preferences.educationStage preferences.degreeOrProgram");
 
   const wards = links.map((link) => ({
     linkId: link._id,
+    status: link.status,
     permissions: link.permissions,
     parentalConsentGranted: link.parentalConsentGranted,
-    student: link.student,
+    student: link.status === "ACTIVE" ? link.student : null,
   }));
 
   res.status(200).json(new ApiResponse(200, wards, "Active wards retrieved"));
@@ -147,6 +133,17 @@ export const getParentWardDetail = asyncHandler(async (req, res) => {
 
   if (!student) throw ApiError.notFound("Student record not found");
 
+  const [interests, learning, quizzes] = await Promise.all([
+    link.permissions.viewMilestones
+      ? RoleInterest.find({ student: studentId })
+        .select("roleName branch committed recordedAt")
+        .populate("role", "title domain")
+        .lean()
+      : [],
+    link.permissions.viewPerformance ? getLearningProgress(studentId) : null,
+    link.permissions.viewPerformance ? getQuizProgress(studentId) : null,
+  ]);
+
   res.status(200).json(
     new ApiResponse(
       200,
@@ -154,6 +151,13 @@ export const getParentWardDetail = asyncHandler(async (req, res) => {
         student,
         permissions: link.permissions,
         parentalConsentGranted: link.parentalConsentGranted,
+        roles: interests.map((interest) => ({
+          title: interest.role?.title || interest.roleName,
+          domain: interest.role?.domain || "",
+          branch: interest.branch,
+          committed: interest.committed,
+        })),
+        performance: link.permissions.viewPerformance ? { learning, quizzes } : null,
       },
       "Ward details fetched"
     )
@@ -165,11 +169,14 @@ export const getParentWardDetail = asyncHandler(async (req, res) => {
  * Initiates a parent-student connection request
  */
 export const requestParentLink = asyncHandler(async (req, res) => {
-  const { studentEmail } = req.body;
-  if (!studentEmail) throw ApiError.badRequest("Student email is required");
-
-  const student = await Student.findOne({ email: studentEmail.trim().toLowerCase() });
-  if (!student) throw ApiError.notFound("No student account found with this email");
+  const code = typeof req.body.studentCode === "string" ? req.body.studentCode.trim().toUpperCase() : "";
+  if (!code) throw ApiError.badRequest("Student link code is required");
+  const codeHash = createHash("sha256").update(code).digest("hex");
+  const student = await Student.findOne({
+    parentLinkCodeHash: codeHash,
+    parentLinkCodeExpiresAt: { $gt: new Date() },
+  });
+  if (!student) throw ApiError.notFound("Student link code is invalid or expired");
 
   const existing = await ParentLink.findOne({ parent: req.user.id, student: student._id });
   if (existing && existing.status === "ACTIVE") {

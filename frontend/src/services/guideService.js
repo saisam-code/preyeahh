@@ -16,6 +16,10 @@ export function assignGuideRoles(id, roleNames) {
   return api.put(`/guides/${id}/roles`, { roleNames }).then((r) => r.data.data);
 }
 
+export function assignGuideDomain(id, domainId) {
+  return api.put(`/guides/${id}/domain`, { domainId }).then((r) => r.data.data);
+}
+
 export function deleteGuide(id) {
   return api.delete(`/guides/${id}`).then((r) => r.data);
 }

@@ -7,8 +7,17 @@ import Guide from "../models/Guide.js";
 import RoleRequest from "../models/RoleRequest.js";
 import RoleInterest from "../models/RoleInterest.js";
 import Student from "../models/Student.js";
+import StudentGoal from "../models/StudentGoal.js";
 import AuditLog from "../models/AuditLog.js";
-import { Institution } from "../models/Institution.js";
+import { Institution, InstitutionMembership } from "../models/Institution.js";
+import Parent from "../models/Parent.js";
+import ParentLink from "../models/ParentLink.js";
+import Quiz from "../models/Quiz.js";
+import QuizResult from "../models/QuizResult.js";
+import PersonalCareerPlan from "../models/PersonalCareerPlan.js";
+import MentorshipConversation from "../models/MentorshipConversation.js";
+import { StudentExperiment, StudentProject, CareerComparison } from "../models/StudentDevelopment.js";
+import { CareerOutcome, UserBlock, UserReport } from "../models/SafetyAndOutcomes.js";
 import escapeRegex from "../utils/escapeRegex.js";
 import Chat from "../models/Chat.js";
 import AIRoadmap from "../models/AIRoadmap.js";
@@ -138,6 +147,45 @@ export const getStudentById = asyncHandler(async (req, res) => {
   );
   if (!student) throw ApiError.notFound("Student not found");
   res.status(200).json(new ApiResponse(200, student, "Student fetched"));
+});
+
+export const deleteStudent = asyncHandler(async (req, res) => {
+  const student = await Student.findById(req.params.studentId).select("_id email");
+  if (!student) throw ApiError.notFound("Student not found");
+
+  await Promise.all([
+    Chat.deleteMany({ studentId: student._id }),
+    AIRoadmap.deleteMany({ studentId: student._id }),
+    Quiz.deleteMany({ studentId: student._id }),
+    QuizResult.deleteMany({ studentId: student._id }),
+    PersonalCareerPlan.deleteMany({ student: student._id }),
+    StudentGoal.deleteMany({ student: student._id }),
+    RoleInterest.deleteMany({ student: student._id }),
+    RoleRequest.deleteMany({
+      $or: [{ student: student._id }, { email: student.email }],
+    }),
+    MentorshipConversation.deleteMany({ studentId: student._id }),
+    ParentLink.deleteMany({ student: student._id }),
+    Parent.updateMany(
+      { "associatedStudents.student": student._id },
+      { $pull: { associatedStudents: { $or: [{ student: student._id }, { studentEmail: student.email }] } } }
+    ),
+    InstitutionMembership.deleteMany({ student: student._id }),
+    StudentExperiment.deleteMany({ student: student._id }),
+    StudentProject.deleteMany({ student: student._id }),
+    CareerComparison.deleteMany({ student: student._id }),
+    CareerOutcome.deleteMany({ student: student._id }),
+    UserReport.deleteMany({
+      $or: [
+        { reporter: student._id, reporterModel: "Student" },
+        { reportedUser: student._id },
+      ],
+    }),
+    UserBlock.deleteMany({ $or: [{ blocker: student._id }, { blockedUser: student._id }] }),
+  ]);
+  await Student.deleteOne({ _id: student._id });
+
+  res.status(200).json(new ApiResponse(200, { id: student._id }, "Student and associated data deleted"));
 });
 
 export const getStudentChats = asyncHandler(async (req, res) => {

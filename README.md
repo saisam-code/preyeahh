@@ -80,9 +80,9 @@ synchronizes the shared 12-domain catalog and links existing roles by their
 domain name, adds the required taxonomy indexes, and associates branches with
 domains already used by their roles. It does not delete or rewrite unmatched
 roles. Subdomains are managed within a specific domain/branch association.
-The source-resource model adds indexes for stable source IDs and taxonomy
-filters; production deployments should review and run
-`node scripts/syncIndexes.js` from `backend/` before the first import.
+The source-resource model uses stable source IDs and wheel-domain score
+indexes. Production keeps Mongoose auto-indexing disabled; review index
+migrations before applying them to an existing database.
 
 ## Testing
 
@@ -95,7 +95,8 @@ cd frontend && npm run build && npm run lint
 
 From `backend/`, run the importer in dry-run mode first. It shallow-clones both
 source repositories, parses the Awesome catalog and Build Your Own X tutorial
-sections, and fetches linked Awesome-list README files with bounded concurrency.
+sections, and fetches only first-level linked Awesome lists whose parent maps
+to a wheel domain.
 The JSON report contains the per-item inventory, source commit SHAs, mapping
 statuses, exclusions, duplicates, failed lists, and category/domain/role
 coverage. Relative Markdown documentation links are resolved to their original
@@ -112,21 +113,35 @@ accurate add/update/duplicate counts. Dry runs never write to MongoDB. Import
 the current source snapshot with:
 
 ```bash
-npm run import:sources -- --report reports\source-content-coverage.json
+npm run import:sources -- --allow-production --report reports\source-content-coverage.json
 ```
 
-Run the same command later to update records by stable source identifiers; it
-does not delete resources when upstream links disappear. `--skip-awesome-crawl`
-is available for a fast catalog-only preview, but is not a full Awesome-list
-inventory. Imported content retains its repository/category attribution and
-license information. The two repository catalogs declare CC0; linked
-repositories' individual licenses are not inferred and remain marked for
-review. Admins can review coverage and correct mappings in **Admin → Imported
-Resources**. The resource API supports filtering by domain, role, skill,
-technology, source category, resource type, and difficulty.
+Run the same command later to update records by stable source identifiers. The
+importer applies wheel-domain and relevance-score rules and omits excluded or
+failed items from the inventory collection. Imported content retains its
+repository/category attribution and license information. The two repository
+catalogs declare CC0; linked repositories' individual licenses are not inferred
+and remain marked for review. Admins can review coverage and correct mappings
+in **Admin → Imported Resources**.
 
-Production writes require an explicit `--allow-production` flag after reviewing
-the dry-run report and synchronizing required indexes.
+Preview imported-resource cleanup before applying it:
+
+```bash
+node scripts/pruneResources.js --report reports/prune.json --min-score 2
+```
+
+Review the report and per-domain counts, then apply only when the drop reasons
+and backup destination are acceptable:
+
+```bash
+node scripts/pruneResources.js --apply --report reports/prune.json --min-score 2 --allow-production
+```
+
+Apply mode writes dropped imported resources to `backend/backups/` before
+deleting them. Records without a source ID are not pruned. GitHub archived and
+star metadata is checked through the public API when available; the report
+states when checks are rate-limited or skipped. Production writes require an
+explicit `--allow-production` flag.
 
 ## Troubleshooting
 

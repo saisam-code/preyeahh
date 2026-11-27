@@ -51,9 +51,15 @@ export const getRoles = asyncHandler(async (req, res) => {
 
   const filter = {};
   filter.institution = null;
-  if (branch) filter.branch = branch.toUpperCase();
+  if (req.user?.role === "guide") {
+    if (!req.user.doc.domainId) throw ApiError.forbidden("Ask an administrator to assign your career domain");
+    filter.domainId = req.user.doc.domainId;
+    filter.branch = req.user.branch;
+  } else if (domainId) {
+    filter.domainId = domainId;
+  }
+  if (branch && req.user?.role !== "guide") filter.branch = branch.toUpperCase();
   if (type) filter.type = type;
-  if (domainId) filter.domainId = domainId;
   if (subdomainId) filter.subdomainId = subdomainId;
   if (search) {
     const re = new RegExp(escapeRegex(search), "i");
@@ -102,6 +108,13 @@ export const getManagedRoles = asyncHandler(async (req, res) => {
 export const getRoleById = asyncHandler(async (req, res) => {
   const role = await Role.findById(req.params.id);
   if (!role) throw ApiError.notFound("Role not found");
+  if (req.user?.role === "guide" && (
+    !req.user.doc.domainId
+    || String(role.domainId || "") !== String(req.user.doc.domainId)
+    || role.branch !== req.user.branch
+  )) {
+    throw ApiError.forbidden("You can only view roles in your assigned career domain and branch");
+  }
   res.status(200).json(new ApiResponse(200, role, "Role fetched"));
 });
 
@@ -117,6 +130,7 @@ export const createRole = asyncHandler(async (req, res) => {
 
   if (req.user.role === "guide") {
     branch = req.user.branch; // guide cannot choose — forced to their own branch
+    if (!req.user.doc.domainId) throw ApiError.forbidden("Ask an administrator to assign your career domain");
   } else if (req.user.role === "institution") {
     institution = req.user.id;
   } else if (req.body.institutionId) {
@@ -128,6 +142,9 @@ export const createRole = asyncHandler(async (req, res) => {
 
   const requestedDomain = domain || "Technology & Engineering";
   const domainRecord = await resolveCareerDomain(CareerDomain, { domainId, domain: requestedDomain });
+  if (req.user.role === "guide" && String(domainRecord?._id || "") !== String(req.user.doc.domainId)) {
+    throw ApiError.forbidden("You can only create roles in your assigned career domain");
+  }
   await findBranchForDomain(branch, domainRecord);
   const subdomainRecord = await resolveRoleSubdomain(req.body.subdomainId, branch, domainRecord);
   const roleReality = req.user.role === "admin"
@@ -173,8 +190,13 @@ export const updateRole = asyncHandler(async (req, res) => {
     if (role.branch !== req.user.branch) {
       throw ApiError.forbidden("You can only edit roles in your own branch");
     }
-    assertGuideOwnsContent(role, req.user);
+    if (!req.user.doc.domainId || String(role.domainId || "") !== String(req.user.doc.domainId)) {
+      throw ApiError.forbidden("You can only edit roles in your assigned career domain");
+    }
     delete req.body.branch;
+    delete req.body.domain;
+    delete req.body.domainId;
+    delete req.body.subdomainId;
   }
   if (req.user.role === "institution" && String(role.institution || "") !== req.user.id) {
     throw ApiError.forbidden("You can only edit roles owned by your institution");
@@ -272,10 +294,13 @@ export const deleteRole = asyncHandler(async (req, res) => {
   if (req.user.role === "guide" && role.branch !== req.user.branch) {
     throw ApiError.forbidden("You can only delete roles in your own branch");
   }
+  if (req.user.role === "guide" && (!req.user.doc.domainId || String(role.domainId || "") !== String(req.user.doc.domainId))) {
+    throw ApiError.forbidden("You can only delete roles in your assigned career domain");
+  }
   if (req.user.role === "institution" && String(role.institution || "") !== req.user.id) {
     throw ApiError.forbidden("You can only delete roles owned by your institution");
   }
-  assertGuideOwnsContent(role, req.user);
+  if (req.user.role !== "guide") assertGuideOwnsContent(role, req.user);
 
   await Role.findByIdAndDelete(role._id);
   res.status(200).json(new ApiResponse(200, null, "Role deleted"));
