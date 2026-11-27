@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { Routes, Route, Navigate, useLocation, useSearchParams } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation, useParams, useSearchParams } from "react-router-dom";
 import { useAuth } from "./context/AuthContext.jsx";
 import { getEducationMaturityStage } from "./constants/educationStages.js";
 
@@ -7,6 +7,7 @@ import { getEducationMaturityStage } from "./constants/educationStages.js";
 import PublicLayout from "./layouts/PublicLayout.jsx";
 import AuthLayout from "./layouts/AuthLayout.jsx";
 import StudentLayout from "./layouts/StudentLayout.jsx";
+import StudyLayout from "./layouts/StudyLayout.jsx";
 import GuideLayout from "./layouts/GuideLayout.jsx";
 import ParentLayout from "./layouts/ParentLayout.jsx";
 import InstitutionLayout from "./layouts/InstitutionLayout.jsx";
@@ -25,6 +26,7 @@ const GoogleCallback = lazy(() => import("./pages/GoogleCallback.jsx"));
 const GoogleOnboarding = lazy(() => import("./pages/GoogleOnboarding.jsx"));
 const PersonalCareerPlanner = lazy(() => import("./pages/PersonalCareerPlanner.jsx"));
 const Explore = lazy(() => import("./pages/Explore.jsx"));
+const CareerDiscovery = lazy(() => import("./pages/CareerDiscovery.jsx"));
 const MyRoadmaps = lazy(() => import("./pages/MyRoadmaps.jsx"));
 const RoadmapView = lazy(() => import("./pages/RoadmapView.jsx"));
 const Quiz = lazy(() => import("./pages/Quiz.jsx"));
@@ -38,6 +40,32 @@ const ParentPortal = lazy(() => import("./pages/ParentPortal.jsx"));
 const InstitutionPortal = lazy(() => import("./pages/InstitutionPortal.jsx"));
 const Admin = lazy(() => import("./pages/Admin.jsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.jsx"));
+
+function LegacyStudentRedirect({ to, children }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (user?.role !== "student") return children;
+
+  const [pathname, query = ""] = to.split("?");
+  const searchParams = new URLSearchParams(query);
+  new URLSearchParams(location.search).forEach((value, key) => {
+    if (!searchParams.has(key)) searchParams.set(key, value);
+  });
+  const search = searchParams.toString();
+  return (
+    <Navigate
+      to={{ pathname, search: search ? `?${search}` : "", hash: location.hash }}
+      state={location.state}
+      replace
+    />
+  );
+}
+
+function LegacyRoadmapRedirect() {
+  const { id } = useParams();
+  const location = useLocation();
+  return <Navigate to={`/study/roadmaps/${encodeURIComponent(id)}`} state={location.state} replace />;
+}
 
 export default function App() {
   const [searchParams] = useSearchParams();
@@ -64,7 +92,7 @@ export default function App() {
     const storedOverride = localStorage.getItem("pp_stage_override") || "auto";
     const educationStage = user?.preferences?.educationStage || location.state?.onboardingData?.educationStage;
     const isAdmin = location.pathname === "/admin";
-    const roleRoute = /^\/(dashboard|explore|discovery|government-careers|planner|roadmaps|roadmap|quiz|profile|resources|roles|beyond|chat|guide-panel|parent-portal|institution-portal)(\/|$)/.test(location.pathname);
+    const roleRoute = /^\/(dashboard|explore|explore-careers|discovery|government-careers|study|planner|roadmaps|roadmap|quiz|profile|resources|roles|beyond|chat|guide-panel|parent-portal|institution-portal)(\/|$)/.test(location.pathname);
     const stage = storedOverride !== "auto"
       ? storedOverride
       : educationStage
@@ -96,9 +124,9 @@ export default function App() {
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        <Route path="/explore-careers" element={<Explore />} />
-        <Route path="/government-careers" element={<Navigate to="/explore-careers?section=exams" replace />} />
-        <Route path="/discovery/government" element={<Navigate to="/explore-careers?section=exams" replace />} />
+        <Route path="/explore-careers" element={<Navigate to="/explore?tab=domains" replace />} />
+        <Route path="/government-careers" element={<Navigate to="/explore?tab=exams" replace />} />
+        <Route path="/discovery/government" element={<Navigate to="/explore?tab=exams" replace />} />
       </Route>
 
       {/* ── EXPERIENCE B: AUTHENTICATION EXPERIENCE ── */}
@@ -114,22 +142,31 @@ export default function App() {
       {/* ── SHARED AUTHENTICATED ROUTES: STUDENT & GUIDE (SINGLE DEFINITION VIA ROLELAYOUT) ── */}
       <Route element={<ProtectedRoute allowedRoles={["student", "guide"]} redirectTo="/login" />}>
         <Route element={<RoleLayout />}>
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/roles" element={<Roles />} />
-          <Route path="/beyond" element={<Beyond />} />
+          <Route path="/chat" element={<LegacyStudentRedirect to="/study/chat"><Chat /></LegacyStudentRedirect>} />
+          <Route path="/resources" element={<LegacyStudentRedirect to="/explore?tab=resources"><Resources /></LegacyStudentRedirect>} />
+          <Route path="/roles" element={<LegacyStudentRedirect to="/explore?tab=roles"><Roles /></LegacyStudentRedirect>} />
+          <Route path="/beyond" element={<LegacyStudentRedirect to="/explore?tab=opportunities"><Beyond /></LegacyStudentRedirect>} />
         </Route>
       </Route>
 
       {/* ── STUDENT-ONLY AUTHENTICATED APPLICATION ── */}
       <Route element={<ProtectedRoute allowedRoles={["student"]} redirectTo="/login" />}>
         <Route element={<StudentLayout />}>
-          <Route path="/planner" element={<PersonalCareerPlanner />} />
           <Route path="/explore" element={<Explore />} />
-          <Route path="/discovery" element={<Explore />} />
-          <Route path="/roadmaps" element={<MyRoadmaps />} />
-          <Route path="/roadmap/:id" element={<RoadmapView />} />
-          <Route path="/quiz" element={<Quiz />} />
+          <Route path="/discovery" element={<Navigate to="/explore" replace />} />
+          <Route path="/study" element={<StudyLayout />}>
+            <Route index element={<Navigate to="planner" replace />} />
+            <Route path="planner" element={<PersonalCareerPlanner />} />
+            <Route path="roadmaps" element={<MyRoadmaps />} />
+            <Route path="roadmaps/:id" element={<RoadmapView />} />
+            <Route path="quiz" element={<Quiz />} />
+            <Route path="chat" element={<Chat />} />
+            <Route path="tools" element={<CareerDiscovery toolsOnly hideHeader />} />
+          </Route>
+          <Route path="/planner" element={<Navigate to="/study/planner" replace />} />
+          <Route path="/roadmaps" element={<Navigate to="/study/roadmaps" replace />} />
+          <Route path="/roadmap/:id" element={<LegacyRoadmapRedirect />} />
+          <Route path="/quiz" element={<Navigate to="/study/quiz" replace />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/dashboard" element={<Dashboard />} />
         </Route>

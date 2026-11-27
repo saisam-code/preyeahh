@@ -60,10 +60,10 @@ const CAPABILITY_TABS = [
   { id: "outcomes", label: "Alumni & Outcomes" },
 ];
 
-export default function CareerDiscovery() {
+export default function CareerDiscovery({ toolsOnly = false, hideHeader = false } = {}) {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("discovery");
+  const [activeTab, setActiveTab] = useState(toolsOnly ? "switch" : "discovery");
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("all");
@@ -113,6 +113,11 @@ export default function CareerDiscovery() {
   const [outcomes, setOutcomes] = useState([]);
   const [studentExperiments, setStudentExperiments] = useState([]);
   const [experimentReflection, setExperimentReflection] = useState({});
+  const visibleTabs = CAPABILITY_TABS.filter(({ id }) => (
+    toolsOnly
+      ? ["switch", "experiments", "financial"].includes(id)
+      : ["discovery", "compare", "outcomes"].includes(id)
+  ));
 
   const loadCareers = async () => {
     try {
@@ -136,14 +141,15 @@ export default function CareerDiscovery() {
   };
 
   useEffect(() => {
+    if (toolsOnly) return;
     fetchCareerDomains()
       .then(setCareerDomains)
       .catch(() => toast.error("Career domains could not be loaded"));
-  }, []);
+  }, [toolsOnly]);
 
   useEffect(() => {
     setBranches([]);
-    if (!selectedDomainId) {
+    if (toolsOnly || !selectedDomainId) {
       setBranchesLoading(false);
       return undefined;
     }
@@ -158,11 +164,11 @@ export default function CareerDiscovery() {
       .finally(() => { if (active) setBranchesLoading(false); });
 
     return () => { active = false; };
-  }, [selectedDomainId]);
+  }, [selectedDomainId, toolsOnly]);
 
   useEffect(() => {
     setSubdomains([]);
-    if (!selectedDomainId || branch === "all") {
+    if (toolsOnly || !selectedDomainId || branch === "all") {
       setSubdomainsLoading(false);
       return undefined;
     }
@@ -177,13 +183,14 @@ export default function CareerDiscovery() {
       .finally(() => { if (active) setSubdomainsLoading(false); });
 
     return () => { active = false; };
-  }, [selectedDomainId, branch]);
+  }, [selectedDomainId, branch, toolsOnly]);
 
   useEffect(() => {
+    if (toolsOnly) return;
     loadCareers();
     // Structured filters trigger automatically; search is submitted explicitly
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, domain, branch, subdomainId, stage]);
+  }, [category, domain, branch, subdomainId, stage, toolsOnly]);
 
   useEffect(() => {
     if (activeTab === "outcomes") {
@@ -301,8 +308,7 @@ export default function CareerDiscovery() {
 
   return (
     <div style={{ maxWidth: 1150, margin: "0 auto", padding: "1.5rem 0" }}>
-      {/* ── HEADER ── */}
-      <div style={{ marginBottom: "1.5rem" }}>
+      {!hideHeader && <div style={{ marginBottom: "1.5rem" }}>
         <span style={{ fontSize: "var(--font-size-xs)", textTransform: "uppercase", letterSpacing: 1, color: "var(--primary)", fontWeight: 700 }}>
           PREYEAHH CAREER INTELLIGENCE SUITE
         </span>
@@ -312,11 +318,11 @@ export default function CareerDiscovery() {
         <p style={{ color: "var(--text-muted)", margin: 0, fontSize: "var(--font-size-md)" }}>
           Understand verified market realities, compare career paths, calculate real ROI, and experiment safely before committing.
         </p>
-      </div>
+      </div>}
 
       {/* ── CAPABILITY TABS ── */}
       <div className="tabs" style={{ marginBottom: "1.5rem", overflowX: "auto" }}>
-        {CAPABILITY_TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <button
             key={t.id}
             className={`tab ${activeTab === t.id ? "active" : ""}`}

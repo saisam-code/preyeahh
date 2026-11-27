@@ -139,7 +139,7 @@ export default function Roles() {
         const existing = await getInterestForRole(role._id);
         if (existing?.committed === committed) {
           if (committed) {
-            navigate("/chat?mode=mentor", { state: { mentorRole: { id: role._id, title: role.title } } });
+            navigate(`${user?.role === "student" ? "/study/chat" : "/chat"}?mode=mentor`, { state: { mentorRole: { id: role._id, title: role.title } } });
             return;
           }
           openDetail(role);
@@ -156,7 +156,7 @@ export default function Roles() {
         await recordInterest(role._id, committed);
         if (committed) {
           toast.success("Commitment saved. Find your guide on the dashboard.");
-          navigate("/chat?mode=mentor", { state: { mentorRole: { id: role._id, title: role.title } } });
+          navigate(`${user?.role === "student" ? "/study/chat" : "/chat"}?mode=mentor`, { state: { mentorRole: { id: role._id, title: role.title } } });
           return;
         }
         toast.success("Saved");
@@ -171,7 +171,7 @@ export default function Roles() {
     try {
       await generateRoadmap({ roleId: role._id });
       toast.success("Roadmap generated!");
-      navigate("/roadmaps");
+      navigate("/study/roadmaps");
     } catch (err) {
       toast.error(err.response?.status === 429 ? "AI is busy — try again shortly" : err.response?.data?.message || "Could not generate roadmap");
     } finally {
@@ -376,7 +376,7 @@ export default function Roles() {
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={() => navigate(`/explore?section=resources&role=${encodeURIComponent(selectedRole.title)}`)}
+                onClick={() => navigate(`/explore?tab=resources&role=${encodeURIComponent(selectedRole.title)}`)}
               >
                 Browse curated resources for this role
               </button>
@@ -389,7 +389,7 @@ export default function Roles() {
                 </button>
                 <button
                   className="btn btn-outline"
-                  onClick={() => navigate("/quiz", { state: { roleId: selectedRole._id, roleTitle: selectedRole.title } })}
+                  onClick={() => navigate("/study/quiz", { state: { roleId: selectedRole._id, roleTitle: selectedRole.title } })}
                 >
                   Quiz this role
                 </button>

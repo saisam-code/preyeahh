@@ -14,7 +14,11 @@ const SECTIONS = [
 ];
 
 function getSection(searchParams) {
-  const requested = searchParams.get("section");
+  const requestedTab = searchParams.get("tab");
+  const requestedSection = searchParams.get("section");
+  const requested = SECTIONS.some(({ id }) => id === requestedTab)
+    ? requestedTab
+    : requestedSection;
   return SECTIONS.some(({ id }) => id === requested) ? requested : "domains";
 }
 
@@ -24,9 +28,13 @@ export default function Explore() {
 
   const selectSection = (section) => {
     const next = new URLSearchParams(searchParams);
-    next.set("section", section);
-    if (section === "exams") next.set("tab", "syllabus");
-    else next.delete("tab");
+    next.set("tab", section);
+    next.delete("section");
+    if (section === "exams") {
+      next.set("examTab", searchParams.get("examTab") || "syllabus");
+    } else {
+      next.delete("examTab");
+    }
     setSearchParams(next);
   };
 
@@ -45,7 +53,7 @@ export default function Explore() {
       content = <Beyond />;
       break;
     default:
-      content = <CareerDiscovery />;
+      content = <CareerDiscovery hideHeader />;
   }
 
   return (

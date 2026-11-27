@@ -140,21 +140,21 @@ export default function Dashboard() {
       title: `Strengthen ${weakestTopic.topic}`,
       description: `Your quiz average is ${weakestTopic.averageScore}% across ${weakestTopic.attempts} attempt${weakestTopic.attempts === 1 ? "" : "s"}. Practice it and compare your next score.`,
       action: "Practice this topic",
-      onClick: () => navigate("/quiz", { state: { topic: weakestTopic.topic } }),
+      onClick: () => navigate("/study/quiz", { state: { topic: weakestTopic.topic } }),
     };
   } else if (nextIncompleteRoadmap) {
     nextStep = {
       title: `Continue ${nextIncompleteRoadmap.title}`,
       description: `${nextIncompleteRoadmap.completedTopics} of ${nextIncompleteRoadmap.totalTopics} topics complete. Keep the momentum going with the next milestone.`,
       action: "Open roadmaps",
-      onClick: () => navigate("/roadmaps", { state: { roadmapId: nextIncompleteRoadmap.id } }),
+      onClick: () => navigate("/study/roadmaps", { state: { roadmapId: nextIncompleteRoadmap.id } }),
     };
   } else if (!quizProgress?.completedQuizzes) {
     nextStep = {
       title: "Check your understanding",
       description: "A short quiz will reveal what to review next and build your learning record.",
       action: "Take a quiz",
-      onClick: () => navigate("/quiz"),
+      onClick: () => navigate("/study/quiz"),
     };
   }
 
@@ -302,7 +302,7 @@ export default function Dashboard() {
             <div className="dashboard-role-badge">Learning Telemetry</div>
             <h2 id="student-progress-title">Your progress at a glance</h2>
           </div>
-          <button className="btn btn-outline btn-sm" type="button" onClick={() => navigate("/roadmaps")}>
+          <button className="btn btn-outline btn-sm" type="button" onClick={() => navigate("/study/roadmaps")}>
             All roadmaps <FaArrowRight />
           </button>
         </div>
@@ -330,7 +330,7 @@ export default function Dashboard() {
           <div className="dashboard-progress-panel">
             <div className="dashboard-progress-panel-heading">
               <h3>Roadmap momentum</h3>
-              <button className="btn btn-outline btn-sm" type="button" onClick={() => navigate("/roadmaps")}>
+              <button className="btn btn-outline btn-sm" type="button" onClick={() => navigate("/study/roadmaps")}>
                 Open roadmaps
               </button>
             </div>
@@ -342,7 +342,7 @@ export default function Dashboard() {
                   className="dashboard-roadmap-row"
                   type="button"
                   key={roadmap.id}
-                  onClick={() => navigate("/roadmaps", { state: { roadmapId: roadmap.id } })}
+                  onClick={() => navigate("/study/roadmaps", { state: { roadmapId: roadmap.id } })}
                 >
                   <span className="dashboard-roadmap-title">
                     <strong>{roadmap.title}</strong>
@@ -380,8 +380,8 @@ export default function Dashboard() {
                   onClick={() => {
                     if (/profile/i.test(suggestion.title)) navigate("/profile");
                     else if (/quiz|revise|strong in/i.test(suggestion.title))
-                      navigate("/quiz", { state: { topic: weakestTopic?.topic || "" } });
-                    else if (/roadmap|resume/i.test(suggestion.title)) navigate("/roadmaps");
+                      navigate("/study/quiz", { state: { topic: weakestTopic?.topic || "" } });
+                    else if (/roadmap|resume/i.test(suggestion.title)) navigate("/study/roadmaps");
                     else navigate(`/explore?section=roles${branchTarget ? `&${branchTarget.slice(1)}` : ""}`);
                   }}
                 >
@@ -408,7 +408,7 @@ export default function Dashboard() {
           <div className="dashboard-progress-panel dashboard-recent-quizzes" style={{ marginTop: "1.25rem" }}>
             <div className="dashboard-progress-panel-heading">
               <h3>Recent quiz results</h3>
-              <button className="btn btn-outline btn-sm" type="button" onClick={() => navigate("/quiz")}>
+              <button className="btn btn-outline btn-sm" type="button" onClick={() => navigate("/study/quiz")}>
                 All quizzes <FaArrowRight />
               </button>
             </div>

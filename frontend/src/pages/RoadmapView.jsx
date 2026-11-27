@@ -22,7 +22,7 @@ export default function RoadmapView() {
       setRelated(all.data || []);
     } catch {
       toast.error("Failed to load roadmap");
-      navigate("/roadmaps");
+      navigate("/study/roadmaps");
     } finally {
       setLoading(false);
     }

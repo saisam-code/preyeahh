@@ -67,17 +67,21 @@ const EDUCATION_STAGES = ["all", ...CANONICAL_EDUCATION_STAGES];
 export default function GovernmentCareers() {
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const legacyTab = searchParams.get("tab");
+  const initialExamTab = ["jobs", "syllabus", "notifications", "compare"].includes(legacyTab)
+    ? legacyTab
+    : "jobs";
   const setGovernmentTab = (tab) => {
     setActiveTab(tab);
     setSearchParams((current) => {
       const next = new URLSearchParams(current);
-      next.set("tab", tab);
+      next.set("examTab", tab);
       return next;
     });
   };
 
   // Tab State: "jobs", "syllabus", "notifications", "compare"
-  const [activeTab, setActiveTab] = useState(() => searchParams.get("tab") || "jobs");
+  const [activeTab, setActiveTab] = useState(() => searchParams.get("examTab") || initialExamTab);
 
   // Filters State
   const [selectedCategory, setSelectedCategory] = useState("all");

@@ -245,7 +245,7 @@ export default function StudentOnboarding() {
           toast.error("Your completed onboarding draft could not be removed from this device.");
         }
         toast.success("Welcome aboard! Your career workspace is ready.");
-        navigate("/planner");
+        navigate("/study/planner");
       } else {
         toast.success("Preferences configured! Create your student account to activate your plan.");
         navigate("/register?role=student", {
