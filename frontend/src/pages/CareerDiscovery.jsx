@@ -455,7 +455,7 @@ export default function CareerDiscovery({ toolsOnly = false, hideHeader = false 
               <button
                 type="button"
                 className="btn btn-outline"
-                onClick={() => navigate(`/explore?section=resources&domain=${encodeURIComponent(selectedDomainSlug)}`)}
+                onClick={() => navigate(`/explore?tab=resources&domain=${encodeURIComponent(selectedDomainSlug)}`)}
               >
                 <FaArrowRight /> Browse {domain} learning resources
               </button>
@@ -823,7 +823,7 @@ export default function CareerDiscovery({ toolsOnly = false, hideHeader = false 
                 <button
                   type="button"
                   className="btn btn-outline"
-                  onClick={() => navigate(`/explore?section=resources&role=${encodeURIComponent(selectedRole.title)}`)}
+                  onClick={() => navigate(`/explore?tab=resources&role=${encodeURIComponent(selectedRole.title)}`)}
                 >
                   Browse curated resources for this role
                 </button>

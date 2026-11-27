@@ -133,7 +133,7 @@ export default function Dashboard() {
       title: "Build your first roadmap",
       description: `Choose a ${user.branch || "career"} role and turn it into a sequence of manageable milestones.`,
       action: "Explore roles",
-      onClick: () => navigate(`/explore?section=roles${branchTarget ? `&${branchTarget.slice(1)}` : ""}`),
+      onClick: () => navigate(`/explore?tab=roles${branchTarget ? `&${branchTarget.slice(1)}` : ""}`),
     };
   } else if (weakestTopic) {
     nextStep = {
@@ -382,7 +382,7 @@ export default function Dashboard() {
                     else if (/quiz|revise|strong in/i.test(suggestion.title))
                       navigate("/study/quiz", { state: { topic: weakestTopic?.topic || "" } });
                     else if (/roadmap|resume/i.test(suggestion.title)) navigate("/study/roadmaps");
-                    else navigate(`/explore?section=roles${branchTarget ? `&${branchTarget.slice(1)}` : ""}`);
+                    else navigate(`/explore?tab=roles${branchTarget ? `&${branchTarget.slice(1)}` : ""}`);
                   }}
                 >
                   <span
